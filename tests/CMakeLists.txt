@@ -44,6 +44,7 @@ gtest_discover_tests(cna_engine_tests
 # --- Enhanced tests: the only executable linking cna-extended. -----------------
 if(CNA_ENGINE_WITH_EXTENDED)
     add_executable(cna_engine_extended_tests
+        Extended/EngineWorldScreenTests.cpp
         Extended/WorldCameraSyncTests.cpp
     )
     target_link_libraries(cna_engine_extended_tests PRIVATE cna_engine_extended GTest::gtest_main)

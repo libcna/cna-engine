@@ -50,6 +50,9 @@ namespace CnaEngine::Graphics
     public:
         virtual ~ICameraController() = default;
         virtual void Update(Camera& camera, const CameraControlInput& input, float elapsedSeconds) = 0;
+        /// Adopts the camera's current state so the next Update() does not
+        /// snap; called when a controller takes over a camera. Default: no-op.
+        virtual void SyncFrom(const Camera& camera) { (void)camera; }
     };
 
     /// Shared yaw/pitch bookkeeping of the first-person controllers.
@@ -67,7 +70,7 @@ namespace CnaEngine::Graphics
         explicit FlyCameraController(FirstPersonSettings settings = {});
 
         /// Adopts the camera's current heading so the first update does not snap.
-        void SyncFrom(const Camera& camera);
+        void SyncFrom(const Camera& camera) override;
         void Update(Camera& camera, const CameraControlInput& input, float elapsedSeconds) override;
 
         [[nodiscard]] float Yaw() const noexcept { return yaw_; }
@@ -91,7 +94,7 @@ namespace CnaEngine::Graphics
         explicit WalkCameraController(FirstPersonSettings settings = {}, float eyeHeight = 1.7f,
                                       GroundHeight ground = {});
 
-        void SyncFrom(const Camera& camera);
+        void SyncFrom(const Camera& camera) override;
         void Update(Camera& camera, const CameraControlInput& input, float elapsedSeconds) override;
 
         [[nodiscard]] float Yaw() const noexcept { return yaw_; }
