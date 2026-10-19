@@ -43,7 +43,7 @@ set(CNA_EXTENDED_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory("${PROBE_EXTENDED_DIR}" "${CMAKE_BINARY_DIR}/_cna_extended" EXCLUDE_FROM_ALL)
 
 # --- The engine, from its installed package only. ----------------------------
-find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics ExtendedIntegration)
+find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics EnhancedGraphics ExtendedIntegration)
 
 add_executable(strict_consumer strict_consumer.cpp)
 target_link_libraries(strict_consumer PRIVATE CnaEngine::Core CnaEngine::Graphics)
@@ -78,12 +78,12 @@ function(_probe_collect_links target out)
     set(${out} ${seen} PARENT_SCOPE)
 endfunction()
 _probe_collect_links(CnaEngine::Graphics _strict_closure)
-foreach(_forbidden IN ITEMS CNA::Extended CNA_EXTENDED CnaEngine::ExtendedIntegration)
+foreach(_forbidden IN ITEMS CNA::Extended CNA_EXTENDED CnaEngine::ExtendedIntegration CnaEngine::EnhancedGraphics)
     if(_forbidden IN_LIST _strict_closure)
         message(FATAL_ERROR "strict consumer probe: CnaEngine::Graphics reaches ${_forbidden}")
     endif()
 endforeach()
-message(STATUS "strict consumer probe: link closure of CnaEngine::Graphics has no cna-extended target")
+message(STATUS "strict consumer probe: link closure of CnaEngine::Graphics has no enhanced or cna-extended target")
 
 enable_testing()
 add_test(NAME consumer.strict COMMAND strict_consumer)

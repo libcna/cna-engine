@@ -32,6 +32,9 @@ cna_dir="$(dirs CNA_ENGINE_CNA_DIR)"
 sharp_dir="$(dirs CNA_ENGINE_SHARP_RUNTIME_DIR)"
 extended_dir="$(dirs CNA_ENGINE_EXTENDED_DIR)"
 
+# Regenerate and build first so install rules and libraries are current.
+cmake "$engine_build" >/dev/null
+cmake --build "$engine_build" --parallel "$jobs"
 rm -rf "$prefix"
 cmake --install "$engine_build" --prefix "$prefix"
 
