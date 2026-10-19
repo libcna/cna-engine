@@ -54,6 +54,30 @@ with Street's `GpuMesh`, both render a **pixel-identical** image with
 BasicEffect lighting; the conversion report shows nothing dropped or
 narrowed.
 
+## Instancing (ENG-034) — validated on the hardware path
+
+`StreetSimulatorTests.InstancingMatchesStreetInstancedMesh` wraps the same
+engine-uploaded buffers in a `ModelMeshPart` for Street's `InstancedMesh` and
+draws seven instances with both. Street's capability check selects the
+hardware path on the software renderer; the engine's `DrawHardware` issues the
+same single draw with the same 64-byte per-instance declaration
+(TextureCoordinate 1–4) and produces a pixel-identical image.
+
+Generalizations made because of this pilot:
+
+- `DrawHardware` restores the device's previous vertex and index bindings,
+  so the next frame's instance upload never writes into a bound buffer
+  (XNA refuses that);
+- the per-instance fallback places instances relative to the effect's current
+  World (a shared pivot) and restores it afterwards, as Street does. This path
+  is not equivalence-tested against Street, because Street's capability check
+  cannot be forced to its fallback without modifying it.
+
+Street selects the path with CNA capability queries
+(`SupportsCapability(Instancing)`, `MultiStreamVertexInput`); the strict
+engine API uses the XNA profile (`ChoosePath`). An enhanced capability-based
+choice belongs in `EnhancedGraphics` when a second consumer needs it.
+
 ## Shadows (ENG-035 step 3) — not required at present
 
 Street still carries shadow settings and statistics, but CNA's
@@ -68,8 +92,7 @@ engine shadow pass would feed.
 
 - Materials and render queue with Street's PBR effect (needs CNA's CNAEXT
   `PbrEffect` in an enhanced renderer; CNA is built with `CNA_CNAEXT=OFF` here).
-- Instancing against Street's `InstancedMesh`, culling/LOD counts, quality
-  tiers.
+- Culling/LOD counts and quality tiers against Street's own settings.
 - Asset registry: Street's caches (`CharacterLibrary`, `ModelLibrary`) are
   tied to its `MaterialLibrary` and glTF import; a probe needs those pieces
   compiled read-only first.

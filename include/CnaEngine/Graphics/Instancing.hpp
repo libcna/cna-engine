@@ -70,15 +70,17 @@ namespace CnaEngine::Graphics
                                                        bool effectReadsInstanceStream);
 
         /// Hardware path: uploads visible instance matrices (when changed),
-        /// binds mesh + instance streams and issues one instanced draw. The
+        /// binds mesh + instance streams, issues one instanced draw and
+        /// restores the device's previous vertex and index bindings. The
         /// caller has applied the effect pass. Throws std::logic_error on a
         /// Reach device. Returns false when there is nothing to draw.
         bool DrawHardware(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
                           RenderStatistics* statistics = nullptr);
 
-        /// Per-instance path: for each visible instance sets the World matrix
-        /// on `matrices`, calls `applyPass` (which applies the effect pass)
-        /// and draws. Returns the number of instances drawn.
+        /// Per-instance path: for each visible instance sets World to
+        /// instance * (the effect's World on entry), calls `applyPass` (which
+        /// applies the effect pass) and draws; World is restored afterwards.
+        /// Returns the number of instances drawn.
         std::size_t DrawPerInstance(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
                                     Microsoft::Xna::Framework::Graphics::IEffectMatrices& matrices,
                                     const std::function<void()>& applyPass, RenderStatistics* statistics = nullptr);

@@ -101,6 +101,7 @@ namespace CnaEngine::Graphics
         device.SetRenderTarget(nullptr);
         EXPECT_EQ(drawn, 3u);
         EXPECT_EQ(stats.drawCalls, 3u);
+        EXPECT_EQ(effect.getWorldProperty(), Matrix::getIdentityProperty()) << "World restored";
         std::vector<Color> pixels(static_cast<std::size_t>(Size * Size));
         target.GetData(pixels.data(), static_cast<int>(pixels.size()));
         // Three separate boxes along the middle row.
@@ -140,6 +141,13 @@ namespace CnaEngine::Graphics
         std::vector<Color> pixels(static_cast<std::size_t>(Size * Size));
         target.GetData(pixels.data(), static_cast<int>(pixels.size()));
         EXPECT_GT(CountLit(pixels), 0);
+
+        // Updating and drawing again must work: the instance stream was
+        // unbound after the first draw, so the upload is allowed.
+        set.Set(0, Matrix::CreateTranslation(0.5f, 0.0f, 0.0f));
+        RenderStatistics again;
+        EXPECT_TRUE(set.DrawHardware(device, &again));
+        EXPECT_EQ(again.drawCalls, 1u);
 
         InstanceSet empty(&box);
         EXPECT_FALSE(empty.DrawHardware(device));

@@ -473,7 +473,9 @@ Blocked by: ENG-032 and ENG-033.
 
 Result: `Graphics/Instancing.hpp` (per-instance world stream, HiDef hardware
 path via `DrawInstancedPrimitives`, per-instance fallback, culling,
-upload-on-change). Open: instancing-capable effect and a measured Street group.
+upload-on-change, binding restore). Street's `InstancedMesh` draws
+pixel-identically on the hardware path (`docs/pilots/street-simulator.md`).
+Open: an instancing-capable effect and a measured Street group.
 
 ### ENG-035 — Add pass orchestration incrementally `[~]`
 

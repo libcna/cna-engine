@@ -7,12 +7,15 @@
 #include "CnaEngine/Graphics/CameraControllers.hpp"
 #include "CnaEngine/Input/ActionMap.hpp"
 #include "CnaEngine/Graphics/GpuMesh.hpp"
+#include "CnaEngine/Graphics/Instancing.hpp"
+#include "CnaEngine/Graphics/MeshBuilder.hpp"
 #include "CnaEngine/Graphics/MeshData.hpp"
 
 #include "CnaStreet/Geometry/MeshBuilder.hpp"
 #include "CnaStreet/Render/Camera.hpp"
 #include "CnaStreet/Render/CameraController.hpp"
 #include "CnaStreet/Render/GpuMesh.hpp"
+#include "CnaStreet/Render/InstancedMesh.hpp"
 
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthFormat.hpp"
@@ -20,6 +23,7 @@
 #include "Microsoft/Xna/Framework/Graphics/EffectPass.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
+#include "Microsoft/Xna/Framework/Graphics/ModelMeshPart.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
@@ -303,5 +307,75 @@ namespace CnaEngine::Pilot
             ASSERT_LT(Vector3::Distance(camera.Forward(), street.forward()), 1e-4f) << "frame " << frame;
         }
         EXPECT_GT(street.position().Length(), 3.0f) << "the camera moved";
+    }
+
+    // ENG-034: Street's InstancedMesh and the engine's InstanceSet draw the
+    // same instances of the same buffers identically, on whichever path
+    // Street's capability check chooses.
+    TEST(StreetSimulatorTests, InstancingMatchesStreetInstancedMesh)
+    {
+        GraphicsDevice device;
+        device.SetGraphicsProfileEXT(GraphicsProfile::HiDef);
+        constexpr int Size = 64;
+        RenderTarget2D target(device, Size, Size, false, SurfaceFormat::Color, DepthFormat::Depth24);
+
+        Graphics::MeshBuilder builder;
+        builder.AddBox(Vector3(-0.2f, 0.0f, -0.2f), Vector3(0.2f, 1.0f, 0.2f));
+        const Graphics::GpuMesh post =
+            Graphics::GpuMesh::Upload(device, builder.Mesh(), Graphics::VertexLayout::PositionNormalTexture());
+        // Street instances a model part; wrap the same buffers.
+        Microsoft::Xna::Framework::Graphics::ModelMeshPart part(post.Vertices(), post.Indices(), post.VertexCount(),
+                                                                 post.PrimitiveCount(), 0, 0);
+        std::vector<Matrix> transforms;
+        Graphics::InstanceSet engine(&post);
+        for (int i = 0; i < 7; ++i) {
+            const Matrix world = Matrix::CreateTranslation(-1.5f + 0.5f * static_cast<float>(i), -0.5f, 0.0f);
+            transforms.push_back(world);
+            engine.Add(world);
+        }
+        CnaStreet::InstancedMesh street(device, &part);
+        street.setInstances(transforms);
+
+        BasicEffect effect(device);
+        effect.EnableDefaultLighting();
+        effect.setWorldProperty(Matrix::CreateRotationY(0.3f)); // a shared pivot both must honour
+        effect.setViewProperty(Matrix::CreateLookAt(Vector3(0.0f, 0.5f, 4.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3::Up));
+        effect.setProjectionProperty(Matrix::CreatePerspectiveFieldOfView(0.9f, 1.0f, 0.1f, 20.0f));
+
+        auto render = [&](auto&& draw) {
+            device.SetRenderTarget(&target);
+            device.Clear(Color(0, 0, 0, 255));
+            device.setDepthStencilStateProperty(DepthStencilState::Default);
+            device.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
+            draw();
+            device.SetRenderTarget(nullptr);
+            std::vector<Color> pixels(static_cast<std::size_t>(Size * Size));
+            target.GetData(pixels.data(), static_cast<int>(pixels.size()));
+            return pixels;
+        };
+
+        const auto streetPixels = render([&] { street.draw(effect); });
+        const bool hardware = street.lastDrawCallCount() == 1;
+        Graphics::RenderStatistics stats;
+        const auto enginePixels = render([&] {
+            if (hardware) {
+                effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
+                engine.DrawHardware(device, &stats);
+            } else {
+                engine.DrawPerInstance(
+                    device, effect, [&] { effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply(); },
+                    &stats);
+            }
+        });
+        EXPECT_EQ(stats.drawCalls, static_cast<std::uint64_t>(street.lastDrawCallCount()));
+        EXPECT_EQ(Graphics::InstanceSet::InstanceDeclaration().getVertexStrideProperty(),
+                  CnaStreet::InstancedMesh::instanceDeclaration().getVertexStrideProperty());
+        int covered = 0;
+        for (const auto& p : enginePixels) {
+            covered += p == Color(0, 0, 0, 255) ? 0 : 1;
+        }
+        EXPECT_GT(covered, 100);
+        EXPECT_EQ(enginePixels, streetPixels) << (hardware ? "hardware path" : "per-instance path");
+        RecordProperty("street_path", hardware ? "hardware" : "per-instance");
     }
 }

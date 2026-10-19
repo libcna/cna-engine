@@ -3,6 +3,7 @@
 
 #include "Microsoft/Xna/Framework/Graphics/BufferUsage.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
+#include "Microsoft/Xna/Framework/Graphics/IndexBuffer.hpp"
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexBufferBinding.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexElement.hpp"
@@ -20,6 +21,7 @@ namespace CnaEngine::Graphics
     using Microsoft::Xna::Framework::Graphics::GraphicsDevice;
     using Microsoft::Xna::Framework::Graphics::GraphicsProfile;
     using Microsoft::Xna::Framework::Graphics::IEffectMatrices;
+    using Microsoft::Xna::Framework::Graphics::IndexBuffer;
     using Microsoft::Xna::Framework::Graphics::PrimitiveType;
     using Microsoft::Xna::Framework::Graphics::VertexBufferBinding;
     using Microsoft::Xna::Framework::Graphics::VertexDeclaration;
@@ -130,6 +132,25 @@ namespace CnaEngine::Graphics
         if (dirty_ || !instances_ || instances_->getIsContentLostProperty()) {
             Upload(device);
         }
+        // Borrow the device's bindings and give them back: leaving the
+        // instance stream bound would make the next upload a write into a
+        // buffer still set on the device, which XNA refuses.
+        struct BindingRestore
+        {
+            GraphicsDevice& device;
+            std::vector<VertexBufferBinding> vertices;
+            const IndexBuffer* indices;
+            ~BindingRestore()
+            {
+                try {
+                    device.SetVertexBuffers(vertices);
+                    device.setIndicesProperty(const_cast<IndexBuffer*>(indices));
+                } catch (...) {
+                    // Restoring must not throw out of a destructor.
+                }
+            }
+        } restore{device, device.GetVertexBuffers(), device.getIndicesProperty()};
+
         device.SetVertexBuffers({VertexBufferBinding(mesh_->Vertices(), 0, 0),
                                  VertexBufferBinding(instances_.get(), 0, 1)});
         device.setIndicesProperty(mesh_->Indices());
@@ -149,13 +170,17 @@ namespace CnaEngine::Graphics
             return 0;
         }
         const std::size_t count = VisibleCount();
+        // Instances are placed relative to the effect's current World (a
+        // shared pivot), which is restored afterwards.
+        const Matrix base = matrices.getWorldProperty();
         for (std::size_t n = 0; n < count; ++n) {
-            matrices.setWorldProperty(worlds_[cullActive_ ? visible_[n] : n]);
+            matrices.setWorldProperty(worlds_[cullActive_ ? visible_[n] : n] * base);
             if (applyPass) {
                 applyPass();
             }
             mesh_->Draw(device, statistics);
         }
+        matrices.setWorldProperty(base);
         return count;
     }
 }

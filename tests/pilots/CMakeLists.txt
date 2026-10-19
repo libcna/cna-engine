@@ -61,7 +61,8 @@ if(EXISTS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/Camera.cpp")
         "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/Camera.cpp"
         "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/CameraController.cpp"
         "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Geometry/MeshBuilder.cpp"
-        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/GpuMesh.cpp")
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/GpuMesh.cpp"
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/InstancedMesh.cpp")
     target_include_directories(cna_engine_pilot_street PUBLIC
         "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/include")
     target_link_libraries(cna_engine_pilot_street PUBLIC CNA::Math CNA::Input CNA::GraphicsCore)
