@@ -55,6 +55,15 @@ engine suite and the cna-extended suite were rerun against the new revision
 3. Rerun the consumer checks listed below.
 4. Update `cmake/CnaEngineBaseline.cmake` and this table in one commit.
 
+### Local reproduction
+
+Concurrent agents edit the shared CNA worktree, so local baseline runs use a
+clean clone at the pinned revision (`~/deps/cna-baseline`, updated with
+`git -C ~/deps/cna-baseline fetch && git -C ~/deps/cna-baseline checkout <pin>`)
+selected with `-DCNA_ENGINE_CNA_DIR=$HOME/deps/cna-baseline`, plus
+`-DCNA_ENGINE_ENFORCE_BASELINE=ON -DCNA_ENABLE_SDL=OFF -DCNA_ENABLE_VIDEO=OFF`
+(the vendored SDL is not part of CNA's git tree).
+
 ### CI reproduction
 
 CI clones the three dependencies at the pinned commits next to the engine
@@ -66,8 +75,8 @@ build uses at most three parallel jobs in the constrained environment.
 
 | Check | Status |
 | --- | --- |
-| Engine build + tests at the pin | done in this repository's `build/` (see `docs/verification.md`) |
-| cna-extended suite against the pinned CNA | pending |
+| Engine build + tests at the pin | done from a clean pinned checkout with the baseline enforced: 150/150 (`docs/verification.md`, baseline entry) |
+| cna-extended suite against the pinned CNA | done: 2,368 passed, 2 known skips (UP-004), 1 test defect (UP-005) |
 | street-simulator against the pinned CNA | pending |
 | car-simulator against the pinned CNA | pending |
 

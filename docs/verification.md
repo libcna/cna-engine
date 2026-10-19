@@ -4,11 +4,35 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-19 (baseline) — clean pinned dependencies, enforced
+
+The CNA worktree used by the earlier runs carries other agents' uncommitted
+edits (by now `modules/math/src/Vector{2,3,4}.cpp`), so it cannot give
+baseline evidence. A clean checkout of the pinned CNA revision was created as
+a shared dependency (`~/deps/cna-baseline`, a local clone; the CNA repository
+itself is untouched).
+
+| Repository | Revision | Worktree |
+| --- | --- | --- |
+| CNA (`~/deps/cna-baseline`) | `5a44d2c507cd5e49eab9ab35570a8a98c4b7a0f3` | clean |
+| Sharp Runtime | `f2aecfefeac171b331787e5cdc4849507363ef0e` | clean |
+| cna-extended | `0061e3e17c30b2a3a302bce617e64765883079aa` | clean |
+
+Configuration (`build-probe/`): as CI — Debug, Ninja, ccache,
+`CNA_ENGINE_ENFORCE_BASELINE=ON` (all three revisions verified at configure
+time), `CNA_ENABLE_SDL=OFF`, `CNA_ENABLE_VIDEO=OFF`, software/headless/null,
+pilot probes on.
+
+Result: build 8 min 13 s with 3 jobs; **150 of 150 tests passed** (unit,
+boundary, examples, pilot probes). This is the engine's baseline evidence for
+ADR-002.
+
 ## 2026-10-19 (later) — new CNA pin, pilots, cna-extended rerun
 
-Dependencies: CNA `next` `5a44d2c507cd5e49eab9ab35570a8a98c4b7a0f3` (new pin;
-tracked modifications only in `CNA_DEMOS_REPAIR_*` documents and
-`modules/c-api/tests/pure_c/GeometrySmoke.c`, none built here), Sharp Runtime
+Dependencies: CNA `next` worktree at `5a44d2c507cd5e49eab9ab35570a8a98c4b7a0f3`
+(new pin; at the time tracked modifications only in `CNA_DEMOS_REPAIR_*`
+documents and `modules/c-api/tests/pure_c/GeometrySmoke.c`, none built here;
+the worktree later moved on, see the baseline entry above), Sharp Runtime
 `f2aecfef` (clean), cna-extended `0061e3e1` (clean). Pilots read-only:
 car-simulator `cd6d948e`, street-simulator `86b4a2e7`.
 
