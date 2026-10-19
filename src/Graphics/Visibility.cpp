@@ -67,23 +67,40 @@ namespace CnaEngine::Graphics
         return Visibility::Visible;
     }
 
+    void CullStatistics::Record(const Visibility result) noexcept
+    {
+        ++considered;
+        switch (result) {
+            case Visibility::Visible: ++visible; break;
+            case Visibility::RejectedByLayer: ++byLayer; break;
+            case Visibility::RejectedByDistance: ++byDistance; break;
+            case Visibility::RejectedByFrustum: ++byFrustum; break;
+        }
+    }
+
+    void LodStatistics::Record(const int level)
+    {
+        if (level < 0) {
+            return;
+        }
+        if (perLevel.size() <= static_cast<std::size_t>(level)) {
+            perLevel.resize(static_cast<std::size_t>(level) + 1, 0);
+        }
+        ++perLevel[static_cast<std::size_t>(level)];
+    }
+
     void CullInto(const std::span<const RenderItem> candidates, const Camera& camera, const VisibilitySettings& settings,
                   RenderQueue& queue, CullStatistics& stats, RenderStatistics* render)
     {
         std::uint64_t visible = 0;
         for (const auto& item : candidates) {
-            ++stats.considered;
-            switch (Classify(item, camera, settings)) {
-                case Visibility::Visible:
-                    ++visible;
-                    queue.Submit(item);
-                    break;
-                case Visibility::RejectedByLayer: ++stats.byLayer; break;
-                case Visibility::RejectedByDistance: ++stats.byDistance; break;
-                case Visibility::RejectedByFrustum: ++stats.byFrustum; break;
+            const Visibility result = Classify(item, camera, settings);
+            stats.Record(result);
+            if (result == Visibility::Visible) {
+                ++visible;
+                queue.Submit(item);
             }
         }
-        stats.visible += visible;
         if (render != nullptr) {
             render->submitted += candidates.size();
             render->culled += candidates.size() - visible;

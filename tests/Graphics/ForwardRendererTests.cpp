@@ -10,10 +10,13 @@
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SamplerStateCollection.hpp"
+#include "Microsoft/Xna/Framework/Graphics/TextureFilter.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -160,6 +163,32 @@ namespace CnaEngine::Graphics
         EXPECT_EQ(device.getRasterizerStateProperty().getCullModeProperty(), CullMode::None);
         EXPECT_EQ(device.getBlendStateProperty().getColorDestinationBlendProperty(),
                   BlendState::Additive.getColorDestinationBlendProperty());
+    }
+
+    TEST_F(Fixture, MaterialsSetTheirSamplersAndRenderRestoresTheDevices)
+    {
+        using Microsoft::Xna::Framework::Graphics::SamplerState;
+        using Microsoft::Xna::Framework::Graphics::TextureFilter;
+        // Two texels stretched over the quad: at the quad's edge, wrapping
+        // blends in the opposite texel, clamping does not.
+        Texture2D texture(device, 2, 1);
+        const Color texels[2] = {Color(255, 0, 0, 255), Color(0, 0, 255, 255)};
+        texture.SetData(texels, 2);
+        Material stripes = Unlit("stripes", Vector3(1.0f, 1.0f, 1.0f));
+        stripes.baseTexture = &texture;
+        RenderQueue queue;
+        queue.Submit(Item(stripes, 0.0f));
+
+        // Whoever drew before left point sampling behind.
+        device.getSamplerStatesProperty()[0] = SamplerState::PointClamp;
+        const Color wrapped = At(Draw(queue), 1, Size / 2);
+        EXPECT_GT(wrapped.getRProperty(), 40) << "LinearWrap by default, not the device's PointClamp";
+        EXPECT_GT(wrapped.getBProperty(), 40);
+        EXPECT_EQ(device.getSamplerStatesProperty()[0].getFilterProperty(), TextureFilter::Point) << "restored";
+
+        stripes.sampler = &SamplerState::LinearClamp;
+        const Color clamped = At(Draw(queue), 1, Size / 2);
+        EXPECT_LT(std::min(clamped.getRProperty(), clamped.getBProperty()), 5) << "one texel only";
     }
 
     TEST_F(Fixture, CustomPassesRunAtTheirPointsInOrder)

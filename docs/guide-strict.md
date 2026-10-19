@@ -89,14 +89,16 @@ object is a plain member you create, update and draw.
    `MissingAttributePolicy::UseDefaults`, and `ConversionReport()` lists what
    was filled, dropped or narrowed. On a Reach device a mesh needing 32-bit
    indices is rejected up front.
-3. Describe surfaces with `Material` (unlit/lit, blend mode, textures you own).
+3. Describe surfaces with `Material` (unlit/lit, blend mode, textures you own
+   and the sampler state to read them with — LinearWrap unless you set
+   `sampler`, never whatever the device had).
 4. Per frame: `RenderItem`s → `CullInto` (layer/distance/frustum) →
    `RenderQueue::Sort` → `ForwardRenderer::Render`.
 
 Ownership: `GpuMesh` owns its buffers (move-only; `Borrow` wraps buffers owned
 elsewhere, such as a `ModelMeshPart`). Materials and textures are borrowed by
 render items and must outlive the frame. After `Render` the device's blend,
-depth and rasterizer states are what they were before.
+depth and rasterizer states and samplers 0–4 are what they were before.
 
 ## 5. Extension points
 
@@ -105,7 +107,9 @@ depth and rasterizer states are what they were before.
   overlay buckets.
 - **Your own effects:** implement `IMaterialBinder` and
   `SetMaterialBinder(...)`; the renderer keeps ordering and states, your
-  binder sets the effect.
+  binder sets the effect and answers `BlendStateFor` (XNA's stock effects
+  write premultiplied color; an effect that writes straight alpha wants
+  `NonPremultiplied`).
 - **Your own camera behaviour:** implement `ICameraController` (chase,
   cockpit, cinematic stay in the game).
 - **Direct access:** every engine object exposes the CNA objects it wraps
@@ -117,7 +121,8 @@ Nothing is silently ignored. The stock binder reports, once per frame and
 material, in `ForwardRenderer::LastFallbacks()`: lit material without normals
 (drawn unlit), PBR on stock effects (drawn lit), textures without UVs or
 disposed, vertex colors without a Color stream, alpha-tested surfaces (unlit
-in XNA). Captures report failure as values (`CaptureResult::error`), asset
+in XNA), premultiplied (glass) blending with alpha below 1 (stock effects
+scale the color by alpha). Captures report failure as values (`CaptureResult::error`), asset
 loads as `AssetRegistry::Failures()` (or a fallback asset you set).
 
 ## 7. Settings, assets, diagnostics

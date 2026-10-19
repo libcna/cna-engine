@@ -21,6 +21,7 @@
 // Usage: cna_engine_street_scene_comparison <output-directory> [seed]
 #include "CnaEngine/Enhanced/PbrMaterialBinder.hpp"
 #include "CnaEngine/Graphics/Camera.hpp"
+#include "CnaEngine/Graphics/DiagnosticsReport.hpp"
 #include "CnaEngine/Graphics/ForwardRenderer.hpp"
 #include "CnaEngine/Graphics/GpuMesh.hpp"
 #include "CnaEngine/Graphics/Instancing.hpp"
@@ -37,12 +38,15 @@
 #include "CnaStreet/Scene/CityScene.hpp"
 
 #include "Microsoft/Xna/Framework/Graphics/AlphaModeEXT.hpp"
+#include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthFormat.hpp"
+#include "Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -90,7 +94,9 @@ namespace
     using Microsoft::Xna::Framework::Matrix;
     using Microsoft::Xna::Framework::Vector3;
     using Microsoft::Xna::Framework::Graphics::AlphaModeEXT;
+    using Microsoft::Xna::Framework::Graphics::BlendState;
     using Microsoft::Xna::Framework::Graphics::DepthFormat;
+    using Microsoft::Xna::Framework::Graphics::DepthStencilState;
     using Microsoft::Xna::Framework::Graphics::GraphicsDevice;
     using Microsoft::Xna::Framework::Graphics::GraphicsProfile;
     using Microsoft::Xna::Framework::Graphics::RenderTarget2D;
@@ -110,7 +116,9 @@ namespace
         switch (m.alphaMode) {
             case AlphaModeEXT::Opaque: e.blend = Graphics::BlendMode::Opaque; break;
             case AlphaModeEXT::Mask: e.blend = Graphics::BlendMode::AlphaTest; break;
-            case AlphaModeEXT::Blend: e.blend = Graphics::BlendMode::AlphaBlend; break;
+            case AlphaModeEXT::Blend:
+                e.blend = m.premultipliedBlend ? Graphics::BlendMode::PremultipliedAlpha : Graphics::BlendMode::AlphaBlend;
+                break;
         }
         e.alpha = m.alpha;
         e.alphaCutoff = m.alphaCutoff;
@@ -248,9 +256,9 @@ int main(int argc, char** argv)
         for (const auto& item : items) {
             const auto e = convert(item, item.cullDistance > 0.0f ? std::min(item.cullDistance, settings.propCullDistance)
                                                                   : 0.0f);
-            ++itemCulling.considered;
-            if (Graphics::Classify(e, camera, Graphics::VisibilitySettings{}) == Graphics::Visibility::Visible) {
-                ++itemCulling.visible;
+            const auto result = Graphics::Classify(e, camera, Graphics::VisibilitySettings{});
+            itemCulling.Record(result);
+            if (result == Graphics::Visibility::Visible) {
                 if (!item.shadowOnly) {
                     queue.Submit(e);
                 }
@@ -261,9 +269,9 @@ int main(int argc, char** argv)
                 continue;
             }
             const auto e = convert(item, settings.propCullDistance);
-            ++itemCulling.considered;
-            if (Graphics::Classify(e, camera, Graphics::VisibilitySettings{}) == Graphics::Visibility::Visible) {
-                ++itemCulling.visible;
+            const auto result = Graphics::Classify(e, camera, Graphics::VisibilitySettings{});
+            itemCulling.Record(result);
+            if (result == Graphics::Visibility::Visible) {
                 queue.Submit(e);
             }
         }
@@ -271,6 +279,7 @@ int main(int argc, char** argv)
         std::uint64_t visibleInstances = 0;
         std::uint64_t totalInstances = 0;
         Graphics::CullStatistics instanceCulling;
+        Graphics::LodStatistics groupLod;
         // One instanced render item per group, as Street draws them.
         std::vector<Graphics::InstanceSet> sets(groups.size());
         for (std::size_t g = 0; g < groups.size(); ++g) {
@@ -286,21 +295,26 @@ int main(int argc, char** argv)
             std::vector<std::size_t> visible;
             float nearest = 1e30f;
             for (std::size_t i = 0; i < group.transforms.size(); ++i) {
-                ++instanceCulling.considered;
-                if (Graphics::Classify(group.spheres[i], 1, camera, visibility) == Graphics::Visibility::Visible) {
+                const auto result = Graphics::Classify(group.spheres[i], 1, camera, visibility);
+                instanceCulling.Record(result);
+                if (result == Graphics::Visibility::Visible) {
                     visible.push_back(i);
                     nearest = std::min(nearest, Vector3::Distance(camera.Position(), group.spheres[i].Center)
                                                     - group.spheres[i].Radius);
                 }
             }
             visibleInstances += visible.size();
-            // Street's batch LOD: one decision per group from its nearest instance.
-            const CnaStreet::GpuMesh* mesh =
-                group.lodMesh != nullptr && group.lodDistance > 0.0f && nearest > group.lodDistance ? group.lodMesh
-                                                                                                     : group.mesh;
             if (visible.empty()) {
                 continue;
             }
+            // Street's batch LOD: one decision per group from its nearest
+            // instance, past lodDistance (no hysteresis).
+            int level = 0;
+            if (group.lodMesh != nullptr && group.lodDistance > 0.0f) {
+                level = Graphics::LodSelector({group.lodDistance}, 0.0f).Select(nearest);
+                groupLod.Record(level);
+            }
+            const CnaStreet::GpuMesh* mesh = level == 1 ? group.lodMesh : group.mesh;
             Graphics::InstanceSet& set = sets[g];
             set.SetMesh(&meshFor(mesh));
             for (const std::size_t i : visible) {
@@ -315,12 +329,40 @@ int main(int argc, char** argv)
         }
         queue.Sort(camera.Position());
 
+        // Street's lighting (SceneRenderer::applyLighting/applyEnvironment):
+        // its sun, sky ambient and image-based environment, all under its
+        // exposure, and fog matched to the horizon haze.
+        auto& sky = streetRenderer.sky();
+        const float exposure = std::max(settings.exposure, 0.0f);
         Graphics::ForwardRenderer renderer(device);
-        renderer.SetMaterialBinder(std::make_shared<Enhanced::PbrMaterialBinder>(device, renderer.StockBinder()));
-        renderer.Lighting().defaultLighting = false;
-        renderer.Lighting().lightDirection = -streetRenderer.sky().sunDirection();
-        renderer.Lighting().lightColor = streetRenderer.sky().sunColour();
-        renderer.Lighting().ambientColor = Vector3(0.25f, 0.27f, 0.3f);
+        auto pbr = std::make_shared<Enhanced::PbrMaterialBinder>(device, renderer.StockBinder());
+        pbr->Settings().exposure = exposure;
+        if (sky.hasImageBasedLighting() && settings.imageBasedLighting) {
+            auto& environment = pbr->Settings().environment;
+            environment.Irradiance = sky.irradiance();
+            environment.PrefilteredSpecular = sky.prefiltered();
+            environment.PrefilteredMipCount = sky.prefilteredMipCount();
+            environment.BrdfLut = sky.brdfLut();
+            environment.Intensity = sky.environmentScale() * settings.iblIntensity;
+        }
+        renderer.SetMaterialBinder(pbr);
+        auto& lighting = renderer.Lighting();
+        lighting.defaultLighting = false;
+        lighting.lightDirection = sky.lightDirection();
+        lighting.lightColor = sky.sunColour();
+        lighting.ambientColor = sky.ambientColour();
+        lighting.fogEnabled = settings.heightFog;
+        lighting.fogColor = sky.ambientColour();
+        lighting.fogStart = settings.farPlane * 0.30f;
+        lighting.fogEnd = settings.farPlane * 0.98f;
+        // Street's sky is the game's own drawing: a custom pass before the
+        // opaque geometry, as Street draws it.
+        renderer.AddPass(Graphics::PassPoint::BeforeOpaque, "street-sky",
+                         [&](GraphicsDevice& passDevice, const Graphics::Camera& passCamera, Graphics::RenderStatistics&) {
+                             passDevice.setDepthStencilStateProperty(DepthStencilState::None);
+                             passDevice.setBlendStateProperty(BlendState::Opaque);
+                             sky.draw(passCamera.View(), passCamera.Projection(), Width, Height, 0.0f, exposure, true);
+                         });
         device.SetRenderTarget(&target);
         device.Clear(Color(0, 0, 0, 255));
         Graphics::RenderStatistics engineStats;
@@ -331,10 +373,15 @@ int main(int argc, char** argv)
 
         // --- Images and report. --------------------------------------------
         double difference = 0.0;
+        int largest = 0;
+        std::size_t differing = 0;
         for (std::size_t i = 0; i < streetPixels.size(); ++i) {
-            difference += std::abs(streetPixels[i].getRProperty() - enginePixels[i].getRProperty())
-                          + std::abs(streetPixels[i].getGProperty() - enginePixels[i].getGProperty())
-                          + std::abs(streetPixels[i].getBProperty() - enginePixels[i].getBProperty());
+            const int r = std::abs(streetPixels[i].getRProperty() - enginePixels[i].getRProperty());
+            const int g = std::abs(streetPixels[i].getGProperty() - enginePixels[i].getGProperty());
+            const int b = std::abs(streetPixels[i].getBProperty() - enginePixels[i].getBProperty());
+            difference += r + g + b;
+            largest = std::max({largest, r, g, b});
+            differing += r + g + b > 0 ? 1u : 0u;
         }
         difference /= static_cast<double>(streetPixels.size() * 3);
         const auto streetPng = Graphics::WritePng(device, streetPixels, Width, Height, (output / "street.png").string());
@@ -350,7 +397,23 @@ int main(int argc, char** argv)
                     streetStats.drawCalls, streetStats.instancedDrawCalls,
                     static_cast<unsigned long long>(engineStats.drawCalls));
         std::printf("cpu frame:         street %.1f ms, engine %.1f ms (software renderer, Debug)\n", streetMs, engineMs);
-        std::printf("image difference:  %.1f / 255 mean per channel\n", difference);
+        std::printf("image difference:  %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ\n",
+                    difference, largest, differing, streetPixels.size());
+        // Culling and LOD counts through the engine's diagnostics (ENG-033).
+        Graphics::DiagnosticsSources itemSources;
+        itemSources.render = &engineStats;
+        itemSources.culling = &itemCulling;
+        itemSources.lod = &groupLod;
+        itemSources.includeGpuMemory = false;
+        for (const auto& line : Graphics::FormatDiagnostics(itemSources)) {
+            std::printf("engine diagnostics: %s\n", line.c_str());
+        }
+        Graphics::DiagnosticsSources instanceSources;
+        instanceSources.culling = &instanceCulling;
+        instanceSources.includeGpuMemory = false;
+        for (const auto& line : Graphics::FormatDiagnostics(instanceSources)) {
+            std::printf("engine diagnostics (instances): %s\n", line.c_str());
+        }
         for (const auto& fallback : renderer.LastFallbacks()) {
             std::printf("fallback: %s\n", fallback.c_str());
         }

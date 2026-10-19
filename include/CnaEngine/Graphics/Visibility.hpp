@@ -24,7 +24,13 @@ namespace CnaEngine::Graphics
         /// Items whose nearest point is closer than this are rejected (0 =
         /// none); for far-only representations such as impostor groups.
         float minDistance = 0.0f;
-        /// Reject items entirely outside the camera frustum.
+        /// Reject items entirely outside the camera frustum. The test is the
+        /// plane test, BoundingFrustum::Contains(...) != Disjoint: it never
+        /// rejects a visible item and may keep one just outside a frustum
+        /// corner. XNA's BoundingFrustum::Intersects(BoundingSphere) is a GJK
+        /// query with a scale-relative tolerance instead, which can also keep
+        /// spheres just outside a plane; code that culls with it may draw a
+        /// few more off-screen items than the engine.
         bool frustum = true;
     };
 
@@ -57,6 +63,10 @@ namespace CnaEngine::Graphics
         std::uint64_t byLayer = 0;
         std::uint64_t byDistance = 0;
         std::uint64_t byFrustum = 0;
+
+        /// Counts one classification (for culling loops that call Classify
+        /// themselves).
+        void Record(Visibility result) noexcept;
     };
 
     /// Submits the visible `candidates` to `queue`. Adds to `stats` and, when
@@ -84,5 +94,15 @@ namespace CnaEngine::Graphics
     private:
         std::vector<float> distances_;
         float hysteresis_;
+    };
+
+    /// How often each level of detail was chosen, for diagnostics.
+    struct LodStatistics
+    {
+        /// `perLevel[i]` counts selections of level i.
+        std::vector<std::uint64_t> perLevel;
+
+        /// Counts one selection of `level` (negative levels are ignored).
+        void Record(int level);
     };
 }

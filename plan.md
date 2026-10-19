@@ -418,7 +418,7 @@ Result: `Extended/EngineWorldScreen.hpp` (a World3DScreenEXT whose update
 order is documented and tested) and `Extended/WorldCameraSync.hpp` for games
 that opt out. Open: particles/animation adapters once a pilot needs them.
 
-### ENG-031 — Define materials and shader-facing parameters `[~]`
+### ENG-031 — Define materials and shader-facing parameters `[x]`
 
 Acceptance:
 
@@ -434,8 +434,15 @@ Result: `Graphics/Material.hpp` (unlit/lit/PBR description, blend modes,
 borrowed textures, no GPU state, glTF metallic-roughness fields matching
 Street's `Material`); `IMaterialBinder` with a strict stock-effect binder and
 an enhanced `PbrMaterialBinder` over CNA's `PbrEffect`, both with reported
-fallbacks. Open: one migrated Street material family with a visual
-comparison against Street's own `applyMaterial`.
+fallbacks. Street's whole material set (opaque, alpha-tested, blended,
+premultiplied glass, unlit interiors) renders through the `PbrMaterialBinder`
+with Street's lighting (exposure, sky ambient, image-based environment, fog)
+practically identically to Street's own `applyMaterial`: mean difference
+0.01/255, 53 of 129,600 pixels differ, 49 of them from Street's depth writes in
+its transparent pass (`docs/pilots/street-simulator.md`). Generalizations:
+binder-chosen blend states (`PbrEffect` writes straight alpha),
+`BlendMode::PremultipliedAlpha`, per-material samplers, PBR environment and
+exposure.
 
 ### ENG-032 — Define render items, queues, and state contracts `[~]`
 
@@ -456,7 +463,7 @@ front-to-back, back-to-front transparent, stable overlay) and the
 (`instances` for instanced groups); skinned submissions remain with
 cna-extended's World3D systems.
 
-### ENG-033 — Add visibility and LOD policy `[~]`
+### ENG-033 — Add visibility and LOD policy `[x]`
 
 Acceptance:
 
@@ -469,9 +476,12 @@ Blocked by: ENG-021 and ENG-032.
 
 Result: `Graphics/Visibility.hpp` (independent layer/distance/frustum
 policies, conservative classification, per-reason statistics, LOD selection
-with hysteresis). Open: Street culling/LOD counts through engine diagnostics.
+with hysteresis). Street's scene reports its culling (per reason, items and
+instances) and group LOD counts through `CullStatistics::Record`,
+`LodStatistics` and `FormatDiagnostics`; the visible sets equal Street's and
+car-simulator's own.
 
-### ENG-034 — Add instanced rendering `[~]`
+### ENG-034 — Add instanced rendering `[x]`
 
 Acceptance:
 
@@ -487,7 +497,11 @@ Result: `Graphics/Instancing.hpp` (per-instance world stream, HiDef hardware
 path via `DrawInstancedPrimitives`, per-instance fallback, culling,
 upload-on-change, binding restore). Street's `InstancedMesh` draws
 pixel-identically on the hardware path (`docs/pilots/street-simulator.md`).
-Open: an instancing-capable effect and a measured Street group.
+In Street's real scene all 51 instanced draws (93 groups, 192 visible
+instances) go through engine instanced render items with Street's `PbrEffect`
+(which reads the instance stream) and produce the same image; the frame's CPU
+time is equal within run-to-run noise (engine 7.4–9.9 s, Street 7.6–10.8 s
+over the same runs, software renderer, Debug).
 
 ### ENG-035 — Add pass orchestration incrementally `[~]`
 
@@ -574,10 +588,14 @@ a CTest example. Street's own camera, controls and tangent-frame meshes are
 validated by equivalence probes. A real Street scene (Street's own `CityScene`) is drawn by Street's
 `SceneRenderer` and by the engine over the same buffers: identical visibility
 (652 items, 192 instances), identical draw calls (703, instanced groups as
-instanced render items), lower CPU frame time for the engine, mean image
-difference 19/255 attributable to Street's lighting model
+instanced render items), CPU frame time equal within noise. With Street's
+lighting carried by the engine binder and Street's sky drawn as a custom pass
+(the direct-CNA escape hatch), the images are practically identical: mean
+difference 0.01/255, 53 of 129,600 pixels differ
 (`docs/pilots/street-simulator.md`). Open: agreed screenshot tolerances with
-the owner and adoption inside street-simulator (needs permission).
+the owner; engine input and assets in the slice (the comparison uses one fixed
+viewpoint and Street's asset libraries); GPU resource estimates; adoption
+inside street-simulator (needs permission).
 
 ### PILOT-001 — Validate `cna-street` `[~]`
 

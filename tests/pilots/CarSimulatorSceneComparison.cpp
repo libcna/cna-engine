@@ -35,9 +35,12 @@
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SamplerState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SamplerStateCollection.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -93,6 +96,7 @@ namespace
     using Microsoft::Xna::Framework::Graphics::GraphicsDevice;
     using Microsoft::Xna::Framework::Graphics::GraphicsProfile;
     using Microsoft::Xna::Framework::Graphics::RenderTarget2D;
+    using Microsoft::Xna::Framework::Graphics::SamplerState;
     using Microsoft::Xna::Framework::Graphics::SurfaceFormat;
 
     constexpr int Width = 480;
@@ -215,6 +219,23 @@ int main(int argc, char** argv)
             item.order = order;
             queue.Submit(item);
         };
+        // Two frustum tests. The engine's is the plane test
+        // (BoundingFrustum::Contains(sphere) != Disjoint); car-simulator calls
+        // BoundingFrustum::Intersects(sphere), which XNA implements with GJK
+        // and a scale-relative tolerance, so it also accepts some spheres just
+        // outside a plane. The `xna*` counts apply the engine's rules with
+        // car-simulator's test and must equal car-simulator's own counts.
+        const auto xnaFrustum = [&](const BoundingSphere& sphere) { return camera.Frustum().Intersects(sphere) ? 1 : 0; };
+        const auto withinRange = [&](const BoundingSphere& sphere, const float maxDistance) {
+            Graphics::VisibilitySettings rangeOnly;
+            rangeOnly.frustum = false;
+            rangeOnly.maxDistance = maxDistance;
+            return Graphics::Classify(sphere, 1, camera, rangeOnly) == Graphics::Visibility::Visible;
+        };
+        int xnaTerrain = 0;
+        int xnaRoads = 0;
+        int xnaObjects = 0;
+        int xnaTrees = 0;
         const auto inFrustum = [&](const BoundingSphere& sphere) {
             Graphics::VisibilitySettings frustumOnly;
             return Graphics::Classify(sphere, 1, camera, frustumOnly) == Graphics::Visibility::Visible;
@@ -227,6 +248,8 @@ int main(int argc, char** argv)
         terrainMaterial.diffuseColor = baked;
         terrainMaterial.baseTexture = (renderer.*Get(Grass{})).get();
         terrainMaterial.secondaryTexture = (renderer.*Get(Macro{})).get();
+        terrainMaterial.sampler = &SamplerState::AnisotropicWrap;
+        terrainMaterial.secondarySampler = &SamplerState::LinearClamp;
         const Graphics::Material* terrain = material(terrainMaterial);
         int terrainDrawn = 0;
         if (skirt) {
@@ -238,7 +261,11 @@ int main(int argc, char** argv)
                 continue;
             }
             const float distance = Vector3::Distance(camera.Position(), chunk.centre) - chunk.radius;
-            if (distance > terrainCull || !inFrustum(chunk.lod0->Sphere())) {
+            if (distance > terrainCull) {
+                continue;
+            }
+            xnaTerrain += xnaFrustum(chunk.lod0->Sphere());
+            if (!inFrustum(chunk.lod0->Sphere())) {
                 continue;
             }
             const int level = terrainLod.Select(distance);
@@ -251,7 +278,11 @@ int main(int argc, char** argv)
         int roadsDrawn = 0;
         std::map<const void*, const Graphics::Material*> roadMaterials;
         for (const auto& b : roads) {
-            if (!b.mesh || !inFrustum(b.mesh->Sphere())) {
+            if (!b.mesh) {
+                continue;
+            }
+            xnaRoads += xnaFrustum(b.mesh->Sphere());
+            if (!inFrustum(b.mesh->Sphere())) {
                 continue;
             }
             auto* texture = textureFor(b.surface);
@@ -263,6 +294,7 @@ int main(int argc, char** argv)
                 road.shading = Graphics::ShadingModel::Unlit;
                 road.vertexColors = true;
                 road.baseTexture = texture;
+                road.sampler = &SamplerState::AnisotropicWrap;
                 road.diffuseColor = marking ? Vector3(0.92f * baked.X, 0.92f * baked.Y, 0.90f * baked.Z) : baked;
                 if (marking) {
                     road.depthBias = -0.00002f;
@@ -283,12 +315,16 @@ int main(int argc, char** argv)
             }
             Graphics::VisibilitySettings visibility;
             visibility.maxDistance = b.cullDistance > 0.0f ? std::min(b.cullDistance, horizon) : horizon;
+            if (withinRange(b.mesh->Sphere(), visibility.maxDistance)) {
+                xnaObjects += xnaFrustum(b.mesh->Sphere());
+            }
             if (Graphics::Classify(b.mesh->Sphere(), 1, camera, visibility) != Graphics::Visibility::Visible) {
                 continue;
             }
             Graphics::Material object;
             object.name = "object";
             object.baseTexture = b.texture;
+            object.sampler = &SamplerState::AnisotropicWrap;
             object.diffuseColor = b.diffuse;
             object.emissiveColor = b.emissive + b.nightEmissive * lampFactor;
             object.specularColor = b.specular;
@@ -305,6 +341,7 @@ int main(int argc, char** argv)
         treeMaterial.blend = Graphics::BlendMode::AlphaTest;
         treeMaterial.alphaCutoff = 111.0f / 255.0f;
         treeMaterial.vertexColors = true;
+        treeMaterial.sampler = &SamplerState::LinearClamp;
         treeMaterial.diffuseColor = baked;
         int treesDrawn = 0;
         for (const auto& b : trees) {
@@ -313,6 +350,9 @@ int main(int argc, char** argv)
             }
             Graphics::VisibilitySettings visibility;
             visibility.maxDistance = treeRange;
+            if (withinRange(b.mesh->Sphere(), treeRange)) {
+                xnaTrees += xnaFrustum(b.mesh->Sphere());
+            }
             if (Graphics::Classify(b.mesh->Sphere(), 1, camera, visibility) != Graphics::Visibility::Visible) {
                 continue;
             }
@@ -338,6 +378,11 @@ int main(int argc, char** argv)
         lighting.fogEnd = rig.fogEnd;
         device.SetRenderTarget(&target);
         device.Clear(Color(0, 0, 0, 255));
+        // The engine sets every sampler it needs from the materials: leave
+        // the device in a state no material asks for.
+        for (int slot = 0; slot < 2; ++slot) {
+            device.getSamplerStatesProperty()[slot] = SamplerState::PointClamp;
+        }
         Graphics::RenderStatistics engineStats;
         engine.Render(queue, camera, &engineStats);
         const double engineMs = Milliseconds(Clock::now() - engineStart);
@@ -345,10 +390,15 @@ int main(int argc, char** argv)
         const auto enginePixels = Pixels(target);
 
         double difference = 0.0;
+        int largest = 0;
+        std::size_t differing = 0;
         for (std::size_t i = 0; i < carPixels.size(); ++i) {
-            difference += std::abs(carPixels[i].getRProperty() - enginePixels[i].getRProperty())
-                          + std::abs(carPixels[i].getGProperty() - enginePixels[i].getGProperty())
-                          + std::abs(carPixels[i].getBProperty() - enginePixels[i].getBProperty());
+            const int r = std::abs(carPixels[i].getRProperty() - enginePixels[i].getRProperty());
+            const int g = std::abs(carPixels[i].getGProperty() - enginePixels[i].getGProperty());
+            const int b = std::abs(carPixels[i].getBProperty() - enginePixels[i].getBProperty());
+            difference += r + g + b;
+            largest = std::max({largest, r, g, b});
+            differing += r + g + b > 0 ? 1u : 0u;
         }
         difference /= static_cast<double>(carPixels.size() * 3);
         const auto carPng = Graphics::WritePng(device, carPixels, Width, Height, (output / "car-simulator.png").string());
@@ -356,22 +406,27 @@ int main(int argc, char** argv)
 
         std::printf("world: %zu terrain chunks, %zu road batches, %zu object batches, %zu tree batches; built in %.0f ms\n",
                     chunks.size(), roads.size(), objects.size(), trees.size(), buildMs);
-        std::printf("terrain chunks drawn: car-simulator %d, engine %d\n", carStats.terrainChunksDrawn, terrainDrawn);
-        std::printf("road batches drawn:   car-simulator %d, engine %d\n", carStats.roadBatchesDrawn, roadsDrawn);
-        std::printf("object batches drawn: car-simulator %d, engine %d\n", carStats.objectBatchesDrawn, objectsDrawn);
-        std::printf("tree batches drawn:   car-simulator %d, engine %d\n", carStats.treeBatchesDrawn, treesDrawn);
+        std::printf("drawn (car-simulator / engine rules with Intersects / engine):\n");
+        std::printf("  terrain chunks %d / %d / %d\n", carStats.terrainChunksDrawn, xnaTerrain, terrainDrawn);
+        std::printf("  road batches   %d / %d / %d\n", carStats.roadBatchesDrawn, xnaRoads, roadsDrawn);
+        std::printf("  object batches %d / %d / %d\n", carStats.objectBatchesDrawn, xnaObjects, objectsDrawn);
+        std::printf("  tree batches   %d / %d / %d\n", carStats.treeBatchesDrawn, xnaTrees, treesDrawn);
         std::printf("draw calls: car-simulator %d (all world passes), engine %llu (compared geometry)\n",
                     carStats.drawCalls, static_cast<unsigned long long>(engineStats.drawCalls));
         std::printf("cpu frame: car-simulator %.1f ms, engine %.1f ms (software renderer, Debug)\n", carMs, engineMs);
-        std::printf("image difference: %.1f / 255 mean per channel\n", difference);
+        std::printf("image difference: %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ\n",
+                    difference, largest, differing, carPixels.size());
         for (const auto& fallback : engine.LastFallbacks()) {
             std::printf("fallback: %s\n", fallback.c_str());
         }
         std::printf("images: %s %s\n", carPng.path.c_str(), enginePng.path.c_str());
         std::fflush(stdout);
 
-        const bool same = carStats.terrainChunksDrawn == terrainDrawn && carStats.roadBatchesDrawn == roadsDrawn
-                          && carStats.objectBatchesDrawn == objectsDrawn && carStats.treeBatchesDrawn == treesDrawn;
+        // The engine's rules reproduce car-simulator's exactly when given
+        // its frustum test; the engine's own plane test may differ only on
+        // spheres outside the view (the image difference shows the rest).
+        const bool same = carStats.terrainChunksDrawn == xnaTerrain && carStats.roadBatchesDrawn == xnaRoads
+                          && carStats.objectBatchesDrawn == xnaObjects && carStats.treeBatchesDrawn == xnaTrees;
         if (!same) {
             std::fprintf(stderr, "visibility differs from car-simulator's\n");
             return 1;

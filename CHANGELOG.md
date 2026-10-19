@@ -21,7 +21,9 @@ First development line. Highlights:
 - Pilot-validated against car-simulator and street-simulator through
   read-only equivalence probes (`docs/pilots/`).
 
-API snapshot baseline taken 2026-10-19 (12 headers).
+API snapshot baseline taken 2026-10-19 (12 headers); extended 2026-10-20 to 20
+headers as the render facilities, the fixed-step clock and the PBR binder
+became pilot-validated (their changes of that day are listed below).
 
 ### Pilot-validated API changes
 
@@ -50,6 +52,12 @@ API snapshot baseline taken 2026-10-19 (12 headers).
   with XNA's premultiplied `AlphaBlend` although CNA's `PbrEffect` writes
   straight alpha, so they came out too bright; they now use
   `NonPremultiplied`. Overlay items now honor `Additive` materials.
+- `Material::sampler` and `secondarySampler` (borrowed XNA sampler states,
+  LinearWrap when unset): binders set them on every texture slot they
+  sample, and `ForwardRenderer::Render` restores samplers 0–4 afterwards.
+  Before, draws inherited whatever sampler the previous drawer had left.
+- `CullStatistics::Record` (for culling loops that call `Classify`
+  themselves), `LodStatistics` and `DiagnosticsSources::lod` ("lod 0: …, 1: …").
 - `PbrSettings::environment` (image-based lighting) and
   `PbrSettings::exposure`, which replaces `lightIntensity` and also scales
   the ambient color and the environment (Street's exposure).

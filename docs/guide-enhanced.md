@@ -37,9 +37,18 @@ renderer performs), selects the alpha mode from the render bucket, and:
 - reports, not hides, a normal map on a mesh without tangents, textures without
   UVs, and meshes without normals.
 
-Image-based lighting, shadows and reflection probes are not managed: derive
-your own binder (or use `PbrMaterialBinder::Effect()`) where your game needs
-them.
+Lighting: `ForwardLighting`'s key, fill and ambient lights, and an optional
+image-based environment in `PbrSettings::environment` (irradiance and
+prefiltered specular cubes with their BRDF table; it replaces the flat
+ambient), all scaled by `PbrSettings::exposure`. Street's renderer is carried
+this way, with its sky drawn by a custom pass (`docs/pilots/street-simulator.md`).
+
+Blending: `PbrEffect` writes straight alpha, so `BlendMode::AlphaBlend` blends
+as `NonPremultiplied`; `BlendMode::PremultipliedAlpha` (glass, whose
+reflection stays at full strength) blends as XNA's `AlphaBlend`.
+
+Shadows and per-item reflection probes are not managed: implement your own
+binder (or use `PbrMaterialBinder::Effect()`) where your game needs them.
 
 ## 2. cna-extended screens and World3D
 

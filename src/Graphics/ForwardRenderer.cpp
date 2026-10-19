@@ -8,9 +8,12 @@
 #include "Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SamplerState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SamplerStateCollection.hpp"
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 namespace CnaEngine::Graphics
 {
@@ -18,9 +21,13 @@ namespace CnaEngine::Graphics
     using Microsoft::Xna::Framework::Graphics::DepthStencilState;
     using Microsoft::Xna::Framework::Graphics::GraphicsDevice;
     using Microsoft::Xna::Framework::Graphics::RasterizerState;
+    using Microsoft::Xna::Framework::Graphics::SamplerState;
 
     namespace
     {
+        // Texture slots binders set samplers on (PbrEffect samples five).
+        constexpr int SamplerSlots = 5;
+
         // Restores the states a renderer changes, whatever happens in between.
         class StateScope
         {
@@ -31,12 +38,18 @@ namespace CnaEngine::Graphics
                   depth_(device.getDepthStencilStateProperty()),
                   rasterizer_(device.getRasterizerStateProperty())
             {
+                for (int slot = 0; slot < SamplerSlots; ++slot) {
+                    samplers_.push_back(device.getSamplerStatesProperty()[slot]);
+                }
             }
             ~StateScope()
             {
                 device_.setBlendStateProperty(blend_);
                 device_.setDepthStencilStateProperty(depth_);
                 device_.setRasterizerStateProperty(rasterizer_);
+                for (int slot = 0; slot < SamplerSlots; ++slot) {
+                    device_.getSamplerStatesProperty()[slot] = samplers_[static_cast<std::size_t>(slot)];
+                }
             }
             StateScope(const StateScope&) = delete;
             StateScope& operator=(const StateScope&) = delete;
@@ -46,6 +59,7 @@ namespace CnaEngine::Graphics
             BlendState blend_;
             DepthStencilState depth_;
             RasterizerState rasterizer_;
+            std::vector<SamplerState> samplers_;
         };
     }
 

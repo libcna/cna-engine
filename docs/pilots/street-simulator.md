@@ -102,8 +102,12 @@ traffic or pedestrians), and draws the first viewpoint twice into the same
    borrowed (`GpuMesh::Borrow(ModelMeshPart&)`), materials converted field by
    field, engine culling with Street's rules (box distance and per-item limits
    for items, sphere distance with min/max for instances, batch LOD from the
-   nearest instance), one instanced render item per group, `ForwardRenderer`
-   with the `PbrMaterialBinder`.
+   nearest instance through `LodSelector`), one instanced render item per
+   group, `ForwardRenderer` with the `PbrMaterialBinder` carrying Street's
+   lighting (sun, sky ambient and image-based environment under Street's
+   exposure, fog matched to the horizon haze), and Street's sky drawn by a
+   custom `BeforeOpaque` pass — the game's own CNA drawing inside the
+   engine's frame.
 
 Result (software renderer, Debug, CNA baseline `5a44d2c5`):
 
@@ -113,22 +117,38 @@ Result (software renderer, Debug, CNA baseline `5a44d2c5`):
 | Visible items | 652 | **652** |
 | Visible instances | 192 | **192** |
 | Draw calls | 703 (51 instanced) | **703** (instanced render items) |
-| CPU frame time | 6.2–9.7 s | 4.8–8.2 s (engine faster in every run) |
-| Mean image difference | — | 19 / 255 per channel |
+| CPU frame time | 7.6–10.8 s | 7.4–9.9 s (equal within run-to-run noise) |
+| Image difference | — | mean **0.01 / 255** per channel; 53 of 129,600 pixels differ (largest 103 / 255) |
 
 The program fails if the visibility sets differ. The images
-(`docs/pilots/images/street-scene-street.png`, `…-engine.png`) show the same
-geometry, materials and composition; the remaining difference is Street's
-lighting model (image-based sky lighting, exposure, its own sun intensity),
-which is game art direction and stays in the game — a Street binder
-deriving from the engine's would carry it.
+(`docs/pilots/images/street-scene-street.png`, `…-engine.png`) are practically
+identical. Street's transparent pass keeps depth writes on, the engine's
+contract draws blended surfaces with depth reads only; switching depth writes
+on for the engine's transparent items (a throwaway binder wrapper) leaves 4
+differing pixels, so 49 of the 53 come from that difference. The remaining 4
+were not investigated.
+
+The engine reports the same frame through its diagnostics:
+
+    draws 703  triangles 434034  vertices 834320
+    culling 1407 considered, 652 visible (layer 0, distance 186, frustum 569)
+    lod 0: 8, 1: 6
+    culling 661 considered, 192 visible (layer 0, distance 340, frustum 129)   (instances)
+
+Before the lighting was carried over (2026-10-19), the mean difference was
+19/255; the engine had drawn Street's materials with a plain sun and ambient.
 
 Generalizations made because of this comparison: `GpuMesh::Borrow` of model
 parts with vertex offset and start index; optional box bounds, per-item cull
 distance and minimum distance in visibility; `Material::keyLight` (Street's
 `sunlit`); instanced render items (`RenderItem::instances`) drawn with one
 hardware draw on HiDef — CNA's effects read the per-instance stream and
-compose it with the effect's World, verified against the per-instance path.
+compose it with the effect's World, verified against the per-instance path;
+binder-chosen blend states (`IMaterialBinder::BlendStateFor`: CNA's
+`PbrEffect` writes straight alpha, XNA's stock effects premultiplied) and
+`BlendMode::PremultipliedAlpha` for Street's glass (`premultipliedBlend`);
+`PbrSettings::environment` and `exposure`; `CullStatistics::Record` and
+`LodStatistics` for diagnostics.
 
 ## Shadows (ENG-035 step 3) — not required at present
 
@@ -159,6 +179,6 @@ Materials, the render queue, culling and instancing with Street's `PbrEffect`
 are covered by the scene comparison above. What remains:
 
 - Screenshot tolerances for MILESTONE-2, to be agreed with the owner (the
-  19/255 difference is Street's lighting model, see above).
+  measured difference above is the starting point).
 - Adoption inside Street (PILOT-001) — requires the owner's permission to
   modify the pilot.

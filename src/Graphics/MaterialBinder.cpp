@@ -6,6 +6,7 @@
 #include "Microsoft/Xna/Framework/Graphics/DirectionalLight.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectPass.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SamplerStateCollection.hpp"
 #include "Microsoft/Xna/Framework/Graphics/IEffectFog.hpp"
 
 #include <algorithm>
@@ -73,7 +74,7 @@ namespace CnaEngine::Graphics
         }
     }
 
-    bool StockMaterialBinder::Apply(GraphicsDevice&, const RenderItem& item, const RenderBucket bucket,
+    bool StockMaterialBinder::Apply(GraphicsDevice& device, const RenderItem& item, const RenderBucket bucket,
                                     const Camera& camera, const FallbackSink& fallback)
     {
         const Material& material = *item.material;
@@ -112,6 +113,7 @@ namespace CnaEngine::Graphics
             effect.setAlphaFunctionProperty(CompareFunction::GreaterEqual);
             effect.setReferenceAlphaProperty(
                 static_cast<int>(std::lround(std::clamp(material.alphaCutoff, 0.0f, 1.0f) * 255.0f)));
+            device.getSamplerStatesProperty()[0] = SamplerFor(material);
             effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
             return true;
         }
@@ -145,6 +147,8 @@ namespace CnaEngine::Graphics
             effect.setAlphaProperty(material.alpha);
             effect.setTextureProperty(texture);
             effect.setTexture2Property(secondary);
+            device.getSamplerStatesProperty()[0] = SamplerFor(material);
+            device.getSamplerStatesProperty()[1] = SecondarySamplerFor(material);
             effect.setVertexColorEnabledProperty(vertexColors);
             effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
             return true;
@@ -167,6 +171,9 @@ namespace CnaEngine::Graphics
         effect.setSpecularPowerProperty(material.specularPower);
         effect.setTextureEnabledProperty(texture != nullptr);
         effect.setTextureProperty(texture);
+        if (texture != nullptr) {
+            device.getSamplerStatesProperty()[0] = SamplerFor(material);
+        }
         effect.setVertexColorEnabledProperty(vertexColors);
         effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         return true;

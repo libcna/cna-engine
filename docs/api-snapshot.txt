@@ -13,3 +13,11 @@ CnaEngine/Graphics/GpuMesh.hpp 7c8a8987fb3d1770
 CnaEngine/Graphics/ScreenCapture.hpp d88bfcc0ed6e2cac
 CnaEngine/Graphics/QualitySchema.hpp ed31d38bf307e865
 CnaEngine/Assets/AssetRegistry.hpp bb84cc840d5c174d
+CnaEngine/Core/FixedStepClock.hpp 7d8301690ba6b541
+CnaEngine/Graphics/Material.hpp 5189aee9cb95a648
+CnaEngine/Graphics/MaterialBinder.hpp a0bdd9a7b08ad134
+CnaEngine/Graphics/RenderQueue.hpp aea5568b1ffa1870
+CnaEngine/Graphics/Visibility.hpp aab30c7a3179c144
+CnaEngine/Graphics/ForwardRenderer.hpp ff1471567c01ef4a
+CnaEngine/Graphics/Instancing.hpp 50caf56545e60a04
+CnaEngine/Enhanced/PbrMaterialBinder.hpp c6c338b96eec399c

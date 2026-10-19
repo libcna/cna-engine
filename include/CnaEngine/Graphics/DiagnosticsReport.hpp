@@ -18,6 +18,7 @@ namespace CnaEngine::Graphics
         const Diagnostics::FrameStatistics* frames = nullptr;
         const RenderStatistics* render = nullptr;
         const CullStatistics* culling = nullptr;
+        const LodStatistics* lod = nullptr;
         const Diagnostics::CpuProfiler* profiler = nullptr;
         bool includeGpuMemory = true;
     };
@@ -27,6 +28,7 @@ namespace CnaEngine::Graphics
     ///   "frame 16.67 ms (60.0 fps) min 15.90 max 18.20 p99 18.10"
     ///   "draws 42  triangles 12840  vertices 9120"
     ///   "culling 310 considered, 128 visible (layer 0, distance 12, frustum 170)"
+    ///   "lod 0: 41, 1: 10, 2: 3"
     ///   "cpu Update 1.20 ms, Draw 3.40 ms"
     ///   "gpu meshes 18, vertex 1.2 MiB, index 0.3 MiB"
     [[nodiscard]] std::vector<std::string> FormatDiagnostics(const DiagnosticsSources& sources);

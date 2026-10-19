@@ -157,13 +157,30 @@ buffers and textures, engine culling with car-simulator's rules, the strict
 The engine's image is practically identical to car-simulator's
 (`docs/pilots/images/carsim-scene-*.png`). The 46 extra car-simulator draw
 calls are its special passes (terrain skirt sharing, signs, lamp glows) that
-the comparison does not take over. The program fails if any visibility count
+the comparison does not take over.
+
+The engine sets every sampler from the materials (car-simulator's anisotropic
+wrap for terrain, roads and objects, linear clamp for the terrain's macro layer
+and the trees); the comparison leaves point sampling on the device before the
+engine draws, so nothing is inherited from car-simulator's pass.
+
+Frustum test. car-simulator culls with `BoundingFrustum::Intersects(sphere)`,
+the engine with the plane test (`Contains(sphere) != Disjoint`). At the pinned
+CNA the two agree. CNA work in progress on 2026-10-20 (uncommitted in the
+shared worktree) implements `Intersects` with XNA's GJK query and its
+scale-relative tolerance, which also accepts some spheres just outside a
+plane: car-simulator then draws 506 object and 34 tree batches, the engine 503
+and 33, with the same image (0.1/255). The comparison therefore counts both:
+the engine's rules with car-simulator's frustum test must reproduce
+car-simulator's counts exactly (they do, at both CNA states), and the engine's
+own counts are reported next to them. The program fails if the reproduction
 differs.
 
 Generalizations made because of this comparison: fill lights and per-pixel
 lighting in `ForwardLighting` (car-simulator's sun / sky fill / ground bounce
-rig), `Material::secondaryTexture` (`DualTextureEffect` terrain), and
-`Material::depthBias` for road markings.
+rig), `Material::secondaryTexture` (`DualTextureEffect` terrain),
+`Material::depthBias` for road markings, and `Material::sampler` /
+`secondarySampler`.
 
 ## Still open for this pilot
 - The strict checker allowance (ADR-001) applied in an integration branch of

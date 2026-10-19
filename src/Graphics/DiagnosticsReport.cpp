@@ -41,6 +41,14 @@ namespace CnaEngine::Graphics
                             + " visible (layer " + std::to_string(c.byLayer) + ", distance "
                             + std::to_string(c.byDistance) + ", frustum " + std::to_string(c.byFrustum) + ")");
         }
+        if (sources.lod != nullptr && !sources.lod->perLevel.empty()) {
+            std::string line = "lod";
+            for (std::size_t level = 0; level < sources.lod->perLevel.size(); ++level) {
+                line += (level == 0 ? " " : ", ") + std::to_string(level) + ": "
+                        + std::to_string(sources.lod->perLevel[level]);
+            }
+            lines.push_back(std::move(line));
+        }
         if (sources.profiler != nullptr && !sources.profiler->LastFrame().empty()) {
             std::string line = "cpu";
             bool first = true;

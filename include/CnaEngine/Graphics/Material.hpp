@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include "Microsoft/Xna/Framework/Graphics/SamplerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
@@ -77,6 +78,15 @@ namespace CnaEngine::Graphics
         /// Second texture multiplied over the base (lightmap, macro variation;
         /// needs TexCoord1). Stock rendering uses XNA's DualTextureEffect.
         Microsoft::Xna::Framework::Graphics::Texture2D* secondaryTexture = nullptr;
+        /// Filtering and addressing for the material's textures: a borrowed
+        /// XNA sampler state, normally one of the static ones such as
+        /// SamplerState::AnisotropicWrap. nullptr means LinearWrap, XNA's
+        /// default. Binders set it on every texture slot their effect
+        /// samples, so a draw never inherits the sampler whoever drew before
+        /// left behind (SpriteBatch leaves LinearClamp).
+        const Microsoft::Xna::Framework::Graphics::SamplerState* sampler = nullptr;
+        /// For `secondaryTexture`; nullptr means the same as `sampler`.
+        const Microsoft::Xna::Framework::Graphics::SamplerState* secondarySampler = nullptr;
 
         /// Base-color and emissive textures hold sRGB-encoded color (normal and
         /// occlusion-roughness-metallic maps are always linear).
@@ -101,4 +111,19 @@ namespace CnaEngine::Graphics
         float ior = 1.5f;
         float specularFactor = 1.0f;
     };
+
+    /// The sampler state `material` asks for (LinearWrap when it names none).
+    [[nodiscard]] inline const Microsoft::Xna::Framework::Graphics::SamplerState&
+    SamplerFor(const Material& material) noexcept
+    {
+        return material.sampler != nullptr ? *material.sampler
+                                           : Microsoft::Xna::Framework::Graphics::SamplerState::LinearWrap;
+    }
+
+    /// The sampler state for `material`'s secondary texture.
+    [[nodiscard]] inline const Microsoft::Xna::Framework::Graphics::SamplerState&
+    SecondarySamplerFor(const Material& material) noexcept
+    {
+        return material.secondarySampler != nullptr ? *material.secondarySampler : SamplerFor(material);
+    }
 }

@@ -4,6 +4,31 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20 (later) — blend states, samplers, Street lighting, diagnostics
+
+Baseline `build-probe/` (clean pinned dependencies, baseline enforced and
+matching: CNA `5a44d2c5`, Sharp Runtime `f2aecfef`, cna-extended `0061e3e1`;
+`CNA_ENGINE_CNA_CNAEXT=ON`), Debug, software renderer:
+
+    cmake --build build-probe --parallel 3
+    ctest --test-dir build-probe --parallel 3
+
+Result: **175 of 175 tests passed**. Scene comparisons in that run:
+
+- Street: visible items 652/652, instances 192/192, draw calls 703/703, mean
+  image difference 0.01/255 (53 of 129,600 pixels differ; 49 explained by
+  Street's depth writes in its transparent pass).
+- car-simulator: terrain 207, roads 77, objects 503, trees 33 — equal under
+  both frustum tests; mean image difference 0.1/255.
+
+Day-to-day `build/` (shared CNA worktree at `b0940e0e` with uncommitted math
+edits by another agent; CNAEXT off): **174 of 174 passed** (all but the Street
+comparison, which needs CNAEXT). In that worktree CNA's
+`BoundingFrustum::Intersects(sphere)` is a GJK query (XNA's algorithm), so
+car-simulator draws 506 object and 34 tree batches where the engine's plane
+test keeps 503 and 33, with the same image; the comparison checks the
+engine's rules under car-simulator's frustum test (506/34, equal).
+
 ## 2026-10-20 — car-simulator clock probe
 
 Day-to-day `build/` (shared CNA worktree at `b0940e0e`, which other agents

@@ -17,6 +17,11 @@ namespace CnaEngine::Graphics
         render.Record(100, 300);
         render.Record(20, 60);
         CullStatistics culling{10, 4, 1, 2, 3};
+        LodStatistics lod;
+        lod.Record(0);
+        lod.Record(2);
+        lod.Record(0);
+        lod.Record(-1);
         std::int64_t now = 0;
         Diagnostics::CpuProfiler profiler([&] { return now; });
         profiler.SetEnabled(true);
@@ -28,14 +33,16 @@ namespace CnaEngine::Graphics
         sources.frames = &frames;
         sources.render = &render;
         sources.culling = &culling;
+        sources.lod = &lod;
         sources.profiler = &profiler;
         sources.includeGpuMemory = false;
         const auto lines = FormatDiagnostics(sources);
-        ASSERT_EQ(lines.size(), 4u);
+        ASSERT_EQ(lines.size(), 5u);
         EXPECT_EQ(lines[0], "frame 18.00 ms (55.6 fps) min 16.00 max 20.00 p99 20.00");
         EXPECT_EQ(lines[1], "draws 2  triangles 120  vertices 360");
         EXPECT_EQ(lines[2], "culling 10 considered, 4 visible (layer 1, distance 2, frustum 3)");
-        EXPECT_EQ(lines[3], "cpu Update 1.25 ms, Draw 3.00 ms");
+        EXPECT_EQ(lines[3], "lod 0: 2, 1: 0, 2: 1");
+        EXPECT_EQ(lines[4], "cpu Update 1.25 ms, Draw 3.00 ms");
     }
 
     TEST(DiagnosticsReportTests, MissingSourcesAreOmitted)

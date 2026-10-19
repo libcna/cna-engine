@@ -6,6 +6,7 @@
 #include "Microsoft/Xna/Framework/Graphics/DirectionalLight.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectPass.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SamplerStateCollection.hpp"
 #include "Microsoft/Xna/Framework/Graphics/TextureTransformEXT.hpp"
 
 #include <stdexcept>
@@ -139,6 +140,8 @@ namespace CnaEngine::Enhanced
         transform.Offset = material.uvOffset;
         for (int slot = 0; slot < 5; ++slot) {
             effect.setTextureTransformEXTProperty(slot, transform);
+            // Base color, normal, metallic-roughness, occlusion, emissive.
+            device.getSamplerStatesProperty()[slot] = Graphics::SamplerFor(material);
         }
 
         effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
