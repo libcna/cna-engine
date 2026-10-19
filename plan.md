@@ -632,7 +632,7 @@ in `docs/api-status.md`, their headers are fingerprinted
 (`docs/api-snapshot.txt`, test `cna_engine.api_snapshot`) and changes go to
 `CHANGELOG.md`. `stable` status waits for adoption in the pilots.
 
-### REL-001 — Package and version the library `[ ]`
+### REL-001 — Package and version the library `[~]`
 
 Acceptance:
 
@@ -641,7 +641,13 @@ Acceptance:
 - source and binary consumers use only public artifacts;
 - CNA and `cna-extended` compatibility ranges are machine-checked.
 
-### REL-002 — Complete documentation and examples `[ ]`
+Progress: installed CMake package with `SameMinorVersion`, MIT `LICENSE`,
+`NOTICE.md` license/provenance inventory (installed with the package),
+`CHANGELOG.md`, API snapshot of pilot-validated headers, and baseline revisions
+machine-checked at configure time. Open: CNA/cna-extended packages (UP-001)
+and version ranges once dependencies have releases.
+
+### REL-002 — Complete documentation and examples `[~]`
 
 Acceptance:
 
@@ -651,7 +657,12 @@ Acceptance:
   documented;
 - examples run under the supported headless/software audit profile.
 
-### REL-003 — Establish the verification matrix `[ ]`
+Progress: `README.md` quick look, `docs/guide-strict.md`,
+`docs/guide-enhanced.md`, `docs/conventions.md`, and two headless examples
+that run as tests. Open: a quick-start game template once a pilot has adopted
+the engine.
+
+### REL-003 — Establish the verification matrix `[~]`
 
 Acceptance:
 
@@ -662,6 +673,11 @@ Acceptance:
 - known skips and environmental timeouts cannot appear as silent success.
 
 Blocked by: PILOT-003.
+
+Progress: `docs/verification-matrix.md` separates unit, boundary, example,
+installed-consumer, pilot, baseline, upstream and visual checks and lists the
+verified combinations; CI caps jobs at three and fails on skipped tests.
+Open: performance checks with agreed budgets (MILESTONE-2).
 
 ## Deferred work and non-goals for 1.0
 
