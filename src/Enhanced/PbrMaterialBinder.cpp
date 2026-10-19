@@ -40,8 +40,17 @@ namespace CnaEngine::Enhanced
         keyColor_ = lighting.lightColor * settings_.lightIntensity;
         key.setDiffuseColorProperty(keyColor_);
         key.setSpecularColorProperty(keyColor_);
-        effect.getDirectionalLight1Property().setEnabledProperty(false);
-        effect.getDirectionalLight2Property().setEnabledProperty(false);
+        Microsoft::Xna::Framework::Graphics::DirectionalLight* fills[2] = {&effect.getDirectionalLight1Property(),
+                                                                            &effect.getDirectionalLight2Property()};
+        for (std::size_t i = 0; i < 2; ++i) {
+            const bool enabled = !lighting.defaultLighting && i < lighting.fillLights.size();
+            fills[i]->setEnabledProperty(enabled);
+            if (enabled) {
+                fills[i]->setDirectionProperty(Vector3::Normalize(lighting.fillLights[i].direction));
+                fills[i]->setDiffuseColorProperty(lighting.fillLights[i].diffuse * settings_.lightIntensity);
+                fills[i]->setSpecularColorProperty(lighting.fillLights[i].specular * settings_.lightIntensity);
+            }
+        }
         effect.setAmbientLightColorProperty(lighting.ambientColor);
         effect.setFogEnabledProperty(lighting.fogEnabled);
         effect.setFogColorProperty(lighting.fogColor);

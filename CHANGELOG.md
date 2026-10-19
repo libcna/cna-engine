@@ -35,3 +35,8 @@ API snapshot baseline taken 2026-10-19 (12 headers).
 - `RenderItem::box`, `cullDistance`, `instances`; `VisibilitySettings::minDistance`;
   `Classify(const RenderItem&, ...)`, `DistanceToBox`.
 - `Material::keyLight`; `InstanceSet::VisibleWorlds()`.
+- `ForwardLighting::fillLights` (up to two, with specular) and
+  `perPixelLighting`; `DirectionalLightDescription`; `Material::secondaryTexture`
+  (XNA `DualTextureEffect` in the stock binder). `keyLight == false` now
+  switches off only the key light; fill lights and ambient stay (Street's
+  `sunlit`, car-simulator's three-light rig).

@@ -25,6 +25,7 @@ namespace CnaEngine::Graphics
     StockMaterialBinder::StockMaterialBinder(GraphicsDevice& device)
         : basic_(std::make_unique<BasicEffect>(device)),
           alphaTest_(std::make_unique<AlphaTestEffect>(device)),
+          dual_(std::make_unique<Microsoft::Xna::Framework::Graphics::DualTextureEffect>(device)),
           white_(std::make_unique<Texture2D>(device, 1, 1))
     {
         const Color white(255, 255, 255, 255);
@@ -36,17 +37,29 @@ namespace CnaEngine::Graphics
         defaultLighting_ = lighting.defaultLighting;
         if (lighting.defaultLighting) {
             basic_->EnableDefaultLighting();
+            fillEnabled_[0] = fillEnabled_[1] = true;
         } else {
             auto& key = basic_->getDirectionalLight0Property();
             key.setEnabledProperty(true);
             key.setDirectionProperty(Vector3::Normalize(lighting.lightDirection));
             key.setDiffuseColorProperty(lighting.lightColor);
             key.setSpecularColorProperty(lighting.lightColor);
-            basic_->getDirectionalLight1Property().setEnabledProperty(false);
-            basic_->getDirectionalLight2Property().setEnabledProperty(false);
+            Microsoft::Xna::Framework::Graphics::DirectionalLight* fills[2] = {&basic_->getDirectionalLight1Property(),
+                                                                                &basic_->getDirectionalLight2Property()};
+            for (std::size_t i = 0; i < 2; ++i) {
+                fillEnabled_[i] = i < lighting.fillLights.size();
+                fills[i]->setEnabledProperty(fillEnabled_[i]);
+                if (fillEnabled_[i]) {
+                    fills[i]->setDirectionProperty(Vector3::Normalize(lighting.fillLights[i].direction));
+                    fills[i]->setDiffuseColorProperty(lighting.fillLights[i].diffuse);
+                    fills[i]->setSpecularColorProperty(lighting.fillLights[i].specular);
+                }
+            }
         }
+        basic_->setPreferPerPixelLightingProperty(lighting.perPixelLighting);
         basic_->setAmbientLightColorProperty(lighting.ambientColor);
-        for (IEffectFog* fog : {static_cast<IEffectFog*>(basic_.get()), static_cast<IEffectFog*>(alphaTest_.get())}) {
+        for (IEffectFog* fog : {static_cast<IEffectFog*>(basic_.get()), static_cast<IEffectFog*>(alphaTest_.get()),
+                                static_cast<IEffectFog*>(dual_.get())}) {
             fog->setFogEnabledProperty(lighting.fogEnabled);
             fog->setFogColorProperty(lighting.fogColor);
             fog->setFogStartProperty(lighting.fogStart);
@@ -101,12 +114,39 @@ namespace CnaEngine::Graphics
         } else if (material.shading == ShadingModel::PhysicallyBased) {
             fallback(material, "PhysicallyBased drawn as Lit (stock effects have no PBR)");
         }
+        Texture2D* secondary = material.secondaryTexture;
+        if (secondary != nullptr && (!attributes.Has(VertexAttribute::TexCoord1) || texture == nullptr)) {
+            fallback(material, texture == nullptr ? "secondary texture ignored: no base texture"
+                                                  : "secondary texture ignored: mesh has no TexCoord1");
+            secondary = nullptr;
+        }
+        if (secondary != nullptr && secondary->getIsDisposedProperty()) {
+            fallback(material, "secondary texture ignored: it has been disposed");
+            secondary = nullptr;
+        }
+        if (secondary != nullptr) {
+            if (lit) {
+                fallback(material, "two-texture surfaces draw unlit (XNA DualTextureEffect)");
+            }
+            auto& effect = *dual_;
+            effect.setWorldProperty(item.world);
+            effect.setViewProperty(camera.View());
+            effect.setProjectionProperty(camera.Projection());
+            effect.setDiffuseColorProperty(material.diffuseColor);
+            effect.setAlphaProperty(material.alpha);
+            effect.setTextureProperty(texture);
+            effect.setTexture2Property(secondary);
+            effect.setVertexColorEnabledProperty(vertexColors);
+            effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
+            return true;
+        }
+
         BasicEffect& effect = *basic_;
-        // Directional lights are on for the frame's rig unless the material
-        // opts out (interiors): then ambient and emissive light it alone.
+        // The key light can be switched off per material (interiors); fill
+        // lights and ambient stay.
         effect.getDirectionalLight0Property().setEnabledProperty(material.keyLight);
-        effect.getDirectionalLight1Property().setEnabledProperty(material.keyLight && defaultLighting_);
-        effect.getDirectionalLight2Property().setEnabledProperty(material.keyLight && defaultLighting_);
+        effect.getDirectionalLight1Property().setEnabledProperty(fillEnabled_[0]);
+        effect.getDirectionalLight2Property().setEnabledProperty(fillEnabled_[1]);
         effect.setWorldProperty(item.world);
         effect.setViewProperty(camera.View());
         effect.setProjectionProperty(camera.Projection());

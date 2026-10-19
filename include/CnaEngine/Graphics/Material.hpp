@@ -54,11 +54,14 @@ namespace CnaEngine::Graphics
         /// Draw both faces (no back-face culling).
         bool doubleSided = false;
         /// Lit by the scene's key (directional) light. Interiors seen through
-        /// windows turn it off and live on ambient and emissive light.
+        /// windows turn it off and live on ambient, fill and emissive light.
         bool keyLight = true;
 
         /// Base color texture (needs TexCoord0); null means untextured.
         Microsoft::Xna::Framework::Graphics::Texture2D* baseTexture = nullptr;
+        /// Second texture multiplied over the base (lightmap, macro variation;
+        /// needs TexCoord1). Stock rendering uses XNA's DualTextureEffect.
+        Microsoft::Xna::Framework::Graphics::Texture2D* secondaryTexture = nullptr;
 
         /// Base-color and emissive textures hold sRGB-encoded color (normal and
         /// occlusion-roughness-metallic maps are always linear).

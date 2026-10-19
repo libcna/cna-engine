@@ -243,6 +243,49 @@ namespace CnaEngine::Graphics
         EXPECT_TRUE(renderer.LastFallbacks().empty());
         // The next sunlit draw gets its light back.
         EXPECT_EQ(At(draw(sunlit), Size / 2, Size / 2), bright);
+
+        // Fill lights stay on for interiors: only the key light is switched off.
+        renderer.Lighting().fillLights = {{Vector3(0.0f, 0.0f, -1.0f), Vector3(0.5f, 0.5f, 0.5f), Vector3::Zero}};
+        const Color filled = At(draw(interior), Size / 2, Size / 2);
+        EXPECT_GT(filled.getRProperty(), dark.getRProperty() + 60) << "lit by the fill light";
+        EXPECT_LT(filled.getRProperty(), bright.getRProperty());
+    }
+
+    TEST_F(Fixture, SecondaryTextureUsesDualTextureEffect)
+    {
+        MeshBuilder builder({VertexAttribute::Position, VertexAttribute::TexCoord0, VertexAttribute::TexCoord1});
+        builder.AddBox(Vector3(-1.0f, -1.0f, -0.1f), Vector3(1.0f, 1.0f, 0.1f));
+        const GpuMesh dual = GpuMesh::Upload(device, builder.Mesh(), VertexLayout::PositionNormalDualTexture(),
+                                             GpuMeshOptions{.missingAttributes = MissingAttributePolicy::UseDefaults});
+        Texture2D white(device, 1, 1);
+        const Color w(255, 255, 255, 255);
+        white.SetData(&w, 1);
+        Texture2D grey(device, 1, 1);
+        const Color g(64, 64, 64, 255);
+        grey.SetData(&g, 1);
+        Material terrain = Unlit("terrain", Vector3(1.0f, 1.0f, 1.0f));
+        terrain.baseTexture = &white;
+        terrain.secondaryTexture = &grey;
+
+        RenderQueue queue;
+        RenderItem item;
+        item.mesh = &dual;
+        item.material = &terrain;
+        item.bounds = WorldBounds(dual, item.world);
+        queue.Submit(item);
+        const auto pixels = Draw(queue);
+        // XNA's DualTextureEffect modulates 2x: white * 64/255 * 2 is about 128.
+        EXPECT_TRUE(Near(At(pixels, Size / 2, Size / 2), 128, 128, 128, 6))
+            << static_cast<int>(At(pixels, Size / 2, Size / 2).getRProperty());
+        EXPECT_TRUE(renderer.LastFallbacks().empty());
+
+        // Without a second UV set the secondary texture is ignored, and said so.
+        RenderQueue plain;
+        RenderItem quadItem = Item(terrain, 0.0f);
+        plain.Submit(quadItem);
+        (void)Draw(plain);
+        ASSERT_EQ(renderer.LastFallbacks().size(), 1u);
+        EXPECT_EQ(renderer.LastFallbacks()[0], "material 'terrain': secondary texture ignored: mesh has no TexCoord1");
     }
 
     // Instanced items draw identically on both paths: one hardware draw on

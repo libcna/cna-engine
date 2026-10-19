@@ -7,6 +7,7 @@
 
 #include "Microsoft/Xna/Framework/Graphics/AlphaTestEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
+#include "Microsoft/Xna/Framework/Graphics/DualTextureEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
@@ -14,19 +15,34 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace CnaEngine::Graphics
 {
+    /// A directional light: `direction` points from the light into the scene.
+    struct DirectionalLightDescription
+    {
+        Microsoft::Xna::Framework::Vector3 direction = Microsoft::Xna::Framework::Vector3(0.0f, -1.0f, 0.0f);
+        Microsoft::Xna::Framework::Vector3 diffuse = Microsoft::Xna::Framework::Vector3::Zero;
+        Microsoft::Xna::Framework::Vector3 specular = Microsoft::Xna::Framework::Vector3::Zero;
+    };
+
     /// Scene-wide lighting shared by material binders.
     struct ForwardLighting
     {
         /// XNA's default three-light rig (BasicEffect::EnableDefaultLighting).
-        /// When false, one directional light (`lightDirection`, `lightColor`)
-        /// is used; binders may expose their effects for other setups.
+        /// When false, the key light (`lightDirection`, `lightColor` for
+        /// diffuse and specular) plus up to two `fillLights` (XNA effects
+        /// have three directional lights; sky fill and ground bounce are the
+        /// usual pair) are used.
         bool defaultLighting = true;
         Microsoft::Xna::Framework::Vector3 lightDirection =
             Microsoft::Xna::Framework::Vector3(-0.5265408f, -0.5735765f, -0.6275069f);
         Microsoft::Xna::Framework::Vector3 lightColor = Microsoft::Xna::Framework::Vector3(1.0f, 0.9607844f, 0.8078432f);
+        /// At most two are used; more are ignored.
+        std::vector<DirectionalLightDescription> fillLights;
+        /// BasicEffect::PreferPerPixelLighting.
+        bool perPixelLighting = false;
         Microsoft::Xna::Framework::Vector3 ambientColor =
             Microsoft::Xna::Framework::Vector3(0.05333332f, 0.09882354f, 0.1819608f);
         bool fogEnabled = false;
@@ -68,8 +84,13 @@ namespace CnaEngine::Graphics
     /// Binder over XNA's stock effects (BasicEffect, AlphaTestEffect); the
     /// strict default.
     ///
+    /// Materials with a `secondaryTexture` (on meshes with TexCoord0 and
+    /// TexCoord1) draw through XNA's DualTextureEffect, which is unlit.
+    ///
     /// Fallbacks (reported through the sink):
     ///  - Lit/PhysicallyBased without normals in the mesh draws Unlit;
+    ///  - a secondary texture on a mesh without TexCoord1 is ignored; a lit
+    ///    material with a secondary texture draws unlit (DualTextureEffect);
     ///  - PhysicallyBased draws Lit (stock effects have no PBR);
     ///  - a texture on a mesh without TexCoord0, or a disposed texture, is ignored;
     ///  - vertex colors on a mesh without a Color attribute are ignored;
@@ -91,8 +112,10 @@ namespace CnaEngine::Graphics
     private:
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::BasicEffect> basic_;
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::AlphaTestEffect> alphaTest_;
+        std::unique_ptr<Microsoft::Xna::Framework::Graphics::DualTextureEffect> dual_;
         /// 1x1 white texture for untextured alpha-tested materials.
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::Texture2D> white_;
         bool defaultLighting_ = true;
+        bool fillEnabled_[2] = {false, false};
     };
 }
