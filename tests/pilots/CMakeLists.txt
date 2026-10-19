@@ -46,3 +46,29 @@ if(EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Input/InputMapper.cpp")
 else()
     message(STATUS "cna-engine: car-simulator not found; pilot probes skipped")
 endif()
+
+set(CNA_ENGINE_STREET_SIMULATOR_DIR "${PROJECT_SOURCE_DIR}/../../libcnalab/street-simulator"
+    CACHE PATH "street-simulator checkout used by the pilot probes (read-only)")
+
+if(EXISTS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/Camera.cpp")
+    # Street's camera, fly/walk controller and tangent-frame geometry/upload.
+    add_library(cna_engine_pilot_street STATIC
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/Camera.cpp"
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/CameraController.cpp"
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Geometry/MeshBuilder.cpp"
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/GpuMesh.cpp")
+    target_include_directories(cna_engine_pilot_street PUBLIC
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/include")
+    target_link_libraries(cna_engine_pilot_street PUBLIC CNA::Math CNA::Input CNA::GraphicsCore)
+
+    add_executable(cna_engine_pilot_street_tests StreetSimulatorTests.cpp)
+    target_link_libraries(cna_engine_pilot_street_tests PRIVATE
+        cna_engine_core cna_engine_graphics cna_engine_pilot_street GTest::gtest_main)
+    gtest_discover_tests(cna_engine_pilot_street_tests
+        TEST_PREFIX "cna_engine.pilot."
+        DISCOVERY_MODE PRE_TEST
+        PROPERTIES LABELS "pilot")
+    message(STATUS "cna-engine: street-simulator pilot probes enabled (${CNA_ENGINE_STREET_SIMULATOR_DIR})")
+else()
+    message(STATUS "cna-engine: street-simulator not found; Street pilot probes skipped")
+endif()

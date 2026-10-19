@@ -300,8 +300,9 @@ Blocked by: ENG-012. Coordinate with EXT-002.
 
 Result: `Graphics/Camera.hpp` (lazy derived values, `Revision()`),
 `CameraControllers.hpp` (fly, walk, `ICameraController`). Open: coordinate
-with EXT-002 and validate in Street. Car-simulator: its chase-camera poses
-drive the engine camera exactly (`docs/pilots/car-simulator.md`).
+with EXT-002. Both pilots validated: car-simulator chase-camera poses and
+Street's fly controller drive the engine camera with matching matrices
+(`docs/pilots/`).
 
 ### ENG-022 — Define generic CPU mesh data `[~]`
 
@@ -319,8 +320,9 @@ Blocked by: ENG-013.
 Result: `Graphics/MeshData.hpp` (attribute streams, 32-bit indices, bounds,
 append, transform, winding, angle-weighted normals, tangents),
 `MeshBuilder.hpp`, `VertexLayouts.hpp` (explicit conversion with
-missing/dropped/narrowed report). Car-simulator meshes convert without loss
-(`docs/pilots/car-simulator.md`); Street: open.
+missing/dropped/narrowed report). Both pilots validated: car-simulator's
+multi-layout meshes and Street's tangent-frame meshes convert without loss
+(`docs/pilots/`).
 
 ### ENG-023 — Add RAII GPU mesh upload and drawing `[~]`
 
@@ -337,8 +339,8 @@ Blocked by: ENG-022.
 
 Result: `Graphics/GpuMesh.hpp` (owned/borrowed buffers, disposal handling,
 16/32-bit indices with Reach-profile checks, statistics and GPU memory tally),
-software-renderer pixel tests. Car-simulator meshes render pixel-identically
-through engine and pilot uploads; Street: open.
+software-renderer pixel tests. Both pilots' meshes render pixel-identically
+through the engine upload and the pilot's own upload (`docs/pilots/`).
 
 ### ENG-024 — Add typed asset registry and lifetime policy `[~]`
 
