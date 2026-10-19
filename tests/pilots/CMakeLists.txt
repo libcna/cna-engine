@@ -15,9 +15,20 @@ if(EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Input/InputMapper.cpp")
         "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/include")
     target_link_libraries(cna_engine_pilot_carsim_input PUBLIC CNA::Math CNA::Input)
 
-    add_executable(cna_engine_pilot_tests CarSimulatorControlsTests.cpp)
+    # Camera poses and procedural meshes / GPU upload. Camera.cpp uses only
+    # VehicleState data, so no simulation sources are needed.
+    add_library(cna_engine_pilot_carsim_render STATIC
+        "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/Camera.cpp"
+        "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/MeshData.cpp"
+        "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/GpuMesh.cpp")
+    target_include_directories(cna_engine_pilot_carsim_render PUBLIC
+        "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/include")
+    target_link_libraries(cna_engine_pilot_carsim_render PUBLIC CNA::Math CNA::GraphicsCore)
+
+    add_executable(cna_engine_pilot_tests CarSimulatorControlsTests.cpp CarSimulatorRenderTests.cpp)
     target_link_libraries(cna_engine_pilot_tests PRIVATE
-        cna_engine_core cna_engine_graphics cna_engine_pilot_carsim_input GTest::gtest_main)
+        cna_engine_core cna_engine_graphics cna_engine_pilot_carsim_input cna_engine_pilot_carsim_render
+        GTest::gtest_main)
     gtest_discover_tests(cna_engine_pilot_tests
         TEST_PREFIX "cna_engine.pilot."
         DISCOVERY_MODE PRE_TEST

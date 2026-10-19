@@ -56,8 +56,31 @@ toggles from a second key while the first is held.
 - Key and button display names (the pilot's are localized-style strings such
   as "Left Shift"); the engine provides stable identifiers only.
 
+## Camera data (ENG-021) — validated
+
+Probe: `tests/pilots/CarSimulatorRenderTests.cpp` with the pilot's
+`Render/Camera.cpp`. The pilot's `ChaseCamera` (vehicle-specific policy that
+stays in the game) runs over 600 frames of a curving, accelerating vehicle;
+each `CameraPose` is applied to an engine `Camera` with a four-line adapter
+(`SetPosition`, `LookAt`, `SetPerspective`). Projections are identical
+(< 1e-6), forward vectors agree to 1e-4, and view matrices agree to float
+precision (< 2e-3 at world coordinates of ~200 m). The engine camera can carry
+the pilot's chase and cockpit cameras without owning their behaviour.
+
+## Mesh data and GPU upload (ENG-022/023) — validated
+
+Same probe with the pilot's `Render/MeshData.cpp` and `Render/GpuMesh.cpp`.
+The pilot's procedural box, cylinder and torus convert to engine `MeshData`
+(array-of-structs to attribute streams) with identical bounds, triangle
+counts and winding (the pilot reports signed volume with the opposite sign
+convention). Uploaded through the engine (`PositionNormalTexture`, 16-bit
+indices) and through the pilot's `GpuMesh` (32-bit indices), both draw a
+**pixel-identical** image with BasicEffect default lighting. The engine's
+conversion report names the attributes the layout drops (color, second UV set).
+
 ## Still open for this pilot
 
-Camera data, mesh data/upload, diagnostics and screenshot capture probes
-(the plan requires at least two engine abstractions exercised by real pilot
-code; input is the first).
+- Diagnostics and screenshot capture against the pilot's `Render/Screenshot`.
+- Asset registry replacing a pilot cache.
+- The strict checker allowance (ADR-001) applied in an integration branch of
+  the pilot — requires the owner's permission to touch car-simulator.
