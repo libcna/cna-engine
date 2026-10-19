@@ -47,7 +47,7 @@ if(EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Input/InputMapper.cpp")
         add_test(NAME cna_engine.pilot.car_simulator_checker_allowance
             COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/run_pilot_checker.py"
                     "${CNA_ENGINE_CAR_SIMULATOR_DIR}" "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
-        set_tests_properties(cna_engine.pilot.car_simulator_checker_allowance PROPERTIES LABELS "pilot;boundary")
+        set_tests_properties(cna_engine.pilot.car_simulator_checker_allowance PROPERTIES LABELS pilot)
     endif()
     message(STATUS "cna-engine: car-simulator pilot probes enabled (${CNA_ENGINE_CAR_SIMULATOR_DIR})")
 else()

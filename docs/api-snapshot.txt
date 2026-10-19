@@ -1,0 +1,15 @@
+# Pilot-validated public API: header and declaration fingerprint.
+# Regenerate with tools/api_snapshot.py --update after a deliberate API
+# change, and record the change in CHANGELOG.md.
+CnaEngine/Input/ActionMap.hpp 356c889b1a76770f
+CnaEngine/Input/Bindings.hpp d6970dc4cf617600
+CnaEngine/Input/InputNames.hpp a8d9cca4b0f12d84
+CnaEngine/Input/InputSnapshot.hpp 016ec2faa05551dd
+CnaEngine/Graphics/Camera.hpp a317ca879841682b
+CnaEngine/Graphics/CameraControllers.hpp 9a1d429ceb782516
+CnaEngine/Graphics/MeshData.hpp 43c2bdc9b87c8379
+CnaEngine/Graphics/VertexLayouts.hpp c4a7321cfda77d5e
+CnaEngine/Graphics/GpuMesh.hpp 34ee68124b97390b
+CnaEngine/Graphics/ScreenCapture.hpp d88bfcc0ed6e2cac
+CnaEngine/Graphics/QualitySchema.hpp ed31d38bf307e865
+CnaEngine/Assets/AssetRegistry.hpp bb84cc840d5c174d

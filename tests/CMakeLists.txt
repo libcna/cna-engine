@@ -46,7 +46,7 @@ target_link_libraries(cna_engine_tests PRIVATE cna_engine_core cna_engine_graphi
 gtest_discover_tests(cna_engine_tests
     TEST_PREFIX "cna_engine."
     DISCOVERY_MODE PRE_TEST
-    PROPERTIES LABELS "unit;strict")
+    PROPERTIES LABELS unit)
 
 # --- Enhanced tests: the only executable linking cna-extended. -----------------
 if(CNA_ENGINE_WITH_EXTENDED)
@@ -59,7 +59,7 @@ if(CNA_ENGINE_WITH_EXTENDED)
     gtest_discover_tests(cna_engine_extended_tests
         TEST_PREFIX "cna_engine_extended."
         DISCOVERY_MODE PRE_TEST
-        PROPERTIES LABELS "unit;enhanced")
+        PROPERTIES LABELS unit)
 endif()
 
 # --- Enhanced graphics tests (CNA extensions, no cna-extended). ----------------
@@ -71,7 +71,7 @@ if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     gtest_discover_tests(cna_engine_enhanced_tests
         TEST_PREFIX "cna_engine_enhanced."
         DISCOVERY_MODE PRE_TEST
-        PROPERTIES LABELS "unit;enhanced")
+        PROPERTIES LABELS unit)
 endif()
 
 # --- Pilot probes: compare engine facilities with pilot implementations. ------
@@ -90,8 +90,12 @@ if(Python3_Interpreter_FOUND)
         COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/tools/check_strict_boundary.py"
                 --root "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/boundary/violations")
     set_tests_properties(cna_engine.strict_boundary_detects_leaks PROPERTIES WILL_FAIL TRUE)
+    # Pilot-validated API changes must be deliberate (PILOT-003).
+    add_test(NAME cna_engine.api_snapshot
+        COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/tools/api_snapshot.py"
+                --root "${PROJECT_SOURCE_DIR}" --check)
     set_tests_properties(cna_engine.strict_boundary cna_engine.strict_boundary_detects_leaks
-        PROPERTIES LABELS "boundary")
+        cna_engine.api_snapshot PROPERTIES LABELS "boundary")
 else()
     message(WARNING "cna-engine: Python 3 not found; strict boundary tests are not registered")
 endif()
