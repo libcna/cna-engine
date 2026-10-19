@@ -9,7 +9,7 @@ Audience: the next AI agent working on `cna-engine`
 Build a higher-level C++23 game-engine library above CNA that makes ordinary
 game development materially easier than CNA's XNA 4.0-compatible API alone,
 without hiding CNA, and reusing `cna-extended` instead of duplicating it.
-Validation projects: `libcnalab/street-simulator` (enhanced profile) and
+Pilots: `libcnalab/street-simulator` (enhanced profile) and
 `libcnalab/car-simulator` (strict-XNA profile). Both moved from
 `libcna/cna-street` and `libcna/cna-car-simulator` after the original audit.
 
@@ -17,69 +17,65 @@ Validation projects: `libcnalab/street-simulator` (enhanced profile) and
 
 - **Modify only this repository.** Do not edit `cna`, `sharp-runtime`,
   `cna-extended`, the simulators or any other app. Defects found elsewhere are
-  written to `upstream-issues.md` (UP-001 … UP-004 so far).
-- Commit regularly on branch `develop` (the owner created it from `main` and
-  pushed it; do not push unless asked).
-- Builds and tests: at most 3 parallel jobs (`--parallel 3`), shared ccache
-  `CCACHE_DIR=/rv/cnaccache CCACHE_BASEDIR=/rv`, never a new cache, never
-  `CCACHE_MAXSIZE`, never build in `/tmp` or the scratchpad, only the build
-  directory names `build`, `build-probe`, `build-consumer`, `build-asan`,
-  `build-ubsan`, `build-tsan`. Read `../CLAUDE.md` (= `../AGENTS.md`).
-- Export `CCACHE_NOHASHDIR=1` as well, otherwise Debug objects are never
-  shared between build trees (UP-003).
+  written to `upstream-issues.md` (UP-001 … UP-005 so far). Pilot code may be
+  *read and compiled read-only* (that is what `tests/pilots/` does).
+- Commit regularly on branch `develop`; do not push unless asked.
+- At most 3 parallel compile/test jobs. Shared ccache only:
+  `CCACHE_DIR=/rv/cnaccache CCACHE_BASEDIR=/rv`, plus `CCACHE_NOHASHDIR=1`
+  (UP-003). Never a new cache, never `CCACHE_MAXSIZE`, never build in `/tmp`
+  or the scratchpad, only the build directory names of `../CLAUDE.md`.
 - Documents stay in English.
 
-## State at hand-off
-
-All work is committed on `develop`. `ctest --test-dir build --parallel 3`
-passes (see `docs/verification.md` for the latest exact numbers).
-
-Build trees:
+## Build trees
 
 | Directory | Content |
 | --- | --- |
-| `build/` | engine build (Debug, SOFTWARE/HEADLESS/NULL, with cna-extended) |
+| `build/` | day-to-day engine build against the shared `../cna` worktree (which other agents edit; not baseline evidence) |
+| `build-probe/` | baseline build against `~/deps/cna-baseline` (clean clone at the pinned CNA revision) with `CNA_ENGINE_ENFORCE_BASELINE=ON` |
 | `build-consumer/` | installed-package consumer probes (`tools/run_consumer_probes.sh`) |
-| `build-probe/` | the 2026-10-14 cna-extended audit tree (configured against an older CNA); reuse it for the ADR-002 cna-extended rerun |
 
-### Done
+`~/deps/cna-baseline` is a local clone of CNA at the pin; move it with
+`git -C ~/deps/cna-baseline fetch && git -C ~/deps/cna-baseline checkout <rev>`
+when the pin changes (ADR-002 "Local reproduction").
 
-- ADR-001 (strict/enhanced boundary) and ADR-002 (pinned baseline, configure
-  check) in `docs/adr/`.
-- CMake skeleton with `CnaEngine::Core`, `::Graphics` (strict),
-  `::ExtendedIntegration` (only cna-extended user), `::Engine`; install and
-  `CnaEngineConfig.cmake`.
-- Strict boundary checker (`tools/check_strict_boundary.py`, car-simulator
-  rules) + deliberate-leak fixture + per-header self-containment build.
-- Strict facilities: input actions/axes/rebinding/persistence/binding capture;
-  camera + fly/walk controllers; SoA mesh data, builder, vertex layouts;
-  RAII GPU meshes; materials; render queue; visibility + LOD; forward renderer
-  over stock effects with custom passes, state restore and reported fallbacks;
-  quality presets with capability resolution; instancing (hardware path +
-  per-instance fallback); screenshots; asset registry; frame statistics and
-  CPU profiler.
-- Enhanced facilities: `EngineWorldScreen` (World3DScreenEXT driven by engine
-  input/camera), World3D camera sync.
-- Example `examples/orbit_scene` (headless, strict only, writes a PNG).
-- Consumer probes `tests/consumer` (installed package; strict and enhanced).
-- EXT-002 dispositioned: CNA defect, UP-004.
+## State
 
-### Open, in priority order
+All work is committed on `develop`. Latest evidence (`docs/verification.md`):
+151 tests pass in `build/`, 150 in the baseline build (`build-probe/`,
+before the API-snapshot test existed), 2 consumer probes pass.
 
-1. ADR-002 reruns against the pin: cna-extended suite (reuse `build-probe/`),
-   street-simulator, car-simulator (they need build trees; use
-   `build-consumer/`-style reuse, never per-ticket directories).
-2. Pilot validation (PILOT-001/002): express each simulator's core controls
-   with `ActionMap`, replace one local cache with `AssetRegistry`, drive one
-   camera through the engine — as integration probes inside this repository
-   (the simulators themselves must not be modified).
-3. ENG-035 later steps: shadows/cascades, post-processing hooks (only when a
-   pilot needs them); ENG-037 debug presentation via cna-extended fonts.
-4. CI job definition (EXT-003, REL-003).
+Done (see `plan.md` for per-task results):
+
+- ADR-001 (+ addendum for `EnhancedGraphics`), ADR-002 with a clean,
+  enforced baseline run.
+- MILESTONE-1 (strict foundation): ENG-020 … ENG-025 complete, validated
+  against both pilots by read-only equivalence probes (`docs/pilots/`); the
+  pilot's own strict checker accepts the strict surface with the ADR-001
+  allowance.
+- Enhanced work: material binders, PBR binder over `PbrEffect`,
+  `EngineWorldScreen`, debug overlay, render queue, culling/LOD, instancing,
+  quality schema (ENG-036 complete), `street_slice` example.
+- Release readiness: LICENSE, NOTICE, CHANGELOG, API snapshot test, profile
+  guides, verification matrix, CI workflow.
+
+## Open, in priority order
+
+1. Pilot adoption (PILOT-001/002) — needs the owner's permission to modify the
+   pilots; until then, probes are the evidence.
+2. MILESTONE-2 remainder: compare a real Street scene (its `SceneRenderer`)
+   with the engine path, CPU/draw-call measurements with agreed tolerances.
+3. ENG-035 later steps only when a pilot needs them (Street currently draws no
+   shadows; see `docs/pilots/street-simulator.md`).
+4. ENG-037: pixel test of the overlay text path (needs a BMFont with a page
+   texture that does not require modifying cna-extended).
+5. Upstream: UP-001 (no CNA package), UP-004 (BoundingFrustum point
+   containment), UP-005 (cna-extended skinned test) — for their owners.
 
 ## Pointers
 
-- `plan.md` — task list with `[x]` / `[~]` / `[ ]` status and per-task results
-- `docs/conventions.md`, `docs/api-status.md`, `docs/verification.md`
-- `upstream-issues.md` — recorded defects elsewhere
+- `README.md`, `docs/guide-strict.md`, `docs/guide-enhanced.md`
+- `plan.md` — tasks with `[x]` / `[~]` / `[ ]` and results
+- `docs/adr/`, `docs/conventions.md`, `docs/api-status.md`,
+  `docs/verification.md`, `docs/verification-matrix.md`, `docs/pilots/`
+- `upstream-issues.md`, `NOTICE.md`, `CHANGELOG.md`
 - `analysis.md`, `gap-audit.md` — the original study and audit
