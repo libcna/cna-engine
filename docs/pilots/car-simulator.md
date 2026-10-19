@@ -78,6 +78,14 @@ indices) and through the pilot's `GpuMesh` (32-bit indices), both draw a
 **pixel-identical** image with BasicEffect default lighting. The engine's
 conversion report names the attributes the layout drops (color, second UV set).
 
+## Strict checker contract (ADR-001) — validated
+
+`cna_engine.pilot.car_simulator_checker_allowance` runs the pilot's own
+`scripts/check_xna_only.py` over all strict engine headers and sources (44
+files at the time of writing). The only findings are the 48 includes of
+strict `CnaEngine/<module>/` headers — exactly the allowance ADR-001 asks the
+pilot to add. No identifier, XNA-type or extension rule fires.
+
 ## Still open for this pilot
 
 - Diagnostics and screenshot capture against the pilot's `Render/Screenshot`.

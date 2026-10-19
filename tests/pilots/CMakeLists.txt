@@ -33,6 +33,15 @@ if(EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Input/InputMapper.cpp")
         TEST_PREFIX "cna_engine.pilot."
         DISCOVERY_MODE PRE_TEST
         PROPERTIES LABELS "pilot")
+    # ADR-001 contract: the pilot's own checker accepts the strict engine
+    # surface given only the documented include allowance.
+    find_package(Python3 COMPONENTS Interpreter)
+    if(Python3_Interpreter_FOUND AND EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/scripts/check_xna_only.py")
+        add_test(NAME cna_engine.pilot.car_simulator_checker_allowance
+            COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/run_pilot_checker.py"
+                    "${CNA_ENGINE_CAR_SIMULATOR_DIR}" "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
+        set_tests_properties(cna_engine.pilot.car_simulator_checker_allowance PROPERTIES LABELS "pilot;boundary")
+    endif()
     message(STATUS "cna-engine: car-simulator pilot probes enabled (${CNA_ENGINE_CAR_SIMULATOR_DIR})")
 else()
     message(STATUS "cna-engine: car-simulator not found; pilot probes skipped")

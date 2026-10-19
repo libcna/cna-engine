@@ -103,6 +103,13 @@ engine, its checker needs one narrow allowance, proposed here as the contract:
 The engine side of the contract is the strict boundary check above: the
 allowance is safe exactly because the strict headers pass the same rules.
 
+Verified with the pilot's unmodified checker: the CTest test
+`cna_engine.pilot.car_simulator_checker_allowance`
+(`tests/pilots/run_pilot_checker.py`) runs car-simulator's
+`scripts/check_xna_only.py` over copies of every strict engine header and
+source and fails unless every reported violation is an include of a strict
+`CnaEngine/<module>/` header.
+
 ### Versioning
 
 - Project version `0.1.0`; everything is experimental until two-consumer
