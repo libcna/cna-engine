@@ -102,7 +102,13 @@ if(CNA_ENGINE_STREET_SCENE_COMPARISON AND CNA_CNAEXT
     target_compile_definitions(cna_engine_pilot_street_core PUBLIC
         CNA_STREET_VERSION="probe" CNA_STREET_RENDERER_NAME="${CNA_GRAPHICS_RENDERER}"
         CNA_STREET_DEFAULT_ASSET_DIR="${CNA_ENGINE_STREET_SIMULATOR_DIR}/assets")
-    target_link_libraries(cna_engine_pilot_street_core PUBLIC CNA SharpRuntime::Text.Json)
+    # Street itself links the `CNA` umbrella, which is libcna.so when
+    # CNA_SHARED_LIBRARY is ON (CNA's default), while the engine links CNA's
+    # static modules: both in one process means two CNA runtimes
+    # (upstream-issues.md UP-006). Link the same static modules instead.
+    target_link_libraries(cna_engine_pilot_street_core PUBLIC
+        CNA::Runtime CNA::GraphicsExt CNA::DevicesExt CNA::Storage CNA::Content CNA::Media CNA::Audio CNA::Input
+        CNA::GraphicsCore CNA::Diagnostics CNA::Core CNA::Math CNA::Platform SharpRuntime::Text.Json)
 
     add_executable(cna_engine_street_scene_comparison StreetSceneComparison.cpp)
     target_link_libraries(cna_engine_street_scene_comparison PRIVATE

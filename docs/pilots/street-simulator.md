@@ -88,6 +88,47 @@ Street selects the path with CNA capability queries
 engine API uses the XNA profile (`ChoosePath`). An enhanced capability-based
 choice belongs in `EnhancedGraphics` when a second consumer needs it.
 
+## A real Street scene through the engine (MILESTONE-2)
+
+`cna_engine.pilot.street_scene_comparison` (built with
+`-DCNA_ENGINE_CNA_CNAEXT=ON`, because Street's sky uses CNA's CNAEXT shader
+packages; run in `build-probe/`) compiles all of Street's core read-only,
+builds Street's procedural `CityScene` (Low preset, no reflection probes, no
+traffic or pedestrians), and draws the first viewpoint twice into the same
+480×270 target:
+
+1. with Street's own `SceneRenderer`;
+2. with the engine: Street's registered items read from the renderer, meshes
+   borrowed (`GpuMesh::Borrow(ModelMeshPart&)`), materials converted field by
+   field, engine culling with Street's rules (box distance and per-item limits
+   for items, sphere distance with min/max for instances, batch LOD from the
+   nearest instance), `ForwardRenderer` with the `PbrMaterialBinder`.
+
+Result (software renderer, Debug, CNA baseline `5a44d2c5`):
+
+| Measure | Street | Engine |
+| --- | --- | --- |
+| Scene | 1,361 static items, 93 instance groups (661 instances) | same objects |
+| Visible items | 652 | **652** |
+| Visible instances | 192 | **192** |
+| Draw calls | 703 (51 instanced) | 844 (instances drawn one by one) |
+| CPU frame time | 6.2–7.2 s | 4.8–5.3 s |
+| Mean image difference | — | 19 / 255 per channel |
+
+The program fails if the visibility sets differ. The images
+(`docs/pilots/images/street-scene-street.png`, `…-engine.png`) show the same
+geometry, materials and composition; the remaining difference is Street's
+lighting model (image-based sky lighting, exposure, its own sun intensity),
+which is game art direction and stays in the game — a Street binder
+deriving from the engine's would carry it. The engine issues more draws
+because its PBR path has no instancing-capable effect; with one, the 192
+instances would collapse into Street's 51 instanced draws.
+
+Generalizations made because of this comparison: `GpuMesh::Borrow` of model
+parts with vertex offset and start index; optional box bounds, per-item cull
+distance and minimum distance in visibility; `Material::keyLight` (Street's
+`sunlit`).
+
 ## Shadows (ENG-035 step 3) — not required at present
 
 Street still carries shadow settings and statistics, but CNA's

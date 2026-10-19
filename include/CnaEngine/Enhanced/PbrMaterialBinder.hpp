@@ -29,7 +29,8 @@ namespace CnaEngine::Enhanced
     /// occlusion-roughness-metallic map, normal map and scale, emissive,
     /// IOR/specular, alpha mode and cutoff, double-sidedness, UV transform).
     ///
-    /// Lighting: ForwardLighting's single directional light and ambient color
+    /// Lighting: ForwardLighting's single directional light (switched off for
+    /// materials with `keyLight == false`) and ambient color
     /// (the default three-light rig of the stock effects is approximated by
     /// its key light). Image-based lighting, shadows and environment probes
     /// are not set; a game that needs them derives its own binder.
@@ -62,5 +63,6 @@ namespace CnaEngine::Enhanced
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::PbrEffect> effect_;
         std::shared_ptr<Graphics::StockMaterialBinder> fallback_;
         PbrSettings settings_;
+        Microsoft::Xna::Framework::Vector3 keyColor_ = Microsoft::Xna::Framework::Vector3::Zero;
     };
 }

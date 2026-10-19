@@ -569,10 +569,13 @@ block through engine camera/input, generic meshes, PBR materials
 (`EnhancedGraphics`), render queues, frustum/distance culling, LOD with
 hysteresis and instanced lamps, with diagnostics and a PNG capture; it runs as
 a CTest example. Street's own camera, controls and tangent-frame meshes are
-validated by equivalence probes. Open: migrating a real Street scene (needs
-the owner's permission to touch street-simulator, or a larger read-only probe
-of its SceneRenderer), screenshot tolerances and CPU/draw comparisons against
-Street's renderer.
+validated by equivalence probes. A real Street scene (Street's own `CityScene`) is drawn by Street's
+`SceneRenderer` and by the engine over the same buffers: identical visibility
+(652 items, 192 instances), comparable CPU time (engine faster), mean image
+difference 19/255 attributable to Street's lighting model
+(`docs/pilots/street-simulator.md`). Open: agreed screenshot tolerances with
+the owner, an instancing-capable PBR effect to match Street's draw count, and
+adoption inside street-simulator (needs permission).
 
 ### PILOT-001 — Validate `cna-street` `[~]`
 

@@ -33,6 +33,7 @@ namespace CnaEngine::Graphics
 
     void StockMaterialBinder::BeginFrame(GraphicsDevice&, const Camera&, const ForwardLighting& lighting)
     {
+        defaultLighting_ = lighting.defaultLighting;
         if (lighting.defaultLighting) {
             basic_->EnableDefaultLighting();
         } else {
@@ -101,6 +102,11 @@ namespace CnaEngine::Graphics
             fallback(material, "PhysicallyBased drawn as Lit (stock effects have no PBR)");
         }
         BasicEffect& effect = *basic_;
+        // Directional lights are on for the frame's rig unless the material
+        // opts out (interiors): then ambient and emissive light it alone.
+        effect.getDirectionalLight0Property().setEnabledProperty(material.keyLight);
+        effect.getDirectionalLight1Property().setEnabledProperty(material.keyLight && defaultLighting_);
+        effect.getDirectionalLight2Property().setEnabledProperty(material.keyLight && defaultLighting_);
         effect.setWorldProperty(item.world);
         effect.setViewProperty(camera.View());
         effect.setProjectionProperty(camera.Projection());

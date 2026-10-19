@@ -143,3 +143,28 @@ layouts would make them XNA-conformant.
 
 Engine handling: engine GPU meshes always pass a `VertexDeclaration`
 (`VertexLayout::Declaration()`), so the engine is unaffected.
+
+## UP-006 — The `CNA` umbrella and CNA's module targets give two runtimes in one process
+
+- Repository: `libcna/cna` (`CNA_SHARED_LIBRARY`, default ON on Linux/GCC/Clang)
+- Status: worked around in the engine's probes; matters for engine adoption
+- Found: 2026-10-19, MILESTONE-2 Street scene comparison
+
+With `CNA_SHARED_LIBRARY=ON`, the `CNA` umbrella target links `libcna.so`,
+while the modular targets (`CNA::Math`, `CNA::GraphicsCore`, …) link static
+archives. An executable that links both — a game linking `CNA` (as
+street-simulator does) plus any library built on the modular targets (as
+cna-engine and cna-extended are) — contains two copies of CNA's statics.
+Observed: the process ran correctly but crashed at exit destroying
+`GraphicsAdapter::adapters_` twice (one copy from the executable, one from
+`libcna.so`). Worse failures (two graphics device registries, two content
+caches) are plausible.
+
+Suggestions for CNA: document that the umbrella and the module targets must
+not be mixed, or make the module targets resolve to the shared library too
+when `CNA_SHARED_LIBRARY=ON`, or detect the mix at configure time.
+
+Engine handling: the Street probe links Street's core against CNA's static
+module targets (the same ones the engine uses). A game adopting the engine
+must do the same (or configure `CNA_SHARED_LIBRARY=OFF`); this is recorded in
+`docs/guide-enhanced.md`.

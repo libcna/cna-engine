@@ -209,4 +209,37 @@ namespace CnaEngine::Graphics
         EXPECT_FLOAT_EQ(world.Radius, local.Radius * 4.0f);
         EXPECT_FLOAT_EQ(world.Center.X, 10.0f);
     }
+
+    TEST_F(Fixture, KeyLightCanBeSwitchedOffPerMaterial)
+    {
+        MeshBuilder builder;
+        builder.AddBox(Vector3(-1.0f, -1.0f, -0.1f), Vector3(1.0f, 1.0f, 0.1f));
+        const GpuMesh lit = GpuMesh::Upload(device, builder.Mesh(), VertexLayout::PositionNormalTexture());
+        renderer.Lighting().defaultLighting = false;
+        renderer.Lighting().lightDirection = Vector3(0.0f, 0.0f, -1.0f);
+        renderer.Lighting().lightColor = Vector3(1.0f, 1.0f, 1.0f);
+        renderer.Lighting().ambientColor = Vector3(0.1f, 0.1f, 0.1f);
+        Material sunlit = Unlit("sunlit", Vector3(1.0f, 1.0f, 1.0f));
+        sunlit.shading = ShadingModel::Lit;
+        Material interior = sunlit;
+        interior.name = "interior";
+        interior.keyLight = false;
+
+        auto draw = [&](const Material& material) {
+            RenderQueue queue;
+            RenderItem item;
+            item.mesh = &lit;
+            item.material = &material;
+            item.bounds = WorldBounds(lit, item.world);
+            queue.Submit(item);
+            return Draw(queue);
+        };
+        const Color bright = At(draw(sunlit), Size / 2, Size / 2);
+        const Color dark = At(draw(interior), Size / 2, Size / 2);
+        EXPECT_GT(bright.getRProperty(), 200);
+        EXPECT_LT(dark.getRProperty(), 60) << "ambient only";
+        EXPECT_TRUE(renderer.LastFallbacks().empty());
+        // The next sunlit draw gets its light back.
+        EXPECT_EQ(At(draw(sunlit), Size / 2, Size / 2), bright);
+    }
 }

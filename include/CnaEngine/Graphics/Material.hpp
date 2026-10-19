@@ -53,6 +53,9 @@ namespace CnaEngine::Graphics
         bool vertexColors = false;
         /// Draw both faces (no back-face culling).
         bool doubleSided = false;
+        /// Lit by the scene's key (directional) light. Interiors seen through
+        /// windows turn it off and live on ambient and emissive light.
+        bool keyLight = true;
 
         /// Base color texture (needs TexCoord0); null means untextured.
         Microsoft::Xna::Framework::Graphics::Texture2D* baseTexture = nullptr;

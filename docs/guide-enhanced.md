@@ -65,7 +65,15 @@ that reads that stream on a HiDef device use `DrawHardware` (one draw, device
 bindings restored); otherwise `DrawPerInstance` with any `IEffectMatrices`
 effect (instances relative to the effect's World, which is restored).
 
-## 5. Boundaries to keep
+## 5. Linking CNA once
+
+Link CNA through its module targets (`CNA::Runtime`, `CNA::GraphicsCore`,
+…), as the engine does. With CNA's default `CNA_SHARED_LIBRARY=ON` the `CNA`
+umbrella is `libcna.so`; linking it together with the engine puts two CNA
+runtimes in one process (`upstream-issues.md` UP-006). Either use the module
+targets or configure CNA with `-DCNA_SHARED_LIBRARY=OFF`.
+
+## 6. Boundaries to keep
 
 - Strict code (yours or the engine's) must not include `CnaEngine/Enhanced/`
   or `CnaEngine/Extended/`; the strict boundary test enforces this for the

@@ -37,8 +37,9 @@ namespace CnaEngine::Enhanced
         auto& key = effect.getDirectionalLight0Property();
         key.setEnabledProperty(true);
         key.setDirectionProperty(Vector3::Normalize(lighting.lightDirection));
-        key.setDiffuseColorProperty(lighting.lightColor * settings_.lightIntensity);
-        key.setSpecularColorProperty(lighting.lightColor * settings_.lightIntensity);
+        keyColor_ = lighting.lightColor * settings_.lightIntensity;
+        key.setDiffuseColorProperty(keyColor_);
+        key.setSpecularColorProperty(keyColor_);
         effect.getDirectionalLight1Property().setEnabledProperty(false);
         effect.getDirectionalLight2Property().setEnabledProperty(false);
         effect.setAmbientLightColorProperty(lighting.ambientColor);
@@ -87,6 +88,9 @@ namespace CnaEngine::Enhanced
         Texture2D* orm = usable(material.occlusionRoughnessMetallicTexture, "occlusion-roughness-metallic map");
 
         PbrEffect& effect = *effect_;
+        const Vector3 key = material.keyLight ? keyColor_ : Vector3::Zero;
+        effect.getDirectionalLight0Property().setDiffuseColorProperty(key);
+        effect.getDirectionalLight0Property().setSpecularColorProperty(key);
         effect.setWorldProperty(item.world);
         effect.setViewProperty(camera.View());
         effect.setProjectionProperty(camera.Projection());
