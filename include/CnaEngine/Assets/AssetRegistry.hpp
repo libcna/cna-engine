@@ -37,8 +37,10 @@ namespace CnaEngine::Assets
     /// Typed cache of shared assets keyed by (type, normalized key).
     ///
     /// Contract:
-    ///  - Keys are normalized: backslashes become '/', and leading "./" is
-    ///    removed. Keys are case-sensitive (file systems are).
+    ///  - Keys are asset paths by default and are normalized: backslashes
+    ///    become '/', and leading "./" is removed. Registries for generated
+    ///    assets keyed by arbitrary text (labels, plate numbers) switch this
+    ///    off with SetNormalizeKeys(false). Keys are case-sensitive.
     ///  - A type is loaded by the loader registered for it. A registry built
     ///    with a ContentManager can register ContentManager-backed loaders
     ///    with UseContentManager<T>(); the ContentManager stays the owner of
@@ -105,14 +107,19 @@ namespace CnaEngine::Assets
         template <typename T>
         [[nodiscard]] bool Contains(std::string_view key) const
         {
-            return entries_.contains(EntryKey{std::type_index(typeid(T)), NormalizeKey(key)});
+            return entries_.contains(EntryKey{std::type_index(typeid(T)), KeyFor(key)});
         }
 
         template <typename T>
         bool Invalidate(std::string_view key)
         {
-            return entries_.erase(EntryKey{std::type_index(typeid(T)), NormalizeKey(key)}) > 0;
+            return entries_.erase(EntryKey{std::type_index(typeid(T)), KeyFor(key)}) > 0;
         }
+
+        /// Path normalization of keys (on by default). Change it only while
+        /// the registry is empty; throws std::logic_error otherwise.
+        void SetNormalizeKeys(bool normalize);
+        [[nodiscard]] bool NormalizesKeys() const noexcept { return normalizeKeys_; }
 
         void InvalidateAll() noexcept { entries_.clear(); }
         [[nodiscard]] std::size_t Size() const noexcept { return entries_.size(); }
@@ -144,6 +151,10 @@ namespace CnaEngine::Assets
         };
 
         std::shared_ptr<void> GetErased(std::type_index type, const char* typeName, std::string_view key, bool throwOnFailure);
+        [[nodiscard]] std::string KeyFor(std::string_view key) const
+        {
+            return normalizeKeys_ ? NormalizeKey(key) : std::string(key);
+        }
 
         Microsoft::Xna::Framework::Content::ContentManager* content_ = nullptr;
         std::unordered_map<std::type_index, std::function<std::shared_ptr<void>(const std::string&)>> loaders_;
@@ -151,5 +162,6 @@ namespace CnaEngine::Assets
         std::unordered_map<EntryKey, Entry, EntryKeyHash> entries_;
         std::vector<AssetFailure> failures_;
         AssetRegistryStatistics statistics_;
+        bool normalizeKeys_ = true;
     };
 }

@@ -115,4 +115,16 @@ namespace CnaEngine::Assets
         AssetRegistry registry;
         EXPECT_THROW(registry.UseContentManager<Microsoft::Xna::Framework::Graphics::Texture2D>(), std::logic_error);
     }
+
+    TEST(AssetRegistryTests, ExactKeysForGeneratedAssets)
+    {
+        AssetRegistry registry;
+        registry.SetNormalizeKeys(false);
+        registry.RegisterLoader<Mesh>([](const std::string& key) { return std::make_shared<Mesh>(Mesh{key}); });
+        EXPECT_NE(registry.Get<Mesh>("./A"), registry.Get<Mesh>("A")) << "text keys are taken literally";
+        EXPECT_EQ(registry.Get<Mesh>("a\\b")->source, "a\\b");
+        EXPECT_THROW(registry.SetNormalizeKeys(true), std::logic_error);
+        registry.InvalidateAll();
+        EXPECT_NO_THROW(registry.SetNormalizeKeys(true));
+    }
 }

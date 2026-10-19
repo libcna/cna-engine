@@ -357,8 +357,9 @@ Acceptance:
 Blocked by: ENG-012. EXT-001 is complete.
 
 Result: `Assets/AssetRegistry.hpp` (normalized keys, typed loaders,
-ContentManager loader, fallbacks, failure records, invalidation). Open:
-replace a local cache in each pilot.
+ContentManager loader, fallbacks, failure records, invalidation, exact text
+keys). Car-simulator's plate-texture cache is replaced without behaviour
+change (`docs/pilots/car-simulator.md`); Street: open.
 
 ### ENG-025 — Add diagnostics and screenshot capture `[x]`
 

@@ -59,5 +59,8 @@ narrowed.
 - Materials and render queue with Street's PBR effect (needs CNA's CNAEXT
   `PbrEffect` in an enhanced renderer; CNA is built with `CNA_CNAEXT=OFF` here).
 - Instancing against Street's `InstancedMesh`, culling/LOD counts, quality
-  tiers, asset libraries.
+  tiers.
+- Asset registry: Street's caches (`CharacterLibrary`, `ModelLibrary`) are
+  tied to its `MaterialLibrary` and glTF import; a probe needs those pieces
+  compiled read-only first.
 - One complete Street vertical slice (MILESTONE-2).

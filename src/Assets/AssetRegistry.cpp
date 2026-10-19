@@ -20,10 +20,18 @@ namespace CnaEngine::Assets
         return normalized;
     }
 
+    void AssetRegistry::SetNormalizeKeys(const bool normalize)
+    {
+        if (!entries_.empty() && normalize != normalizeKeys_) {
+            throw std::logic_error("AssetRegistry::SetNormalizeKeys: the registry already holds assets");
+        }
+        normalizeKeys_ = normalize;
+    }
+
     std::shared_ptr<void> AssetRegistry::GetErased(const std::type_index type, const char* typeName,
                                                    const std::string_view key, const bool throwOnFailure)
     {
-        EntryKey entryKey{type, NormalizeKey(key)};
+        EntryKey entryKey{type, KeyFor(key)};
         if (const auto it = entries_.find(entryKey); it != entries_.end()) {
             ++statistics_.hits;
             return it->second.asset;

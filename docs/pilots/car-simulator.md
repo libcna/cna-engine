@@ -86,9 +86,25 @@ files at the time of writing). The only findings are the 48 includes of
 strict `CnaEngine/<module>/` headers — exactly the allowance ADR-001 asks the
 pilot to add. No identifier, XNA-type or extension rule fires.
 
-## Still open for this pilot
+## Screenshots (ENG-025) — validated
 
-- Diagnostics and screenshot capture against the pilot's `Render/Screenshot`.
-- Asset registry replacing a pilot cache.
+`CarSimulatorRenderTests.ScreenshotsMatchThePilotCapture` captures the same
+HiDef back buffer with the pilot's `SaveBackBufferPng` and the engine's
+`CaptureBackBuffer`: both PNG files decode to identical pixels, and the
+engine's in-memory copy matches them. On a Reach device both refuse; the
+engine reports why as a value instead of printing to stderr.
+
+## Asset registry (ENG-024) — validated
+
+`CarSimulatorAssetsTests` replaces `TrafficRenderer::PlateTexture`'s map
+(generate a plate texture once per plate text, then reuse) with an engine
+`AssetRegistry` over the pilot's own `PlateRenderer::Render` and
+`UploadTexture`: one generation per distinct plate, shared textures for
+repeats, pixels identical to a direct upload.
+
+Generalization made because of this pilot: `SetNormalizeKeys(false)` for
+registries keyed by text rather than asset paths.
+
+## Still open for this pilot
 - The strict checker allowance (ADR-001) applied in an integration branch of
   the pilot — requires the owner's permission to touch car-simulator.
