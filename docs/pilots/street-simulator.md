@@ -109,15 +109,17 @@ traffic or pedestrians), and draws the first viewpoint twice into the same
    custom `BeforeOpaque` pass — the game's own CNA drawing inside the
    engine's frame.
 
-Result (software renderer, Debug, CNA baseline `5a44d2c5`):
+Result (software renderer, Debug, CNA baseline `5a44d2c5`), with Street's
+pedestrians on (traffic off):
 
 | Measure | Street | Engine |
 | --- | --- | --- |
-| Scene | 1,361 static items, 93 instance groups (661 instances) | same objects |
-| Visible items | 652 | **652** |
+| Scene | 1,361 static items, 93 instance groups (661 instances), 181 skinned figures | same objects |
+| Visible items | 652 | **652** (the same set) |
 | Visible instances | 192 | **192** |
-| Draw calls | 703 (51 instanced) | **703** (instanced render items) |
-| CPU frame time | 7.6–10.8 s | 7.4–9.9 s (equal within run-to-run noise) |
+| Visible figures | 117 | **117** |
+| Draw calls | 820 (51 instanced, 117 skinned) | **820** |
+| CPU frame time | 6.7–9.5 s | 6.2–10.5 s (equal within run-to-run noise) |
 | Image difference | — | mean **0.01 / 255** per channel; 53 of 129,600 pixels differ (largest 103 / 255) |
 
 The program fails if the visibility sets differ. The images
@@ -128,12 +130,25 @@ on for the engine's transparent items (a throwaway binder wrapper) leaves 4
 differing pixels, so 49 of the 53 come from that difference. The remaining 4
 were not investigated.
 
+From this viewpoint the figures are far away and mostly hidden (486 pixels),
+so the program draws a second view: a close-up 3.5 m in front of a
+pedestrian (`docs/pilots/images/street-figure-*.png`). There 57 figures cover
+10,412 pixels, and **2** of those differ from Street's frame. The frame as a
+whole differs in 772 pixels (mean 0.39 / 255): the engine draws exactly
+Street's visible set, but this camera's view matrix differs from Street's by
+1.7e-6 (its orientation goes through two implementations' yaw handling; for
+the first viewpoint the matrices are identical), and the differing pixels lie
+where Street's ground meshes overlap coplanar (kerb, paving, setts), whose
+depth ties such a difference can flip. Neither draw order (forcing the engine
+into Street's order: 764 pixels) nor depth writes (717) accounts for them.
+
 The engine reports the same frame through its diagnostics:
 
-    draws 703  triangles 434034  vertices 834320
+    draws 820  triangles 471578  vertices 915084
     culling 1407 considered, 652 visible (layer 0, distance 186, frustum 569)
     lod 0: 8, 1: 6
     culling 661 considered, 192 visible (layer 0, distance 340, frustum 129)   (instances)
+    culling 181 considered, 117 visible (layer 0, distance 0, frustum 64)      (figures)
 
 Before the lighting was carried over (2026-10-19), the mean difference was
 19/255; the engine had drawn Street's materials with a plain sun and ambient.
@@ -148,7 +163,10 @@ binder-chosen blend states (`IMaterialBinder::BlendStateFor`: CNA's
 `PbrEffect` writes straight alpha, XNA's stock effects premultiplied) and
 `BlendMode::PremultipliedAlpha` for Street's glass (`premultipliedBlend`);
 `PbrSettings::environment` and `exposure`; `CullStatistics::Record` and
-`LodStatistics` for diagnostics.
+`LodStatistics` for diagnostics; skinned render items (`RenderItem::bones`,
+blend-index and blend-weight streams, skinned layouts, `SkinnedPbrEffect` in
+the PBR binder) and `GpuMesh::Borrow` with offsets for Street's imported
+skinned meshes.
 
 ## Shadows (ENG-035 step 3) — not required at present
 

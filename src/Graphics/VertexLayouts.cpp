@@ -3,6 +3,7 @@
 
 #include "Microsoft/Xna/Framework/Graphics/VertexElement.hpp"
 
+#include <array>
 #include <cstring>
 #include <stdexcept>
 #include <utility>
@@ -23,6 +24,7 @@ namespace CnaEngine::Graphics
         constexpr VertexAttribute AllAttributes[] = {
             VertexAttribute::Position, VertexAttribute::Normal,    VertexAttribute::Tangent,
             VertexAttribute::Color,    VertexAttribute::TexCoord0, VertexAttribute::TexCoord1,
+            VertexAttribute::BlendIndices, VertexAttribute::BlendWeights,
         };
 
         int SizeOf(const VertexElementFormat format)
@@ -32,6 +34,7 @@ namespace CnaEngine::Graphics
                 case VertexElementFormat::Vector3: return 12;
                 case VertexElementFormat::Vector4: return 16;
                 case VertexElementFormat::Color: return 4;
+                case VertexElementFormat::Byte4: return 4;
                 default: return 0;
             }
         }
@@ -53,6 +56,10 @@ namespace CnaEngine::Graphics
                 case VertexAttribute::TexCoord0:
                 case VertexAttribute::TexCoord1:
                     return format == VertexElementFormat::Vector2;
+                case VertexAttribute::BlendIndices:
+                    return format == VertexElementFormat::Byte4;
+                case VertexAttribute::BlendWeights:
+                    return format == VertexElementFormat::Vector4;
             }
             return false;
         }
@@ -85,6 +92,12 @@ namespace CnaEngine::Graphics
                     const Vector2 t = present ? mesh.texCoords1[i] : Vector2::Zero;
                     return Vector4(t.X, t.Y, 0.0f, 0.0f);
                 }
+                case VertexAttribute::BlendIndices: {
+                    const auto b = present ? mesh.blendIndices[i] : std::array<std::uint8_t, 4>{0, 0, 0, 0};
+                    return Vector4(b[0], b[1], b[2], b[3]);
+                }
+                case VertexAttribute::BlendWeights:
+                    return present ? mesh.blendWeights[i] : Vector4(1.0f, 0.0f, 0.0f, 0.0f);
             }
             return Vector4(0.0f, 0.0f, 0.0f, 0.0f);
         }
@@ -119,6 +132,13 @@ namespace CnaEngine::Graphics
                     std::memcpy(destination, &packed, sizeof(packed));
                     break;
                 }
+                case VertexElementFormat::Byte4: {
+                    // Bone indices, one byte each (copied exactly).
+                    const std::uint8_t data[4] = {static_cast<std::uint8_t>(value.X), static_cast<std::uint8_t>(value.Y),
+                                                  static_cast<std::uint8_t>(value.Z), static_cast<std::uint8_t>(value.W)};
+                    std::memcpy(destination, data, sizeof(data));
+                    break;
+                }
                 default: break;
             }
         }
@@ -140,6 +160,10 @@ namespace CnaEngine::Graphics
                                           VertexElementUsage::TextureCoordinate, 0};
         constexpr VertexLayoutElement Uv1{VertexAttribute::TexCoord1, VertexElementFormat::Vector2,
                                           VertexElementUsage::TextureCoordinate, 1};
+        constexpr VertexLayoutElement Weights{VertexAttribute::BlendWeights, VertexElementFormat::Vector4,
+                                              VertexElementUsage::BlendWeight, 0};
+        constexpr VertexLayoutElement Bones{VertexAttribute::BlendIndices, VertexElementFormat::Byte4,
+                                            VertexElementUsage::BlendIndices, 0};
     }
 
     VertexLayout::VertexLayout(std::string name, std::vector<VertexLayoutElement> elements)
@@ -207,6 +231,20 @@ namespace CnaEngine::Graphics
     {
         static const VertexLayout layout =
             MakeLayout("PositionNormalTangentTexture", {Position, Normal, Tangent, Uv0});
+        return layout;
+    }
+
+    const VertexLayout& VertexLayout::PositionNormalTextureSkinned()
+    {
+        static const VertexLayout layout =
+            MakeLayout("PositionNormalTextureSkinned", {Position, Normal, Uv0, Weights, Bones});
+        return layout;
+    }
+
+    const VertexLayout& VertexLayout::PositionNormalTangentTextureSkinned()
+    {
+        static const VertexLayout layout =
+            MakeLayout("PositionNormalTangentTextureSkinned", {Position, Normal, Tangent, Uv0, Weights, Bones});
         return layout;
     }
 

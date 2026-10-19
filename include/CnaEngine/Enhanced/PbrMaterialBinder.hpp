@@ -9,6 +9,7 @@
 
 #include "Microsoft/Xna/Framework/Graphics/ImageBasedLightEXT.hpp"
 #include "Microsoft/Xna/Framework/Graphics/PbrEffect.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SkinnedPbrEffect.hpp"
 
 #include <memory>
 
@@ -47,6 +48,12 @@ namespace CnaEngine::Enhanced
     /// own IMaterialBinder (Effect() exposes the effect for setups the binder
     /// leaves alone).
     ///
+    /// Skinned items (RenderItem::bones) draw through CNA's SkinnedPbrEffect
+    /// with the same parameters; a palette on a mesh without
+    /// BlendIndices/BlendWeights is ignored and reported, more than 72 bones
+    /// is reported and not drawn. Delegated skinned materials use the stock
+    /// binder's SkinnedEffect.
+    ///
     /// Blending: PbrEffect writes straight (not premultiplied) color, so
     /// BlendMode::AlphaBlend blends with XNA's `NonPremultiplied` state and
     /// BlendMode::PremultipliedAlpha with `AlphaBlend`; delegated materials
@@ -84,6 +91,7 @@ namespace CnaEngine::Enhanced
         [[nodiscard]] static bool Delegated(const Graphics::RenderItem& item);
 
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::PbrEffect> effect_;
+        std::unique_ptr<Microsoft::Xna::Framework::Graphics::SkinnedPbrEffect> skinned_;
         std::shared_ptr<Graphics::StockMaterialBinder> fallback_;
         PbrSettings settings_;
         Microsoft::Xna::Framework::Vector3 keyColor_ = Microsoft::Xna::Framework::Vector3::Zero;

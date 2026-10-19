@@ -463,4 +463,48 @@ namespace CnaEngine::Graphics
                   "material 'pane': premultiplied blending drawn as AlphaBlend (stock effects scale the color by alpha)");
         EXPECT_TRUE(Near(At(pixels, Size / 2, Size / 2), 0, 0, 128, 4)) << "half blue over black";
     }
+
+    TEST_F(Fixture, SkinnedItemsFollowTheirBonePalette)
+    {
+        // The front face of a box, every vertex bound to bone 0 (the builder's default).
+        MeshBuilder builder({VertexAttribute::Position, VertexAttribute::Normal, VertexAttribute::TexCoord0,
+                             VertexAttribute::BlendIndices, VertexAttribute::BlendWeights});
+        builder.AddBox(Vector3(-1.0f, -1.0f, 0.0f), Vector3(1.0f, 1.0f, 0.0f));
+        MeshData data = builder.Take();
+        data.indices.resize(6);
+        const GpuMesh skinned = GpuMesh::Upload(device, data, VertexLayout::PositionNormalTextureSkinned());
+        Material glow;
+        glow.name = "glow";
+        glow.emissiveColor = Vector3(1.0f, 1.0f, 1.0f);
+
+        const std::vector<Matrix> shifted{Matrix::CreateTranslation(1.0f, 0.0f, 0.0f)};
+        auto draw = [&](const GpuMesh& mesh, const std::vector<Matrix>* bones) {
+            RenderQueue queue;
+            RenderItem item;
+            item.mesh = &mesh;
+            item.material = &glow;
+            item.bounds = BoundingSphere(Vector3::Zero, 3.0f);
+            item.bones = bones;
+            queue.Submit(item);
+            return Draw(queue);
+        };
+        const auto moved = draw(skinned, &shifted);
+        EXPECT_TRUE(Near(At(moved, 4, Size / 2), 0, 0, 0)) << "the bone moved the quad off the left half";
+        EXPECT_TRUE(Near(At(moved, Size - 4, Size / 2), 255, 255, 255));
+        EXPECT_TRUE(renderer.LastFallbacks().empty());
+
+        // A palette on a rigid mesh is reported and the mesh drawn as it is
+        // (the fixture's quad has no normals either, so it is drawn unlit).
+        const auto rigid = draw(quad, &shifted);
+        ASSERT_EQ(renderer.LastFallbacks().size(), 2u);
+        EXPECT_EQ(renderer.LastFallbacks()[0], "material 'glow': bone palette ignored: mesh has no BlendIndices and BlendWeights");
+        EXPECT_EQ(renderer.LastFallbacks()[1], "material 'glow': drawn unlit: mesh has no normals");
+        EXPECT_FALSE(Near(At(rigid, 4, Size / 2), 0, 0, 0));
+
+        const std::vector<Matrix> tooMany(73, Matrix::getIdentityProperty());
+        const auto none = draw(skinned, &tooMany);
+        ASSERT_EQ(renderer.LastFallbacks().size(), 1u);
+        EXPECT_EQ(renderer.LastFallbacks()[0], "material 'glow': not drawn: more bones than XNA SkinnedEffect's 72");
+        EXPECT_TRUE(Near(At(none, Size / 2, Size / 2), 0, 0, 0));
+    }
 }

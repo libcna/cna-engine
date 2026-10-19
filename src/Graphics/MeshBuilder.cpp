@@ -48,6 +48,12 @@ namespace CnaEngine::Graphics
         if (attributes_.Has(VertexAttribute::TexCoord1)) {
             mesh_.texCoords1.push_back(vertex.texCoord1);
         }
+        if (attributes_.Has(VertexAttribute::BlendIndices)) {
+            mesh_.blendIndices.push_back(vertex.blendIndices);
+        }
+        if (attributes_.Has(VertexAttribute::BlendWeights)) {
+            mesh_.blendWeights.push_back(vertex.blendWeights);
+        }
         return static_cast<std::uint32_t>(mesh_.positions.size() - 1);
     }
 

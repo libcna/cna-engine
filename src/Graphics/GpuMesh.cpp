@@ -138,10 +138,14 @@ namespace CnaEngine::Graphics
     }
 
     GpuMesh GpuMesh::Borrow(VertexBuffer& vertices, IndexBuffer& indices, const int vertexCount,
-                            const int primitiveCount, const BoundingBox& bounds, const AttributeMask attributes)
+                            const int primitiveCount, const BoundingBox& bounds, const AttributeMask attributes,
+                            const int baseVertex, const int startIndex)
     {
         if (vertexCount <= 0 || primitiveCount <= 0) {
             throw std::invalid_argument("GpuMesh::Borrow: counts must be positive");
+        }
+        if (baseVertex < 0 || startIndex < 0) {
+            throw std::invalid_argument("GpuMesh::Borrow: offsets must not be negative");
         }
         GpuMesh gpu;
         gpu.vertices_ = &vertices;
@@ -153,6 +157,8 @@ namespace CnaEngine::Graphics
         gpu.indexSize_ = indices.getIndexElementSizeProperty();
         gpu.bounds_ = bounds;
         gpu.sphere_ = BoundingSphere::CreateFromBoundingBox(bounds);
+        gpu.baseVertex_ = baseVertex;
+        gpu.startIndex_ = startIndex;
         return gpu;
     }
 
@@ -162,11 +168,9 @@ namespace CnaEngine::Graphics
         if (part.getVertexBufferProperty() == nullptr || part.getIndexBufferProperty() == nullptr) {
             throw std::invalid_argument("GpuMesh::Borrow: the mesh part needs a vertex and an index buffer");
         }
-        GpuMesh gpu = Borrow(*part.getVertexBufferProperty(), *part.getIndexBufferProperty(),
-                             part.getNumVerticesProperty(), part.getPrimitiveCountProperty(), bounds, attributes);
-        gpu.baseVertex_ = part.getVertexOffsetProperty();
-        gpu.startIndex_ = part.getStartIndexProperty();
-        return gpu;
+        return Borrow(*part.getVertexBufferProperty(), *part.getIndexBufferProperty(), part.getNumVerticesProperty(),
+                      part.getPrimitiveCountProperty(), bounds, attributes, part.getVertexOffsetProperty(),
+                      part.getStartIndexProperty());
     }
 
     bool GpuMesh::IsDrawable() const noexcept

@@ -279,4 +279,55 @@ namespace CnaEngine::Enhanced
         binder->Settings().environment = {};
         EXPECT_EQ(At(Draw(matte, sphere), Size / 2, Size / 2), flat) << "and leaves no trace";
     }
+
+    TEST_F(PbrFixture, SkinnedItemsDrawThroughSkinnedPbrEffect)
+    {
+        Graphics::MeshBuilder builder({Graphics::VertexAttribute::Position, Graphics::VertexAttribute::Normal,
+                                       Graphics::VertexAttribute::TexCoord0, Graphics::VertexAttribute::BlendIndices,
+                                       Graphics::VertexAttribute::BlendWeights});
+        builder.AddSphere(Vector3::Zero, 1.0f, 32, 20);
+        const auto skinned =
+            Graphics::GpuMesh::Upload(device, builder.Mesh(), Graphics::VertexLayout::PositionNormalTextureSkinned());
+        const Material clay = Pbr("clay", Vector3(0.8f, 0.3f, 0.2f), 0.0f, 0.8f);
+        const std::vector<Matrix> raised{Matrix::CreateTranslation(0.0f, 1.2f, 0.0f)};
+
+        RenderQueue queue;
+        RenderItem item;
+        item.mesh = &skinned;
+        item.material = &clay;
+        item.bounds = Microsoft::Xna::Framework::BoundingSphere(Vector3::Zero, 3.0f);
+        item.bones = &raised;
+        queue.Submit(item);
+        device.SetRenderTarget(&target);
+        device.Clear(Background);
+        renderer.Render(queue, camera);
+        device.SetRenderTarget(nullptr);
+        std::vector<Color> pixels(static_cast<std::size_t>(Size * Size));
+        target.GetData(pixels.data(), static_cast<int>(pixels.size()));
+        EXPECT_TRUE(renderer.LastFallbacks().empty());
+
+        // Raised by 1.2: the lower part of the frame is empty, the upper shaded.
+        EXPECT_EQ(At(pixels, Size / 2, Size - 8), Background);
+        const Color top = At(pixels, Size / 2, 12);
+        EXPECT_NE(top, Background);
+        EXPECT_GT(top.getRProperty(), top.getBProperty()) << "the material's base color";
+        // Same image as the rigid sphere moved by its world matrix.
+        const Color rigidTop = [&] {
+            RenderQueue rigidQueue;
+            RenderItem rigidItem;
+            rigidItem.mesh = &sphere;
+            rigidItem.material = &clay;
+            rigidItem.world = raised[0];
+            rigidItem.bounds = Graphics::WorldBounds(sphere, rigidItem.world);
+            rigidQueue.Submit(rigidItem);
+            device.SetRenderTarget(&target);
+            device.Clear(Background);
+            renderer.Render(rigidQueue, camera);
+            device.SetRenderTarget(nullptr);
+            std::vector<Color> rigidPixels(static_cast<std::size_t>(Size * Size));
+            target.GetData(rigidPixels.data(), static_cast<int>(rigidPixels.size()));
+            return At(rigidPixels, Size / 2, 12);
+        }();
+        EXPECT_LE(Distance(top, rigidTop), 6);
+    }
 }

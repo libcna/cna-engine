@@ -175,6 +175,10 @@ namespace CnaEngine::Graphics
                 sink_(material, "instanced item ignored: its InstanceSet draws a different mesh");
                 continue;
             }
+            if (item.bones != nullptr) {
+                sink_(material, "instanced item ignored: skinned items are not instanced");
+                continue;
+            }
             if (device_.getGraphicsProfileProperty() == Microsoft::Xna::Framework::Graphics::GraphicsProfile::HiDef) {
                 // One draw: the effect's World is the shared base, the
                 // instance stream supplies each instance's own transform.

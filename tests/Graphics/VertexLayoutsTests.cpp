@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 #include "CnaEngine/Graphics/VertexLayouts.hpp"
 
+#include "Microsoft/Xna/Framework/Graphics/VertexPositionNormalTangentTextureSkinned.hpp"
+#include "Microsoft/Xna/Framework/Graphics/VertexPositionNormalTextureSkinned.hpp"
+
 #include <gtest/gtest.h>
 
 #include <cstdint>
@@ -113,5 +116,42 @@ namespace CnaEngine::Graphics
         MeshData mesh = Triangle();
         mesh.normals.pop_back();
         EXPECT_THROW((void)Interleave(mesh, VertexLayout::PositionNormalTexture()), std::invalid_argument);
+    }
+
+    TEST(VertexLayoutsTests, SkinnedLayoutsMatchCnaSkinnedVertices)
+    {
+        using Microsoft::Xna::Framework::Graphics::VertexDeclaration;
+        using Microsoft::Xna::Framework::Graphics::VertexPositionNormalTangentTextureSkinned;
+        using Microsoft::Xna::Framework::Graphics::VertexPositionNormalTextureSkinned;
+        auto same = [](const VertexDeclaration& engine, const VertexDeclaration& cna) {
+            ASSERT_EQ(engine.getVertexStrideProperty(), cna.getVertexStrideProperty());
+            const auto a = engine.GetVertexElements();
+            const auto b = cna.GetVertexElements();
+            ASSERT_EQ(a.size(), b.size());
+            for (std::size_t i = 0; i < a.size(); ++i) {
+                EXPECT_EQ(a[i].getOffsetProperty(), b[i].getOffsetProperty()) << "element " << i;
+                EXPECT_EQ(a[i].getVertexElementFormatProperty(), b[i].getVertexElementFormatProperty()) << "element " << i;
+                EXPECT_EQ(a[i].getVertexElementUsageProperty(), b[i].getVertexElementUsageProperty()) << "element " << i;
+            }
+        };
+        EXPECT_EQ(VertexLayout::PositionNormalTextureSkinned().Stride(), 52);
+        EXPECT_EQ(VertexLayout::PositionNormalTangentTextureSkinned().Stride(), 68);
+        same(VertexLayout::PositionNormalTextureSkinned().Declaration(),
+             VertexPositionNormalTextureSkinned::getVertexDeclarationStatic());
+        same(VertexLayout::PositionNormalTangentTextureSkinned().Declaration(),
+             VertexPositionNormalTangentTextureSkinned::getVertexDeclarationStatic());
+
+        MeshData mesh = Triangle();
+        mesh.blendIndices = {{0, 1, 2, 3}, {4, 5, 6, 7}, {255, 0, 9, 1}};
+        mesh.blendWeights = {Vector4(0.5f, 0.5f, 0.0f, 0.0f), Vector4(1.0f, 0.0f, 0.0f, 0.0f),
+                             Vector4(0.25f, 0.25f, 0.25f, 0.25f)};
+        const auto skinned = Interleave(mesh, VertexLayout::PositionNormalTextureSkinned());
+        const std::uint8_t* last = skinned.bytes.data() + 2 * 52;
+        float weights[4];
+        std::memcpy(weights, last + 32, sizeof(weights));
+        EXPECT_EQ(weights[3], 0.25f);
+        EXPECT_EQ(last[48], 255);
+        EXPECT_EQ(last[50], 9) << "indices are copied byte for byte";
+        EXPECT_EQ(skinned.dropped, (AttributeMask{VertexAttribute::Color}));
     }
 }

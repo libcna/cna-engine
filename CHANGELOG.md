@@ -32,6 +32,19 @@ became pilot-validated (their changes of that day are listed below).
   offset and start index. Reason: Street's meshes share buffers through model
   parts (MILESTONE-2 scene comparison). Additive; existing calls unchanged.
 
+- Skinning (ENG-032), additive: `VertexAttribute::BlendIndices` and
+  `BlendWeights` with `MeshData::blendIndices`/`blendWeights` (and
+  `BuilderVertex` fields); `VertexLayout::PositionNormalTextureSkinned()` and
+  `PositionNormalTangentTextureSkinned()` (CNA's skinned vertex layouts,
+  `Byte4` element format); `RenderItem::bones` (borrowed palette, at most
+  72); the stock binder draws skinned items with XNA's `SkinnedEffect`, the
+  PBR binder with CNA's `SkinnedPbrEffect`. Reason: Street's pedestrians are
+  skinned, and static, dynamic, skinned and instanced submissions are to share
+  one render item.
+- `Graphics/GpuMesh.hpp`: the buffer overload of `Borrow` takes an optional
+  `baseVertex` and `startIndex` (trailing, defaulted: existing calls are
+  unchanged). Reason: Street's imported skinned meshes share buffers.
+
 ### Other API additions (experimental headers)
 
 - `RenderItem::box`, `cullDistance`, `instances`; `VisibilitySettings::minDistance`;

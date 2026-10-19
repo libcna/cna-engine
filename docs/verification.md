@@ -4,6 +4,18 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20 (evening) — skinned render items
+
+Baseline `build-probe/` (clean pinned dependencies, baseline enforced and
+matching; CNAEXT on), Debug, software renderer: **179 of 179 tests passed**.
+Day-to-day `build/` (shared CNA worktree, CNAEXT off): **178 of 178 passed**.
+
+Street scene comparison now runs with Street's pedestrians: first viewpoint
+652/652 items, 192/192 instances, 117/117 figures, 820/820 draw calls, mean
+image difference 0.01/255 (53 pixels); close-up of a pedestrian: 57 figures
+covering 10,412 pixels, 2 of them differ, 772 pixels in the frame
+(coplanar ground meshes under a 1.7e-6 view-matrix difference).
+
 ## 2026-10-20 (later) — blend states, samplers, Street lighting, diagnostics
 
 Baseline `build-probe/` (clean pinned dependencies, baseline enforced and

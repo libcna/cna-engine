@@ -63,12 +63,14 @@ namespace CnaEngine::Graphics
 
         /// Wraps buffers owned elsewhere (e.g. a Model's mesh part).
         /// `attributes` describes the vertex buffer's elements for renderers
-        /// that adapt to them.
+        /// that adapt to them; `baseVertex` and `startIndex` locate the mesh
+        /// in buffers it shares with others.
         [[nodiscard]] static GpuMesh Borrow(Microsoft::Xna::Framework::Graphics::VertexBuffer& vertices,
                                             Microsoft::Xna::Framework::Graphics::IndexBuffer& indices,
                                             int vertexCount, int primitiveCount,
                                             const Microsoft::Xna::Framework::BoundingBox& bounds,
-                                            AttributeMask attributes = {VertexAttribute::Position});
+                                            AttributeMask attributes = {VertexAttribute::Position},
+                                            int baseVertex = 0, int startIndex = 0);
 
         /// Wraps a model mesh part (shared buffers with a vertex offset and a
         /// start index, as content-pipeline and glTF models use). The part

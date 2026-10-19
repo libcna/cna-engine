@@ -27,6 +27,7 @@ the API; "Consumers" lists code that uses the engine facility today.
 | Materials | `Graphics/Material.hpp` | Graphics | pilot-validated (both) | Street material descriptions, car-simulator effect setup | tests, both scene comparisons |
 | Render items and queue (buckets, deterministic sorting) | `Graphics/RenderQueue.hpp` | Graphics | pilot-validated (both) | Street render submission model | tests, both scene comparisons |
 | Visibility policies and LOD selection | `Graphics/Visibility.hpp` | Graphics | pilot-validated (both) | Street culling/LOD, island-simulator culling | tests, both scene comparisons |
+| Skinned render items (bone palettes, skinned layouts) | `Graphics/RenderQueue.hpp`, `Graphics/VertexLayouts.hpp` | Graphics | pilot-validated (Street) | Street `SceneRenderer::drawSkinned` | tests, Street scene comparison |
 | Forward renderer (buckets, passes, state restore, fallbacks) | `Graphics/ForwardRenderer.hpp` | Graphics | pilot-validated (both) | Street `SceneRenderer`, car-simulator world renderer | tests, both scene comparisons |
 | Material binders (interface, stock-effect binder) | `Graphics/MaterialBinder.hpp` | Graphics | pilot-validated (stock: car-simulator) | Street `SceneRenderer::applyMaterial` | tests, car-simulator scene comparison |
 | PBR material binder (CNA `PbrEffect`) | `Enhanced/PbrMaterialBinder.hpp` | EnhancedGraphics | pilot-validated (Street) | Street `SceneRenderer::applyMaterial`, `Material` | tests, Street scene comparison |

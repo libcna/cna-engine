@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <cmath>
 #include <stdexcept>
 
@@ -183,5 +184,35 @@ namespace CnaEngine::Graphics
         again.ComputeNormals();
         again.Transform(Matrix::CreateRotationX(0.5f) * Matrix::CreateScale(1.0f, 3.0f, 0.5f));
         ExpectNear(again.normals[0], recomputed, 1e-4f);
+    }
+
+    TEST(MeshDataTests, SkinStreamsAreOrdinaryAttributes)
+    {
+        MeshData mesh = QuadFacingPositiveZ();
+        mesh.AddAttribute(VertexAttribute::BlendIndices);
+        mesh.AddAttribute(VertexAttribute::BlendWeights);
+        EXPECT_TRUE(mesh.Has(VertexAttribute::BlendIndices));
+        EXPECT_TRUE(mesh.Has(VertexAttribute::BlendWeights));
+        EXPECT_EQ(mesh.blendIndices[3], (std::array<std::uint8_t, 4>{0, 0, 0, 0}));
+        EXPECT_EQ(mesh.blendWeights[3].X, 1.0f) << "bound rigidly to bone 0";
+        EXPECT_TRUE(mesh.Validate().empty());
+
+        mesh.blendIndices[1] = {1, 2, 0, 0};
+        MeshData twice = mesh;
+        twice.Append(mesh);
+        ASSERT_EQ(twice.blendIndices.size(), 8u);
+        EXPECT_EQ(twice.blendIndices[5], (std::array<std::uint8_t, 4>{1, 2, 0, 0})) << "bone indices are not rebased";
+
+        mesh.blendWeights.pop_back();
+        mesh.blendIndices[0][0] = 7;
+        const auto problems = mesh.Validate();
+        ASSERT_EQ(problems.size(), 1u);
+        EXPECT_EQ(problems[0], "BlendWeights stream has 3 elements for 4 vertices");
+        mesh.blendWeights.push_back(Vector4(std::nanf(""), 0.0f, 0.0f, 0.0f));
+        ASSERT_EQ(mesh.Validate().size(), 1u);
+        EXPECT_EQ(mesh.Validate()[0], "bone weight 3 is not finite");
+
+        mesh.RemoveAttribute(VertexAttribute::BlendIndices);
+        EXPECT_FALSE(mesh.Has(VertexAttribute::BlendIndices));
     }
 }

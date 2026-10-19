@@ -19,7 +19,7 @@ namespace CnaEngine::Graphics
     struct VertexLayoutElement
     {
         VertexAttribute attribute = VertexAttribute::Position;
-        /// Vector2, Vector3, Vector4 or Color.
+        /// Vector2, Vector3, Vector4, Color or Byte4 (bone indices).
         Microsoft::Xna::Framework::Graphics::VertexElementFormat format =
             Microsoft::Xna::Framework::Graphics::VertexElementFormat::Vector3;
         Microsoft::Xna::Framework::Graphics::VertexElementUsage usage =
@@ -34,7 +34,7 @@ namespace CnaEngine::Graphics
     /// usage). Note that CNA's C++ vertex structs are not byte images of that
     /// layout (Color carries a vtable), which is why interleaving writes the
     /// bytes explicitly instead of copying structs. Games may define further
-    /// layouts; only the four element formats listed above are supported, so a
+    /// layouts; only the five element formats listed above are supported, so a
     /// layout can always be produced from MeshData without a lossy cast other
     /// than the documented ones (Vector4 tangent -> Vector3 drops handedness).
     class VertexLayout
@@ -68,6 +68,13 @@ namespace CnaEngine::Graphics
         /// 48 bytes: tangent-frame layout for normal mapping
         /// (position, normal, tangent xyzw, uv), tangent bound by usage.
         [[nodiscard]] static const VertexLayout& PositionNormalTangentTexture();
+        /// 52 bytes: skinned (position, normal, uv, bone weights Vector4,
+        /// bone indices Byte4), the layout of CNA's
+        /// VertexPositionNormalTextureSkinned.
+        [[nodiscard]] static const VertexLayout& PositionNormalTextureSkinned();
+        /// 68 bytes: skinned with a tangent frame, the layout of CNA's
+        /// VertexPositionNormalTangentTextureSkinned.
+        [[nodiscard]] static const VertexLayout& PositionNormalTangentTextureSkinned();
 
     private:
         std::string name_;

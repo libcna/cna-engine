@@ -444,7 +444,7 @@ binder-chosen blend states (`PbrEffect` writes straight alpha),
 `BlendMode::PremultipliedAlpha`, per-material samplers, PBR environment and
 exposure.
 
-### ENG-032 — Define render items, queues, and state contracts `[~]`
+### ENG-032 — Define render items, queues, and state contracts `[x]`
 
 Acceptance:
 
@@ -459,9 +459,13 @@ Blocked by: ENG-023 and ENG-031.
 Result: `Graphics/RenderQueue.hpp` (buckets, deterministic material-grouped
 front-to-back, back-to-front transparent, stable overlay) and the
 `ForwardRenderer` state contract (states set per bucket, restored after
-`Render`). Static, dynamic and instanced submissions share `RenderItem`
-(`instances` for instanced groups); skinned submissions remain with
-cna-extended's World3D systems.
+`Render`, samplers included). Static, dynamic, instanced (`instances`) and
+skinned (`bones`: XNA `SkinnedEffect` in the stock binder, CNA
+`SkinnedPbrEffect` in the PBR binder) submissions share `RenderItem`. Street's
+pedestrians draw through it: in a close-up 3.5 m from a figure, 57 skinned
+figures cover 10,412 pixels and 2 of them differ from Street's own frame
+(`docs/pilots/street-simulator.md`). cna-extended's World3D skinning stays
+available to games that use World3D.
 
 ### ENG-033 — Add visibility and LOD policy `[x]`
 

@@ -10,6 +10,7 @@
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DualTextureEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SkinnedEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 
@@ -91,7 +92,8 @@ namespace CnaEngine::Graphics
         BlendStateFor(const RenderItem& item) const;
     };
 
-    /// Binder over XNA's stock effects (BasicEffect, AlphaTestEffect); the
+    /// Binder over XNA's stock effects (BasicEffect, AlphaTestEffect,
+    /// DualTextureEffect, SkinnedEffect); the
     /// strict default.
     ///
     /// Materials with a `secondaryTexture` (on meshes with TexCoord0 and
@@ -107,6 +109,13 @@ namespace CnaEngine::Graphics
     ///  - AlphaTest draws through AlphaTestEffect, which is unlit in XNA;
     ///  - PremultipliedAlpha with alpha < 1 draws as AlphaBlend (stock
     ///    effects scale their color by the alpha).
+    ///
+    /// Skinned items (RenderItem::bones) draw through XNA's SkinnedEffect,
+    /// which is always lit and textured and has no vertex colors, second
+    /// texture or alpha test; each of those is reported when the material
+    /// asks for it. A palette on a mesh without BlendIndices/BlendWeights or
+    /// normals is ignored (the bind pose is drawn) and reported; more than 72
+    /// bones is reported and not drawn.
     class StockMaterialBinder final : public IMaterialBinder
     {
     public:
@@ -122,9 +131,14 @@ namespace CnaEngine::Graphics
         [[nodiscard]] Microsoft::Xna::Framework::Graphics::BasicEffect& LitEffect() noexcept { return *basic_; }
 
     private:
+        bool ApplySkinned(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device, const RenderItem& item,
+                          RenderBucket bucket, const Camera& camera, Microsoft::Xna::Framework::Graphics::Texture2D* texture,
+                          bool vertexColors, const FallbackSink& fallback);
+
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::BasicEffect> basic_;
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::AlphaTestEffect> alphaTest_;
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::DualTextureEffect> dual_;
+        std::unique_ptr<Microsoft::Xna::Framework::Graphics::SkinnedEffect> skinned_;
         /// 1x1 white texture for untextured alpha-tested materials.
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::Texture2D> white_;
         bool defaultLighting_ = true;

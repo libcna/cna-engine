@@ -51,6 +51,8 @@ namespace CnaEngine::Graphics
             case VertexAttribute::Color: return "Color";
             case VertexAttribute::TexCoord0: return "TexCoord0";
             case VertexAttribute::TexCoord1: return "TexCoord1";
+            case VertexAttribute::BlendIndices: return "BlendIndices";
+            case VertexAttribute::BlendWeights: return "BlendWeights";
         }
         return "?";
     }
@@ -63,6 +65,8 @@ namespace CnaEngine::Graphics
         colors.clear();
         texCoords0.clear();
         texCoords1.clear();
+        blendIndices.clear();
+        blendWeights.clear();
         indices.clear();
     }
 
@@ -86,6 +90,12 @@ namespace CnaEngine::Graphics
         }
         if (!texCoords1.empty()) {
             mask.Add(VertexAttribute::TexCoord1);
+        }
+        if (!blendIndices.empty()) {
+            mask.Add(VertexAttribute::BlendIndices);
+        }
+        if (!blendWeights.empty()) {
+            mask.Add(VertexAttribute::BlendWeights);
         }
         return mask;
     }
@@ -120,6 +130,16 @@ namespace CnaEngine::Graphics
                     texCoords1.assign(n, Vector2::Zero);
                 }
                 break;
+            case VertexAttribute::BlendIndices:
+                if (blendIndices.empty()) {
+                    blendIndices.assign(n, std::array<std::uint8_t, 4>{0, 0, 0, 0});
+                }
+                break;
+            case VertexAttribute::BlendWeights:
+                if (blendWeights.empty()) {
+                    blendWeights.assign(n, Vector4(1.0f, 0.0f, 0.0f, 0.0f));
+                }
+                break;
         }
     }
 
@@ -134,6 +154,8 @@ namespace CnaEngine::Graphics
             case VertexAttribute::Color: colors.clear(); break;
             case VertexAttribute::TexCoord0: texCoords0.clear(); break;
             case VertexAttribute::TexCoord1: texCoords1.clear(); break;
+            case VertexAttribute::BlendIndices: blendIndices.clear(); break;
+            case VertexAttribute::BlendWeights: blendWeights.clear(); break;
         }
     }
 
@@ -152,6 +174,8 @@ namespace CnaEngine::Graphics
         checkStream(colors.size(), VertexAttribute::Color);
         checkStream(texCoords0.size(), VertexAttribute::TexCoord0);
         checkStream(texCoords1.size(), VertexAttribute::TexCoord1);
+        checkStream(blendIndices.size(), VertexAttribute::BlendIndices);
+        checkStream(blendWeights.size(), VertexAttribute::BlendWeights);
         if (n > std::numeric_limits<std::uint32_t>::max()) {
             problems.push_back("more vertices than 32-bit indices can address");
         }
@@ -169,6 +193,13 @@ namespace CnaEngine::Graphics
             const auto& p = positions[i];
             if (!std::isfinite(p.X) || !std::isfinite(p.Y) || !std::isfinite(p.Z)) {
                 problems.push_back("position " + std::to_string(i) + " is not finite");
+                break;
+            }
+        }
+        for (std::size_t i = 0; i < blendWeights.size(); ++i) {
+            const auto& w = blendWeights[i];
+            if (!std::isfinite(w.X) || !std::isfinite(w.Y) || !std::isfinite(w.Z) || !std::isfinite(w.W)) {
+                problems.push_back("bone weight " + std::to_string(i) + " is not finite");
                 break;
             }
         }
@@ -223,6 +254,8 @@ namespace CnaEngine::Graphics
         AppendStream(colors, other.colors);
         AppendStream(texCoords0, other.texCoords0);
         AppendStream(texCoords1, other.texCoords1);
+        AppendStream(blendIndices, other.blendIndices);
+        AppendStream(blendWeights, other.blendWeights);
         indices.reserve(indices.size() + other.indices.size());
         for (const auto index : other.indices) {
             indices.push_back(static_cast<std::uint32_t>(base + index));

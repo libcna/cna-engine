@@ -10,13 +10,13 @@
 // explicit-instantiation access idiom, because Street offers no accessor and
 // may not be changed from this repository.
 //
-// Output: a report on stdout (visible items and instances, draw calls, CPU
-// milliseconds, image difference) and both images as PNG files. The program
-// fails when the engine's visibility decisions differ from Street's: the
-// rules are the same and must give the same sets. Images are expected to
-// differ (Street adds sky, image-based lighting, reflection probes and
-// exposure that the engine path does not reproduce); their difference is
-// reported, not asserted.
+// Two views: Street's first viewpoint, and a close-up of a pedestrian (the
+// skinned path). For each, a report on stdout (visible items, instances and
+// figures, draw calls, CPU milliseconds, image difference, the engine's
+// diagnostics) and both images as PNG files. The program fails when the
+// engine's visibility decisions differ from Street's: the rules are the same
+// and must give the same sets. The image difference is reported, not
+// asserted (screenshot tolerances are for the owner to agree).
 //
 // Usage: cna_engine_street_scene_comparison <output-directory> [seed]
 #include "CnaEngine/Enhanced/PbrMaterialBinder.hpp"
@@ -34,6 +34,7 @@
 #include "CnaStreet/Render/GpuMesh.hpp"
 #include "CnaStreet/Render/MaterialLibrary.hpp"
 #include "CnaStreet/Render/RenderSettings.hpp"
+#include "CnaStreet/Render/SkinnedGpuMesh.hpp"
 #include "CnaStreet/Render/SceneRenderer.hpp"
 #include "CnaStreet/Scene/CityScene.hpp"
 
@@ -81,9 +82,47 @@ namespace
         using type = std::vector<CnaStreet::SceneItem> CnaStreet::SceneRenderer::*;
         friend type Get(DynamicTag);
     };
+    struct SkinnedTag
+    {
+        using type = std::vector<CnaStreet::SkinnedItem> CnaStreet::SceneRenderer::*;
+        friend type Get(SkinnedTag);
+    };
     template struct Expose<ItemsTag, &CnaStreet::SceneRenderer::items_>;
     template struct Expose<DynamicTag, &CnaStreet::SceneRenderer::dynamic_>;
     template struct Expose<GroupsTag, &CnaStreet::SceneRenderer::groups_>;
+    template struct Expose<SkinnedTag, &CnaStreet::SceneRenderer::skinned_>;
+
+    // SkinnedGpuMesh keeps its (possibly shared) buffers to itself.
+    template <typename Member>
+    struct SkinnedMeshTag
+    {
+        using type = Member CnaStreet::SkinnedGpuMesh::*;
+    };
+    struct VertexBufferTag : SkinnedMeshTag<Microsoft::Xna::Framework::Graphics::VertexBuffer*>
+    {
+        friend type Get(VertexBufferTag);
+    };
+    struct IndexBufferTag : SkinnedMeshTag<Microsoft::Xna::Framework::Graphics::IndexBuffer*>
+    {
+        friend type Get(IndexBufferTag);
+    };
+    struct VertexOffsetTag : SkinnedMeshTag<int>
+    {
+        friend type Get(VertexOffsetTag);
+    };
+    struct StartIndexTag : SkinnedMeshTag<int>
+    {
+        friend type Get(StartIndexTag);
+    };
+    struct VertexCountTag : SkinnedMeshTag<int>
+    {
+        friend type Get(VertexCountTag);
+    };
+    template struct Expose<VertexBufferTag, &CnaStreet::SkinnedGpuMesh::vertexBuffer_>;
+    template struct Expose<IndexBufferTag, &CnaStreet::SkinnedGpuMesh::indexBuffer_>;
+    template struct Expose<VertexOffsetTag, &CnaStreet::SkinnedGpuMesh::vertexOffset_>;
+    template struct Expose<StartIndexTag, &CnaStreet::SkinnedGpuMesh::startIndex_>;
+    template struct Expose<VertexCountTag, &CnaStreet::SkinnedGpuMesh::vertexCount_>;
 }
 
 namespace
@@ -165,8 +204,8 @@ int main(int argc, char** argv)
         CnaStreet::RenderSettings settings;
         settings.applyPreset(CnaStreet::QualityPreset::Low);
         settings.reflectionProbes = false; // a probe bake would dominate the run time
-        settings.traffic = false;          // static city only: movers are submitted per frame
-        settings.pedestrians = false;
+        settings.traffic = false;          // parked city: moving traffic is submitted per frame
+        settings.pedestrians = true;       // skinned figures (ENG-032)
         if (seed != 0) {
             settings.seed = seed;
         }
@@ -179,6 +218,7 @@ int main(int argc, char** argv)
         streetRenderer.initialise(settings);
         CnaStreet::CityScene scene(device, streetRenderer, materials, models);
         scene.build(settings);
+        scene.update(0.5f, settings); // poses the pedestrians (their bone palettes)
         const double buildMs = Milliseconds(Clock::now() - buildStart);
 
         const auto& viewpoints = scene.viewpoints();
@@ -186,44 +226,38 @@ int main(int argc, char** argv)
             std::fprintf(stderr, "Street produced no viewpoints\n");
             return 1;
         }
-        const auto& viewpoint = viewpoints.front();
-        CnaStreet::Camera streetCamera;
-        streetCamera.setPerspective(viewpoint.fov, static_cast<float>(Width) / Height, settings.nearPlane,
-                                    settings.farPlane);
-        streetCamera.setPosition(viewpoint.position);
-        streetCamera.setOrientation(viewpoint.yaw, viewpoint.pitch);
 
-        // --- Street frame. ------------------------------------------------
-        device.SetRenderTarget(&target);
-        device.Clear(Color(0, 0, 0, 255));
-        const auto streetStart = Clock::now();
-        streetRenderer.beginFrame();
-        scene.submit(settings, streetCamera.position());
-        streetRenderer.render(streetCamera, settings, 0.0f);
-        const double streetMs = Milliseconds(Clock::now() - streetStart);
-        // Street may have switched targets; read the capture target unbound.
-        device.SetRenderTarget(nullptr);
-        const auto streetPixels = Pixels(target);
-        const auto& streetStats = streetRenderer.stats();
-
-        // --- The same scene through the engine. ----------------------------
-        Graphics::Camera camera;
-        camera.SetPosition(streetCamera.position());
-        camera.SetYawPitchRoll(-streetCamera.yaw(), streetCamera.pitch());
-        camera.SetPerspective(streetCamera.verticalFov(), streetCamera.aspect(), streetCamera.nearPlane(),
-                              streetCamera.farPlane());
-
+        // --- The engine side, set up once. ----------------------------------
         const auto& items = streetRenderer.*Get(ItemsTag{});
         const auto& dynamic = streetRenderer.*Get(DynamicTag{});
         const auto& groups = streetRenderer.*Get(GroupsTag{});
+        const auto& skinnedItems = streetRenderer.*Get(SkinnedTag{});
         const Graphics::AttributeMask pntt{Graphics::VertexAttribute::Position, Graphics::VertexAttribute::Normal,
                                            Graphics::VertexAttribute::Tangent, Graphics::VertexAttribute::TexCoord0};
+        const Graphics::AttributeMask skinnedAttributes{
+            Graphics::VertexAttribute::Position,     Graphics::VertexAttribute::Normal,
+            Graphics::VertexAttribute::Tangent,      Graphics::VertexAttribute::TexCoord0,
+            Graphics::VertexAttribute::BlendIndices, Graphics::VertexAttribute::BlendWeights};
         std::map<const CnaStreet::GpuMesh*, Graphics::GpuMesh> meshes;
+        std::map<const CnaStreet::SkinnedGpuMesh*, Graphics::GpuMesh> skinnedMeshes;
         std::map<const CnaStreet::Material*, Graphics::Material> engineMaterials;
         auto meshFor = [&](const CnaStreet::GpuMesh* mesh) -> const Graphics::GpuMesh& {
             auto it = meshes.find(mesh);
             if (it == meshes.end()) {
                 it = meshes.emplace(mesh, Graphics::GpuMesh::Borrow(*mesh->part(), mesh->bounds(), pntt)).first;
+            }
+            return it->second;
+        };
+        auto skinnedMeshFor = [&](const CnaStreet::SkinnedGpuMesh* mesh) -> const Graphics::GpuMesh& {
+            auto it = skinnedMeshes.find(mesh);
+            if (it == skinnedMeshes.end()) {
+                const CnaStreet::SkinnedGpuMesh& m = *mesh;
+                it = skinnedMeshes
+                         .emplace(mesh, Graphics::GpuMesh::Borrow(*(m.*Get(VertexBufferTag{})),
+                                                                  *(m.*Get(IndexBufferTag{})), m.*Get(VertexCountTag{}),
+                                                                  m.triangleCount(), m.bounds(), skinnedAttributes,
+                                                                  m.*Get(VertexOffsetTag{}), m.*Get(StartIndexTag{})))
+                         .first;
             }
             return it->second;
         };
@@ -234,100 +268,6 @@ int main(int argc, char** argv)
             }
             return it->second;
         };
-
-        const auto engineStart = Clock::now();
-        Graphics::RenderQueue queue;
-        // Street's visible-item count covers registered items (shadow-only
-        // ones included: they are culled like any other) and this frame's
-        // movers (box distance against the prop cull distance, shadow-only
-        // movers skipped). The engine applies the same rules; only drawable
-        // items go to the queue.
-        Graphics::CullStatistics itemCulling;
-        auto convert = [&](const CnaStreet::SceneItem& item, float cullDistance) {
-            Graphics::RenderItem e;
-            e.mesh = &meshFor(item.mesh);
-            e.material = &materialFor(item.material);
-            e.world = item.world;
-            e.bounds = item.worldSphere;
-            e.box = item.worldBounds;
-            e.cullDistance = cullDistance;
-            return e;
-        };
-        for (const auto& item : items) {
-            const auto e = convert(item, item.cullDistance > 0.0f ? std::min(item.cullDistance, settings.propCullDistance)
-                                                                  : 0.0f);
-            const auto result = Graphics::Classify(e, camera, Graphics::VisibilitySettings{});
-            itemCulling.Record(result);
-            if (result == Graphics::Visibility::Visible) {
-                if (!item.shadowOnly) {
-                    queue.Submit(e);
-                }
-            }
-        }
-        for (const auto& item : dynamic) {
-            if (item.shadowOnly) {
-                continue;
-            }
-            const auto e = convert(item, settings.propCullDistance);
-            const auto result = Graphics::Classify(e, camera, Graphics::VisibilitySettings{});
-            itemCulling.Record(result);
-            if (result == Graphics::Visibility::Visible) {
-                queue.Submit(e);
-            }
-        }
-
-        std::uint64_t visibleInstances = 0;
-        std::uint64_t totalInstances = 0;
-        Graphics::CullStatistics instanceCulling;
-        Graphics::LodStatistics groupLod;
-        // One instanced render item per group, as Street draws them.
-        std::vector<Graphics::InstanceSet> sets(groups.size());
-        for (std::size_t g = 0; g < groups.size(); ++g) {
-            const auto& group = groups[g];
-            if (group.shadowOnly) {
-                continue;
-            }
-            totalInstances += group.transforms.size();
-            Graphics::VisibilitySettings visibility;
-            visibility.maxDistance = group.cullDistance > 0.0f ? std::min(group.cullDistance, settings.propCullDistance)
-                                                               : settings.propCullDistance;
-            visibility.minDistance = group.minDistance;
-            std::vector<std::size_t> visible;
-            float nearest = 1e30f;
-            for (std::size_t i = 0; i < group.transforms.size(); ++i) {
-                const auto result = Graphics::Classify(group.spheres[i], 1, camera, visibility);
-                instanceCulling.Record(result);
-                if (result == Graphics::Visibility::Visible) {
-                    visible.push_back(i);
-                    nearest = std::min(nearest, Vector3::Distance(camera.Position(), group.spheres[i].Center)
-                                                    - group.spheres[i].Radius);
-                }
-            }
-            visibleInstances += visible.size();
-            if (visible.empty()) {
-                continue;
-            }
-            // Street's batch LOD: one decision per group from its nearest
-            // instance, past lodDistance (no hysteresis).
-            int level = 0;
-            if (group.lodMesh != nullptr && group.lodDistance > 0.0f) {
-                level = Graphics::LodSelector({group.lodDistance}, 0.0f).Select(nearest);
-                groupLod.Record(level);
-            }
-            const CnaStreet::GpuMesh* mesh = level == 1 ? group.lodMesh : group.mesh;
-            Graphics::InstanceSet& set = sets[g];
-            set.SetMesh(&meshFor(mesh));
-            for (const std::size_t i : visible) {
-                set.Add(group.transforms[i]);
-            }
-            Graphics::RenderItem e;
-            e.mesh = set.Mesh();
-            e.material = &materialFor(group.material);
-            e.bounds = group.spheres[visible.front()];
-            e.instances = &set;
-            queue.Submit(e);
-        }
-        queue.Sort(camera.Position());
 
         // Street's lighting (SceneRenderer::applyLighting/applyEnvironment):
         // its sun, sky ambient and image-based environment, all under its
@@ -363,70 +303,286 @@ int main(int argc, char** argv)
                              passDevice.setBlendStateProperty(BlendState::Opaque);
                              sky.draw(passCamera.View(), passCamera.Projection(), Width, Height, 0.0f, exposure, true);
                          });
-        device.SetRenderTarget(&target);
-        device.Clear(Color(0, 0, 0, 255));
-        Graphics::RenderStatistics engineStats;
-        renderer.Render(queue, camera, &engineStats);
-        const double engineMs = Milliseconds(Clock::now() - engineStart);
-        device.SetRenderTarget(nullptr);
-        const auto enginePixels = Pixels(target);
 
-        // --- Images and report. --------------------------------------------
-        double difference = 0.0;
-        int largest = 0;
-        std::size_t differing = 0;
-        for (std::size_t i = 0; i < streetPixels.size(); ++i) {
-            const int r = std::abs(streetPixels[i].getRProperty() - enginePixels[i].getRProperty());
-            const int g = std::abs(streetPixels[i].getGProperty() - enginePixels[i].getGProperty());
-            const int b = std::abs(streetPixels[i].getBProperty() - enginePixels[i].getBProperty());
-            difference += r + g + b;
-            largest = std::max({largest, r, g, b});
-            differing += r + g + b > 0 ? 1u : 0u;
-        }
-        difference /= static_cast<double>(streetPixels.size() * 3);
-        const auto streetPng = Graphics::WritePng(device, streetPixels, Width, Height, (output / "street.png").string());
-        const auto enginePng = Graphics::WritePng(device, enginePixels, Width, Height, (output / "engine.png").string());
+        // One view drawn by Street and by the engine; returns false when the
+        // visibility decisions differ or an image cannot be written.
+        auto compare = [&](const CnaStreet::Camera& streetCamera, const std::string& name) -> bool {
+            // --- Street frame. --------------------------------------------
+            device.SetRenderTarget(&target);
+            device.Clear(Color(0, 0, 0, 255));
+            const auto streetStart = Clock::now();
+            streetRenderer.beginFrame();
+            scene.submit(settings, streetCamera.position());
+            streetRenderer.render(streetCamera, settings, 0.0f);
+            const double streetMs = Milliseconds(Clock::now() - streetStart);
+            // Street may have switched targets; read the capture target unbound.
+            device.SetRenderTarget(nullptr);
+            const auto streetPixels = Pixels(target);
+            const auto streetStats = streetRenderer.stats();
 
-        std::printf("scene: %zu static items, %zu instance groups (%llu instances), built in %.0f ms\n", items.size(),
-                    groups.size(), static_cast<unsigned long long>(totalInstances), buildMs);
-        std::printf("visible items:     street %d, engine %llu\n", streetStats.visibleItems,
-                    static_cast<unsigned long long>(itemCulling.visible));
-        std::printf("visible instances: street %d, engine %llu\n", streetStats.visibleInstances,
-                    static_cast<unsigned long long>(visibleInstances));
-        std::printf("draw calls:        street %d (instanced %d), engine %llu\n",
-                    streetStats.drawCalls, streetStats.instancedDrawCalls,
-                    static_cast<unsigned long long>(engineStats.drawCalls));
-        std::printf("cpu frame:         street %.1f ms, engine %.1f ms (software renderer, Debug)\n", streetMs, engineMs);
-        std::printf("image difference:  %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ\n",
-                    difference, largest, differing, streetPixels.size());
-        // Culling and LOD counts through the engine's diagnostics (ENG-033).
-        Graphics::DiagnosticsSources itemSources;
-        itemSources.render = &engineStats;
-        itemSources.culling = &itemCulling;
-        itemSources.lod = &groupLod;
-        itemSources.includeGpuMemory = false;
-        for (const auto& line : Graphics::FormatDiagnostics(itemSources)) {
-            std::printf("engine diagnostics: %s\n", line.c_str());
-        }
-        Graphics::DiagnosticsSources instanceSources;
-        instanceSources.culling = &instanceCulling;
-        instanceSources.includeGpuMemory = false;
-        for (const auto& line : Graphics::FormatDiagnostics(instanceSources)) {
-            std::printf("engine diagnostics (instances): %s\n", line.c_str());
-        }
-        for (const auto& fallback : renderer.LastFallbacks()) {
-            std::printf("fallback: %s\n", fallback.c_str());
-        }
-        std::printf("images: %s %s\n", streetPng.path.c_str(), enginePng.path.c_str());
+            // --- The same view through the engine. ------------------------
+            Graphics::Camera camera;
+            camera.SetPosition(streetCamera.position());
+            camera.SetYawPitchRoll(-streetCamera.yaw(), streetCamera.pitch());
+            camera.SetPerspective(streetCamera.verticalFov(), streetCamera.aspect(), streetCamera.nearPlane(),
+                                  streetCamera.farPlane());
 
-        std::fflush(stdout);
-        const bool sameVisibility = static_cast<std::uint64_t>(streetStats.visibleItems) == itemCulling.visible
-                                    && static_cast<std::uint64_t>(streetStats.visibleInstances) == visibleInstances;
-        if (!sameVisibility) {
-            std::fprintf(stderr, "visibility differs from Street's\n");
+            const auto engineStart = Clock::now();
+            Graphics::RenderQueue queue;
+            // Street's visible-item count covers registered items (shadow-only
+            // ones included: they are culled like any other) and this frame's
+            // movers (box distance against the prop cull distance, shadow-only
+            // movers skipped). The engine applies the same rules; only
+            // drawable items go to the queue.
+            Graphics::CullStatistics itemCulling;
+            auto convert = [&](const CnaStreet::SceneItem& item, float cullDistance) {
+                Graphics::RenderItem e;
+                e.mesh = &meshFor(item.mesh);
+                e.material = &materialFor(item.material);
+                e.world = item.world;
+                e.bounds = item.worldSphere;
+                e.box = item.worldBounds;
+                e.cullDistance = cullDistance;
+                return e;
+            };
+            for (const auto& item : items) {
+                const auto e = convert(item, item.cullDistance > 0.0f
+                                                 ? std::min(item.cullDistance, settings.propCullDistance)
+                                                 : 0.0f);
+                const auto result = Graphics::Classify(e, camera, Graphics::VisibilitySettings{});
+                itemCulling.Record(result);
+                if (result == Graphics::Visibility::Visible && !item.shadowOnly) {
+                    queue.Submit(e);
+                }
+            }
+            for (const auto& item : dynamic) {
+                if (item.shadowOnly) {
+                    continue;
+                }
+                const auto e = convert(item, settings.propCullDistance);
+                const auto result = Graphics::Classify(e, camera, Graphics::VisibilitySettings{});
+                itemCulling.Record(result);
+                if (result == Graphics::Visibility::Visible) {
+                    queue.Submit(e);
+                }
+            }
+
+            // Skinned figures: Street's own limit (pedestrian cull distance,
+            // sphere against the frustum), one skinned render item each.
+            Graphics::CullStatistics skinnedCulling;
+            Graphics::RenderQueue figuresOnly;
+            for (const auto& item : skinnedItems) {
+                Graphics::VisibilitySettings visibility;
+                visibility.maxDistance = settings.pedestrianCullDistance;
+                const auto result = Graphics::Classify(item.worldSphere, 1, camera, visibility);
+                skinnedCulling.Record(result);
+                if (result != Graphics::Visibility::Visible) {
+                    continue;
+                }
+                Graphics::RenderItem e;
+                e.mesh = &skinnedMeshFor(item.mesh);
+                e.material = &materialFor(item.material);
+                e.world = item.world;
+                e.bounds = item.worldSphere;
+                e.bones = item.bones;
+                queue.Submit(e);
+                figuresOnly.Submit(e);
+            }
+
+            std::uint64_t visibleInstances = 0;
+            std::uint64_t totalInstances = 0;
+            Graphics::CullStatistics instanceCulling;
+            Graphics::LodStatistics groupLod;
+            // One instanced render item per group, as Street draws them.
+            std::vector<Graphics::InstanceSet> sets(groups.size());
+            for (std::size_t g = 0; g < groups.size(); ++g) {
+                const auto& group = groups[g];
+                if (group.shadowOnly) {
+                    continue;
+                }
+                totalInstances += group.transforms.size();
+                Graphics::VisibilitySettings visibility;
+                visibility.maxDistance = group.cullDistance > 0.0f
+                                             ? std::min(group.cullDistance, settings.propCullDistance)
+                                             : settings.propCullDistance;
+                visibility.minDistance = group.minDistance;
+                std::vector<std::size_t> visible;
+                float nearest = 1e30f;
+                for (std::size_t i = 0; i < group.transforms.size(); ++i) {
+                    const auto result = Graphics::Classify(group.spheres[i], 1, camera, visibility);
+                    instanceCulling.Record(result);
+                    if (result == Graphics::Visibility::Visible) {
+                        visible.push_back(i);
+                        nearest = std::min(nearest, Vector3::Distance(camera.Position(), group.spheres[i].Center)
+                                                        - group.spheres[i].Radius);
+                    }
+                }
+                visibleInstances += visible.size();
+                if (visible.empty()) {
+                    continue;
+                }
+                // Street's batch LOD: one decision per group from its nearest
+                // instance, past lodDistance (no hysteresis).
+                int level = 0;
+                if (group.lodMesh != nullptr && group.lodDistance > 0.0f) {
+                    level = Graphics::LodSelector({group.lodDistance}, 0.0f).Select(nearest);
+                    groupLod.Record(level);
+                }
+                const CnaStreet::GpuMesh* mesh = level == 1 ? group.lodMesh : group.mesh;
+                Graphics::InstanceSet& set = sets[g];
+                set.SetMesh(&meshFor(mesh));
+                for (const std::size_t i : visible) {
+                    set.Add(group.transforms[i]);
+                }
+                Graphics::RenderItem e;
+                e.mesh = set.Mesh();
+                e.material = &materialFor(group.material);
+                e.bounds = group.spheres[visible.front()];
+                e.instances = &set;
+                queue.Submit(e);
+            }
+            queue.Sort(camera.Position());
+
+            device.SetRenderTarget(&target);
+            device.Clear(Color(0, 0, 0, 255));
+            Graphics::RenderStatistics engineStats;
+            renderer.Render(queue, camera, &engineStats);
+            const double engineMs = Milliseconds(Clock::now() - engineStart);
+            device.SetRenderTarget(nullptr);
+            const auto enginePixels = Pixels(target);
+            const auto fallbacks = renderer.LastFallbacks();
+
+            // How much of the frame the figures cover on their own (shows
+            // that the skinned path is actually exercised).
+            figuresOnly.Sort(camera.Position());
+            device.SetRenderTarget(&target);
+            device.Clear(Color(0, 0, 0, 0));
+            renderer.Render(figuresOnly, camera);
+            device.SetRenderTarget(nullptr);
+            std::vector<bool> figureMask;
+            std::size_t figurePixels = 0;
+            for (const auto& c : Pixels(target)) {
+                figureMask.push_back(c.getAProperty() > 0);
+                figurePixels += figureMask.back() ? 1u : 0u;
+            }
+
+            // --- Images and report. ---------------------------------------
+            double difference = 0.0;
+            int largest = 0;
+            std::size_t differing = 0;
+            std::size_t differingOnFigures = 0;
+            for (std::size_t i = 0; i < streetPixels.size(); ++i) {
+                const int r = std::abs(streetPixels[i].getRProperty() - enginePixels[i].getRProperty());
+                const int g = std::abs(streetPixels[i].getGProperty() - enginePixels[i].getGProperty());
+                const int b = std::abs(streetPixels[i].getBProperty() - enginePixels[i].getBProperty());
+                difference += r + g + b;
+                largest = std::max({largest, r, g, b});
+                differing += r + g + b > 0 ? 1u : 0u;
+                differingOnFigures += r + g + b > 0 && figureMask[i] ? 1u : 0u;
+            }
+            difference /= static_cast<double>(streetPixels.size() * 3);
+            const std::string prefix = name.empty() ? "" : name + "-";
+            const auto streetPng =
+                Graphics::WritePng(device, streetPixels, Width, Height, (output / (prefix + "street.png")).string());
+            const auto enginePng =
+                Graphics::WritePng(device, enginePixels, Width, Height, (output / (prefix + "engine.png")).string());
+
+            std::printf("--- view: %s\n", name.empty() ? "first viewpoint" : name.c_str());
+            std::printf("scene: %zu static items, %zu instance groups (%llu instances), built in %.0f ms\n",
+                        items.size(), groups.size(), static_cast<unsigned long long>(totalInstances), buildMs);
+            std::printf("visible items:     street %d, engine %llu\n", streetStats.visibleItems,
+                        static_cast<unsigned long long>(itemCulling.visible));
+            std::printf("visible instances: street %d, engine %llu\n", streetStats.visibleInstances,
+                        static_cast<unsigned long long>(visibleInstances));
+            std::printf("visible figures:   street %d (%d skinned draws), engine %llu of %zu; %zu pixels of figures,"
+                        " %zu of them differ\n",
+                        streetStats.visibleCharacters, streetStats.skinnedDrawCalls,
+                        static_cast<unsigned long long>(skinnedCulling.visible), skinnedItems.size(), figurePixels,
+                        differingOnFigures);
+            std::printf("draw calls:        street %d (instanced %d), engine %llu\n", streetStats.drawCalls,
+                        streetStats.instancedDrawCalls, static_cast<unsigned long long>(engineStats.drawCalls));
+            std::printf("cpu frame:         street %.1f ms, engine %.1f ms (software renderer, Debug)\n", streetMs,
+                        engineMs);
+            std::printf("image difference:  %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ\n",
+                        difference, largest, differing, streetPixels.size());
+            // Culling and LOD counts through the engine's diagnostics (ENG-033).
+            Graphics::DiagnosticsSources itemSources;
+            itemSources.render = &engineStats;
+            itemSources.culling = &itemCulling;
+            itemSources.lod = &groupLod;
+            itemSources.includeGpuMemory = false;
+            for (const auto& line : Graphics::FormatDiagnostics(itemSources)) {
+                std::printf("engine diagnostics: %s\n", line.c_str());
+            }
+            Graphics::DiagnosticsSources instanceSources;
+            instanceSources.culling = &instanceCulling;
+            instanceSources.includeGpuMemory = false;
+            for (const auto& line : Graphics::FormatDiagnostics(instanceSources)) {
+                std::printf("engine diagnostics (instances): %s\n", line.c_str());
+            }
+            Graphics::DiagnosticsSources skinnedSources;
+            skinnedSources.culling = &skinnedCulling;
+            skinnedSources.includeGpuMemory = false;
+            for (const auto& line : Graphics::FormatDiagnostics(skinnedSources)) {
+                std::printf("engine diagnostics (figures): %s\n", line.c_str());
+            }
+            for (const auto& fallback : fallbacks) {
+                std::printf("fallback: %s\n", fallback.c_str());
+            }
+            std::printf("images: %s %s\n", streetPng.path.c_str(), enginePng.path.c_str());
+            std::fflush(stdout);
+
+            const bool sameVisibility =
+                static_cast<std::uint64_t>(streetStats.visibleItems) == itemCulling.visible
+                && static_cast<std::uint64_t>(streetStats.visibleInstances) == visibleInstances
+                && static_cast<std::uint64_t>(streetStats.visibleCharacters) == skinnedCulling.visible;
+            if (!sameVisibility) {
+                std::fprintf(stderr, "%s: visibility differs from Street's\n", name.c_str());
+            }
+            return sameVisibility && streetPng.success && enginePng.success;
+        };
+
+        const auto& viewpoint = viewpoints.front();
+        CnaStreet::Camera streetCamera;
+        streetCamera.setPerspective(viewpoint.fov, static_cast<float>(Width) / Height, settings.nearPlane,
+                                    settings.farPlane);
+        streetCamera.setPosition(viewpoint.position);
+        streetCamera.setOrientation(viewpoint.yaw, viewpoint.pitch);
+        bool ok = compare(streetCamera, "");
+
+        // A close-up of a pedestrian: 3.5 m in front of the first figure
+        // whose eye point is in the open, looking at it.
+        bool closeUp = false;
+        for (const auto& figure : skinnedItems) {
+            Vector3 facing(-figure.world.M31, 0.0f, -figure.world.M33);
+            if (facing.LengthSquared() < 1e-6f) {
+                continue;
+            }
+            facing.Normalize();
+            const Vector3 target3 = figure.worldSphere.Center;
+            const Vector3 eye = target3 + facing * 3.5f + Vector3(0.0f, 0.4f, 0.0f);
+            if (scene.isSolid(eye)) {
+                continue;
+            }
+            const Vector3 look = Vector3::Normalize(target3 - eye);
+            // The engine camera's convention (positive yaw turns left from
+            // -Z), and Street's yaw is its negation (see the conversion above).
+            const float engineYaw = std::atan2(-look.X, -look.Z);
+            const float pitch = std::asin(std::clamp(look.Y, -1.0f, 1.0f));
+            CnaStreet::Camera figureCamera;
+            figureCamera.setPerspective(viewpoint.fov, static_cast<float>(Width) / Height, settings.nearPlane,
+                                        settings.farPlane);
+            figureCamera.setPosition(eye);
+            figureCamera.setOrientation(-engineYaw, pitch);
+            ok = compare(figureCamera, "figure") && ok;
+            closeUp = true;
+            break;
+        }
+        if (!closeUp) {
+            std::fprintf(stderr, "no pedestrian could be framed for the close-up\n");
             return 1;
         }
-        return streetPng.success && enginePng.success ? 0 : 1;
+        return ok ? 0 : 1;
     } catch (const std::exception& e) {
         std::fprintf(stderr, "street scene comparison: %s\n", e.what());
         return 1;

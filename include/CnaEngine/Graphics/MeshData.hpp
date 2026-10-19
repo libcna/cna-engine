@@ -9,6 +9,7 @@
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Vector4.hpp"
 
+#include <array>
 #include <cstdint>
 #include <initializer_list>
 #include <string>
@@ -27,6 +28,12 @@ namespace CnaEngine::Graphics
         Color,
         TexCoord0,
         TexCoord1,
+        /// Four bone indices per vertex (skinning); into the bone palette of
+        /// the render item that draws the mesh.
+        BlendIndices,
+        /// Four bone weights per vertex, matching BlendIndices (normally
+        /// summing to 1).
+        BlendWeights,
     };
 
     /// Bit set of VertexAttribute values.
@@ -88,6 +95,8 @@ namespace CnaEngine::Graphics
         std::vector<Microsoft::Xna::Framework::Color> colors;
         std::vector<Microsoft::Xna::Framework::Vector2> texCoords0;
         std::vector<Microsoft::Xna::Framework::Vector2> texCoords1;
+        std::vector<std::array<std::uint8_t, 4>> blendIndices;
+        std::vector<Microsoft::Xna::Framework::Vector4> blendWeights;
         std::vector<std::uint32_t> indices;
 
         [[nodiscard]] std::size_t VertexCount() const noexcept { return positions.size(); }
@@ -100,8 +109,9 @@ namespace CnaEngine::Graphics
         [[nodiscard]] bool Has(VertexAttribute attribute) const noexcept { return Attributes().Has(attribute); }
 
         /// Adds an absent attribute stream filled with a neutral value: normal
-        /// +Y, tangent (+X, +1), white, texture coordinate (0, 0). Present
-        /// streams and Position are left unchanged.
+        /// +Y, tangent (+X, +1), white, texture coordinate (0, 0), bone
+        /// indices 0 with weights (1, 0, 0, 0) (rigidly bound to bone 0).
+        /// Present streams and Position are left unchanged.
         void AddAttribute(VertexAttribute attribute);
         /// Adds (or overwrites) the color stream with `fill`.
         void SetUniformColor(const Microsoft::Xna::Framework::Color& fill);
@@ -110,7 +120,7 @@ namespace CnaEngine::Graphics
 
         /// Empty when the mesh is consistent; otherwise one message per problem
         /// (stream length mismatch, index out of range, index count not a
-        /// multiple of three, non-finite position).
+        /// multiple of three, non-finite position or bone weight).
         [[nodiscard]] std::vector<std::string> Validate() const;
 
         /// Axis-aligned bounds of all vertices; a zero box at the origin when

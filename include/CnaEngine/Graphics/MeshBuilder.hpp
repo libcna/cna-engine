@@ -8,6 +8,7 @@
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Vector4.hpp"
 
+#include <array>
 #include <cstdint>
 
 namespace CnaEngine::Graphics
@@ -22,6 +23,8 @@ namespace CnaEngine::Graphics
         Microsoft::Xna::Framework::Color color = Microsoft::Xna::Framework::Color(255, 255, 255, 255);
         Microsoft::Xna::Framework::Vector2 texCoord0 = Microsoft::Xna::Framework::Vector2::Zero;
         Microsoft::Xna::Framework::Vector2 texCoord1 = Microsoft::Xna::Framework::Vector2::Zero;
+        std::array<std::uint8_t, 4> blendIndices{0, 0, 0, 0};
+        Microsoft::Xna::Framework::Vector4 blendWeights = Microsoft::Xna::Framework::Vector4(1.0f, 0.0f, 0.0f, 0.0f);
     };
 
     /// Appends vertices and triangles to a MeshData while keeping every stream

@@ -59,6 +59,13 @@ namespace CnaEngine::Graphics
         /// draw per instance. Cull the set itself (InstanceSet::Cull); `bounds`
         /// should enclose all instances.
         InstanceSet* instances = nullptr;
+        /// Bone palette for a skinned mesh (BlendIndices and BlendWeights;
+        /// borrowed, at most 72 matrices — XNA's SkinnedEffect::MaxBones).
+        /// Vertices are skinned by the palette and then placed with `world`,
+        /// as XNA's SkinnedEffect does (palettes already in world space go
+        /// with an identity `world`). Null for rigid meshes. Skinned items
+        /// are not instanced.
+        const std::vector<Microsoft::Xna::Framework::Matrix>* bones = nullptr;
     };
 
     /// World-space bounds of `mesh` placed with `world` (conservative for

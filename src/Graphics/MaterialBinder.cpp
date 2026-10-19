@@ -21,6 +21,7 @@ namespace CnaEngine::Graphics
     using Microsoft::Xna::Framework::Graphics::CompareFunction;
     using Microsoft::Xna::Framework::Graphics::GraphicsDevice;
     using Microsoft::Xna::Framework::Graphics::IEffectFog;
+    using Microsoft::Xna::Framework::Graphics::SkinnedEffect;
     using Microsoft::Xna::Framework::Graphics::Texture2D;
 
     const Microsoft::Xna::Framework::Graphics::BlendState& IMaterialBinder::BlendStateFor(const RenderItem& item) const
@@ -33,6 +34,7 @@ namespace CnaEngine::Graphics
         : basic_(std::make_unique<BasicEffect>(device)),
           alphaTest_(std::make_unique<AlphaTestEffect>(device)),
           dual_(std::make_unique<Microsoft::Xna::Framework::Graphics::DualTextureEffect>(device)),
+          skinned_(std::make_unique<SkinnedEffect>(device)),
           white_(std::make_unique<Texture2D>(device, 1, 1))
     {
         const Color white(255, 255, 255, 255);
@@ -42,31 +44,36 @@ namespace CnaEngine::Graphics
     void StockMaterialBinder::BeginFrame(GraphicsDevice&, const Camera&, const ForwardLighting& lighting)
     {
         defaultLighting_ = lighting.defaultLighting;
-        if (lighting.defaultLighting) {
-            basic_->EnableDefaultLighting();
-            fillEnabled_[0] = fillEnabled_[1] = true;
-        } else {
-            auto& key = basic_->getDirectionalLight0Property();
-            key.setEnabledProperty(true);
-            key.setDirectionProperty(Vector3::Normalize(lighting.lightDirection));
-            key.setDiffuseColorProperty(lighting.lightColor);
-            key.setSpecularColorProperty(lighting.lightColor);
-            Microsoft::Xna::Framework::Graphics::DirectionalLight* fills[2] = {&basic_->getDirectionalLight1Property(),
-                                                                                &basic_->getDirectionalLight2Property()};
-            for (std::size_t i = 0; i < 2; ++i) {
-                fillEnabled_[i] = i < lighting.fillLights.size();
-                fills[i]->setEnabledProperty(fillEnabled_[i]);
-                if (fillEnabled_[i]) {
-                    fills[i]->setDirectionProperty(Vector3::Normalize(lighting.fillLights[i].direction));
-                    fills[i]->setDiffuseColorProperty(lighting.fillLights[i].diffuse);
-                    fills[i]->setSpecularColorProperty(lighting.fillLights[i].specular);
+        // BasicEffect and SkinnedEffect light the same way.
+        auto light = [&](auto& effect) {
+            if (lighting.defaultLighting) {
+                effect.EnableDefaultLighting();
+                fillEnabled_[0] = fillEnabled_[1] = true;
+            } else {
+                auto& key = effect.getDirectionalLight0Property();
+                key.setEnabledProperty(true);
+                key.setDirectionProperty(Vector3::Normalize(lighting.lightDirection));
+                key.setDiffuseColorProperty(lighting.lightColor);
+                key.setSpecularColorProperty(lighting.lightColor);
+                Microsoft::Xna::Framework::Graphics::DirectionalLight* fills[2] = {
+                    &effect.getDirectionalLight1Property(), &effect.getDirectionalLight2Property()};
+                for (std::size_t i = 0; i < 2; ++i) {
+                    fillEnabled_[i] = i < lighting.fillLights.size();
+                    fills[i]->setEnabledProperty(fillEnabled_[i]);
+                    if (fillEnabled_[i]) {
+                        fills[i]->setDirectionProperty(Vector3::Normalize(lighting.fillLights[i].direction));
+                        fills[i]->setDiffuseColorProperty(lighting.fillLights[i].diffuse);
+                        fills[i]->setSpecularColorProperty(lighting.fillLights[i].specular);
+                    }
                 }
             }
-        }
-        basic_->setPreferPerPixelLightingProperty(lighting.perPixelLighting);
-        basic_->setAmbientLightColorProperty(lighting.ambientColor);
+            effect.setPreferPerPixelLightingProperty(lighting.perPixelLighting);
+            effect.setAmbientLightColorProperty(lighting.ambientColor);
+        };
+        light(*basic_);
+        light(*skinned_);
         for (IEffectFog* fog : {static_cast<IEffectFog*>(basic_.get()), static_cast<IEffectFog*>(alphaTest_.get()),
-                                static_cast<IEffectFog*>(dual_.get())}) {
+                                static_cast<IEffectFog*>(dual_.get()), static_cast<IEffectFog*>(skinned_.get())}) {
             fog->setFogEnabledProperty(lighting.fogEnabled);
             fog->setFogColorProperty(lighting.fogColor);
             fog->setFogStartProperty(lighting.fogStart);
@@ -96,6 +103,19 @@ namespace CnaEngine::Graphics
         }
         if (material.blend == BlendMode::PremultipliedAlpha && material.alpha < 1.0f) {
             fallback(material, "premultiplied blending drawn as AlphaBlend (stock effects scale the color by alpha)");
+        }
+
+        if (item.bones != nullptr) {
+            if (!attributes.Has(VertexAttribute::BlendIndices) || !attributes.Has(VertexAttribute::BlendWeights)) {
+                fallback(material, "bone palette ignored: mesh has no BlendIndices and BlendWeights");
+            } else if (!attributes.Has(VertexAttribute::Normal)) {
+                fallback(material, "bone palette ignored: XNA SkinnedEffect needs normals");
+            } else if (item.bones->size() > static_cast<std::size_t>(SkinnedEffect::MaxBones)) {
+                fallback(material, "not drawn: more bones than XNA SkinnedEffect's 72");
+                return false;
+            } else {
+                return ApplySkinned(device, item, bucket, camera, texture, vertexColors, fallback);
+            }
         }
 
         if (bucket == RenderBucket::AlphaTested) {
@@ -175,6 +195,45 @@ namespace CnaEngine::Graphics
             device.getSamplerStatesProperty()[0] = SamplerFor(material);
         }
         effect.setVertexColorEnabledProperty(vertexColors);
+        effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
+        return true;
+    }
+    bool StockMaterialBinder::ApplySkinned(GraphicsDevice& device, const RenderItem& item, const RenderBucket bucket,
+                                           const Camera& camera, Texture2D* texture, const bool vertexColors,
+                                           const FallbackSink& fallback)
+    {
+        const Material& material = *item.material;
+        if (bucket == RenderBucket::AlphaTested) {
+            fallback(material, "alpha-tested skinned surfaces draw without the alpha test (XNA SkinnedEffect)");
+        }
+        if (material.shading == ShadingModel::Unlit) {
+            fallback(material, "skinned surfaces draw lit (XNA SkinnedEffect)");
+        } else if (material.shading == ShadingModel::PhysicallyBased) {
+            fallback(material, "PhysicallyBased drawn as Lit (stock effects have no PBR)");
+        }
+        if (vertexColors) {
+            fallback(material, "vertex colors ignored: XNA SkinnedEffect has none");
+        }
+        if (material.secondaryTexture != nullptr) {
+            fallback(material, "secondary texture ignored: XNA SkinnedEffect has one texture");
+        }
+        SkinnedEffect& effect = *skinned_;
+        effect.getDirectionalLight0Property().setEnabledProperty(material.keyLight);
+        effect.getDirectionalLight1Property().setEnabledProperty(fillEnabled_[0]);
+        effect.getDirectionalLight2Property().setEnabledProperty(fillEnabled_[1]);
+        effect.setWorldProperty(item.world);
+        effect.setViewProperty(camera.View());
+        effect.setProjectionProperty(camera.Projection());
+        effect.setDiffuseColorProperty(material.diffuseColor);
+        effect.setAlphaProperty(material.alpha);
+        effect.setEmissiveColorProperty(material.emissiveColor);
+        effect.setSpecularColorProperty(material.specularColor);
+        effect.setSpecularPowerProperty(material.specularPower);
+        // SkinnedEffect always samples its texture: white stands for "none".
+        effect.setTextureProperty(texture != nullptr ? texture : white_.get());
+        effect.setWeightsPerVertexProperty(4);
+        effect.SetBoneTransforms(*item.bones);
+        device.getSamplerStatesProperty()[0] = SamplerFor(material);
         effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         return true;
     }
