@@ -1,0 +1,133 @@
+diff --git a/include/CNA/Extended/Content/ExternalResourceResolvers.hpp b/include/CNA/Extended/Content/ExternalResourceResolvers.hpp
+--- a/include/CNA/Extended/Content/ExternalResourceResolvers.hpp
++++ b/include/CNA/Extended/Content/ExternalResourceResolvers.hpp
+@@ -6,9 +6,9 @@
+ // Ported from MonoGame.Extended's Content/ExternalResourceResolvers.cs. Upstream's static class
+ // -> free functions in this namespace, matching this project's established convention for
+ // stateless static-method-only C# classes. `File.OpenRead(path)` (returning a lazily-read Stream)
+ // has no direct sharp-runtime equivalent -- System::IO::File only provides whole-content read
+-// methods (ReadAllBytes/ReadAllText/etc.), not a stream-returning open -- translated instead via
+-// System::IO::FileStream's single-path constructor (opens for reading), which returns the same
+-// lazily-readable Stream semantics upstream's File.OpenRead provides.
++// methods (ReadAllBytes/ReadAllText/etc.), not a stream-returning open -- translated instead via
++// System::IO::FileStream with explicit FileMode::Open and FileAccess::Read, which returns the same
++// lazily-readable Stream semantics upstream's File.OpenRead provides.
+ #pragma once
+ 
+ #include "CNA/Extended/Content/ExternalResourceResolver.hpp"
+diff --git a/src/CNA/Extended/Content/BitmapFonts/BitmapFontFileReader.cpp b/src/CNA/Extended/Content/BitmapFonts/BitmapFontFileReader.cpp
+--- a/src/CNA/Extended/Content/BitmapFonts/BitmapFontFileReader.cpp
++++ b/src/CNA/Extended/Content/BitmapFonts/BitmapFontFileReader.cpp
+@@ -803,7 +803,9 @@ namespace CNA::Extended::Content::BitmapFonts
+ 
+     BitmapFontFileContent Read(const std::string& path)
+     {
+-        System::IO::FileStream stream(path);
++        System::IO::FileStream stream(
++            path,
++            System::IO::FileMode::Open, System::IO::FileAccess::Read);
+         return Read(stream, path);
+     }
+ }
+diff --git a/src/CNA/Extended/Content/ExternalResourceResolvers.cpp b/src/CNA/Extended/Content/ExternalResourceResolvers.cpp
+--- a/src/CNA/Extended/Content/ExternalResourceResolvers.cpp
++++ b/src/CNA/Extended/Content/ExternalResourceResolvers.cpp
+@@ -16,7 +16,10 @@ namespace CNA::Extended::Content
+         {
+             throw std::invalid_argument("path must not be empty.");
+         }
+-        return std::make_unique<System::IO::FileStream>(path);
++        return std::make_unique<System::IO::FileStream>(
++            path,
++            System::IO::FileMode::Open,
++            System::IO::FileAccess::Read);
+     }
+ 
+     std::unique_ptr<System::IO::Stream> OpenTitleContainerStream(const std::string& path)
+diff --git a/tests/CNA/Extended/BitmapFonts/BitmapFontFileReaderTests.cpp b/tests/CNA/Extended/BitmapFonts/BitmapFontFileReaderTests.cpp
+--- a/tests/CNA/Extended/BitmapFonts/BitmapFontFileReaderTests.cpp
++++ b/tests/CNA/Extended/BitmapFonts/BitmapFontFileReaderTests.cpp
+@@ -158,9 +158,7 @@ namespace CNA::Extended::Content::BitmapFonts
+     TEST(BitmapFontFileReaderTests, ReadBinaryFile)
+     {
+         const std::filesystem::path path = FixturePath("test-font-binary.fnt");
+-        System::IO::FileStream stream(path.string());
+-
+-        const BitmapFontFileContent actual = Read(stream, path.string());
++        const BitmapFontFileContent actual = Read(path.string());
+ 
+         ExpectMatches(CreateExpected(), actual);
+     }
+@@ -168,7 +166,9 @@ namespace CNA::Extended::Content::BitmapFonts
+     TEST(BitmapFontFileReaderTests, ReadXmlFile)
+     {
+         const std::filesystem::path path = FixturePath("test-font-xml.fnt");
+-        System::IO::FileStream stream(path.string());
++        System::IO::FileStream stream(
++            path.string(),
++            System::IO::FileMode::Open, System::IO::FileAccess::Read);
+ 
+         const BitmapFontFileContent actual = Read(stream, path.string());
+ 
+@@ -180,7 +180,9 @@ namespace CNA::Extended::Content::BitmapFonts
+     TEST(BitmapFontFileReaderTests, ReadXmlFileWithUtf8Bom)
+     {
+         const std::filesystem::path path = FixturePath("test-font-xml-utf8-bom.fnt");
+-        System::IO::FileStream stream(path.string());
++        System::IO::FileStream stream(
++            path.string(),
++            System::IO::FileMode::Open, System::IO::FileAccess::Read);
+ 
+         const BitmapFontFileContent actual = Read(stream, path.string());
+ 
+@@ -190,7 +192,9 @@ namespace CNA::Extended::Content::BitmapFonts
+     TEST(BitmapFontFileReaderTests, ReadTextFile)
+     {
+         const std::filesystem::path path = FixturePath("test-font-text.fnt");
+-        System::IO::FileStream stream(path.string());
++        System::IO::FileStream stream(
++            path.string(),
++            System::IO::FileMode::Open, System::IO::FileAccess::Read);
+ 
+         const BitmapFontFileContent actual = Read(stream, path.string());
+ 
+diff --git a/tests/CNA/Extended/Content/ExternalResourceResolversTests.cpp b/tests/CNA/Extended/Content/ExternalResourceResolversTests.cpp
+--- a/tests/CNA/Extended/Content/ExternalResourceResolversTests.cpp
++++ b/tests/CNA/Extended/Content/ExternalResourceResolversTests.cpp
+@@ -35,6 +35,8 @@ namespace CNA::Extended::Content
+ 
+         const std::unique_ptr<System::IO::Stream> stream = OpenFile(path.string());
+         ASSERT_NE(stream, nullptr);
++        EXPECT_TRUE(stream->getCanReadProperty());
++        EXPECT_FALSE(stream->getCanWriteProperty());
+ 
+         std::vector<SharpRuntime::bytecs> buffer(11);
+         stream->Read(buffer.data(), 0, static_cast<int>(buffer.size()));
+diff --git a/tests/CNA/Extended/Content/TexturePacker/TexturePackerFileReaderTests.cpp b/tests/CNA/Extended/Content/TexturePacker/TexturePackerFileReaderTests.cpp
+--- a/tests/CNA/Extended/Content/TexturePacker/TexturePackerFileReaderTests.cpp
++++ b/tests/CNA/Extended/Content/TexturePacker/TexturePackerFileReaderTests.cpp
+@@ -58,7 +58,9 @@ namespace CNA::Extended::Content::TexturePacker
+     {
+         const std::filesystem::path path = MakeTempFile(kDocument);
+ 
+-        System::IO::FileStream stream(path.string());
++        System::IO::FileStream stream(
++            path.string(),
++            System::IO::FileMode::Open, System::IO::FileAccess::Read);
+         const TexturePackerFileContent content = Read(stream);
+ 
+         ASSERT_EQ(content.getRegionsProperty().size(), 1u);
+diff --git a/tests/CNA/Extended/World3DEXT/Tilemap3DFactoryEXTJsonTests.cpp b/tests/CNA/Extended/World3DEXT/Tilemap3DFactoryEXTJsonTests.cpp
+--- a/tests/CNA/Extended/World3DEXT/Tilemap3DFactoryEXTJsonTests.cpp
++++ b/tests/CNA/Extended/World3DEXT/Tilemap3DFactoryEXTJsonTests.cpp
+@@ -52,7 +52,9 @@ namespace CNA::Extended::World3DEXT
+     {
+         const std::filesystem::path path = MakeTempFile(kDocument);
+ 
+-        System::IO::FileStream stream(path.string());
++        System::IO::FileStream stream(
++            path.string(),
++            System::IO::FileMode::Open, System::IO::FileAccess::Read);
+         const Tilemap3DEXT tilemap = Tilemap3DFactoryEXT::BuildFromJsonStreamEXT(stream);
+ 
+         EXPECT_EQ(tilemap.GetTileCountEXT(), 2u);
