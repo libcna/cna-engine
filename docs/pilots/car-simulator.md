@@ -113,6 +113,28 @@ engine `QualitySchema` and defines the presets from the pilot's own
 and HiDef, with no decisions, and the preset names parse with the pilot's
 `QualityFromName()`.
 
+## Fixed-step clock — validated
+
+`CarSimulatorClockProbe` (in `cna_engine_pilot_carsim_sim_tests`) drives
+car-simulator's own `Vehicle::Update` (reference vehicle on flat ground) and
+an engine `FixedStepClock` with car-simulator's constants using the same frame
+times, and recovers car-simulator's per-frame step count from its private
+accumulator.
+
+| Frame sequence | Frames | Result |
+| --- | --- | --- |
+| Fixed 30, 60, 120, 144 and 240 Hz | 36,000 each | identical step count in every frame |
+| Hitches (5 s, 0.3 s, 0.25 s), zero and negative frames | 10 | identical (same clamp, same 30-step cap) |
+| 60 Hz with ±4 ms jitter | 36,000 (71,922 steps) | 12 frames differ by one step; running totals never more than one step apart |
+
+### Intentional difference
+
+car-simulator accumulates in `float`, the engine in `double`. A frame that
+ends within a few ULPs of a step boundary can be rounded to the other side,
+so that step is taken one frame earlier or later. car-simulator's
+deterministic captures (`--lockstep`, exactly 1/60 s per frame) are in the
+identical case.
+
 ## Its real map through the engine (strict ForwardRenderer)
 
 `cna_engine.pilot.carsim_scene_comparison` compiles car-simulator's libraries

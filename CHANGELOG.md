@@ -41,3 +41,5 @@ API snapshot baseline taken 2026-10-19 (12 headers).
   switches off only the key light; fill lights and ambient stay (Street's
   `sunlit`, car-simulator's three-light rig).
 - `Material::depthBias` and `slopeScaleDepthBias` (decals such as road markings).
+- `Core/FixedStepClock.hpp`: fixed-step simulation policy (car-simulator's
+  vehicle step loop).

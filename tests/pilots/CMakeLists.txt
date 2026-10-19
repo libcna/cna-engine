@@ -75,6 +75,15 @@ if(CNA_ENGINE_CARSIM_SCENE_COMPARISON AND EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR
     add_test(NAME cna_engine.pilot.carsim_scene_comparison
         COMMAND cna_engine_carsim_scene_comparison "${CMAKE_CURRENT_BINARY_DIR}/carsim_scene_comparison")
     set_tests_properties(cna_engine.pilot.carsim_scene_comparison PROPERTIES LABELS pilot TIMEOUT 3600)
+
+    # car-simulator's vehicle step loop against FixedStepClock.
+    add_executable(cna_engine_pilot_carsim_sim_tests CarSimulatorClockTests.cpp)
+    target_link_libraries(cna_engine_pilot_carsim_sim_tests PRIVATE
+        cna_engine_core cna_engine_pilot_carsim_full GTest::gtest_main)
+    gtest_discover_tests(cna_engine_pilot_carsim_sim_tests
+        TEST_PREFIX "cna_engine.pilot."
+        DISCOVERY_MODE PRE_TEST
+        PROPERTIES LABELS "pilot")
 endif()
 
 set(CNA_ENGINE_STREET_SIMULATOR_DIR "${PROJECT_SOURCE_DIR}/../../libcnalab/street-simulator"

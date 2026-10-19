@@ -4,6 +4,19 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20 — car-simulator clock probe
+
+Day-to-day `build/` (shared CNA worktree at `b0940e0e`, which other agents
+edit — not baseline evidence; CNAEXT off), Debug, software renderer.
+
+    cmake --build build --parallel 3
+    ctest --test-dir build --parallel 3
+
+Result: **167 of 167 tests passed**, including the three new
+`cna_engine.pilot.CarSimulatorClockProbe.*` tests (car-simulator's
+`Vehicle::Update` step loop against `FixedStepClock`; see
+`docs/pilots/car-simulator.md`).
+
 ## 2026-10-19 (night) — CNAEXT configuration and the Street scene comparison
 
 `build-probe/` reconfigured with `-DCNA_ENGINE_CNA_CNAEXT=ON` (same clean

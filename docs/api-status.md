@@ -9,7 +9,7 @@ the API; "Consumers" lists code that uses the engine facility today.
 | Facility | Header | Target | Status | Evidence | Consumers |
 | --- | --- | --- | --- | --- | --- |
 | Version constants | `Core/Version.hpp` | Core | experimental | — | tests |
-| Fixed-step clock | `Core/FixedStepClock.hpp` | Core | experimental | car-simulator `Vehicle::Update` step loop | tests |
+| Fixed-step clock | `Core/FixedStepClock.hpp` | Core | pilot-validated (car-simulator) | car-simulator `Vehicle::Update` step loop | tests, car-simulator equivalence probe |
 | Input snapshot | `Input/InputSnapshot.hpp` | Core | experimental | car-simulator `InputMapper::Update` | tests |
 | Action map (actions, axes, rebinding, conflicts, focus loss, persistence) | `Input/ActionMap.hpp` | Core | pilot-validated (both) | car-simulator `InputMapper` (key names, overrides, pad snapshot) | tests, example, car-simulator equivalence probe |
 | Binding names and text format | `Input/InputNames.hpp` | Core | experimental | car-simulator `KeyName`/`KeyFromName` | tests |
