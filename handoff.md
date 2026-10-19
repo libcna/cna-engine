@@ -17,7 +17,7 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
 
 - **Modify only this repository.** Do not edit `cna`, `sharp-runtime`,
   `cna-extended`, the simulators or any other app. Defects found elsewhere are
-  written to `upstream-issues.md` (UP-001 … UP-005 so far). Pilot code may be
+  written to `upstream-issues.md` (UP-001 … UP-006 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
 - Commit regularly on branch `develop`; do not push unless asked.
 - At most 3 parallel compile/test jobs. Shared ccache only:
@@ -31,7 +31,7 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
 | Directory | Content |
 | --- | --- |
 | `build/` | day-to-day engine build against the shared `../cna` worktree (which other agents edit; not baseline evidence) |
-| `build-probe/` | baseline build against `~/deps/cna-baseline` (clean clone at the pinned CNA revision) with `CNA_ENGINE_ENFORCE_BASELINE=ON` and `CNA_ENGINE_CNA_CNAEXT=ON`; the only tree that builds the Street scene comparison |
+| `build-probe/` | baseline build against `~/deps/cna-baseline` (clean clone at the pinned CNA revision) with `CNA_ENGINE_ENFORCE_BASELINE=ON` and `CNA_ENGINE_CNA_CNAEXT=ON`; the only tree that builds the Street scene comparison (`build/` builds the car-simulator one) |
 | `build-consumer/` | installed-package consumer probes (`tools/run_consumer_probes.sh`) |
 
 `~/deps/cna-baseline` is a local clone of CNA at the pin; move it with
@@ -41,8 +41,14 @@ when the pin changes (ADR-002 "Local reproduction").
 ## State
 
 All work is committed on `develop`. Latest evidence (`docs/verification.md`):
-151 tests pass in `build/`, 150 in the baseline build (`build-probe/`,
-before the API-snapshot test existed), 2 consumer probes pass.
+164 tests pass in `build/`, 158 in the baseline build (`build-probe/`, which
+also runs the Street scene comparison), 2 consumer probes pass.
+
+Both pilots' real scenes render through the engine's `ForwardRenderer`:
+Street's procedural city with the PBR binder (visible items, instances and
+draw calls identical; 19/255 image difference from Street's own lighting
+model) and car-simulator's `lipova` map with the strict stock binder (every
+visibility count identical; 0.1/255 image difference). See `docs/pilots/`.
 
 Done (see `plan.md` for per-task results):
 
@@ -62,9 +68,8 @@ Done (see `plan.md` for per-task results):
 
 1. Pilot adoption (PILOT-001/002) — needs the owner's permission to modify the
    pilots; until then, probes are the evidence.
-2. MILESTONE-2 remainder: the real Street scene already matches Street's
-   visibility and draw calls through the engine (`docs/pilots/street-simulator.md`);
-   screenshot tolerances must be agreed with the owner.
+2. MILESTONE-2 remainder: screenshot tolerances must be agreed with the owner
+   (the scene comparisons give the measured differences to start from).
 3. ENG-035 later steps only when a pilot needs them (Street currently draws no
    shadows; see `docs/pilots/street-simulator.md`).
 4. Upstream: UP-001 (no CNA package), UP-004 (BoundingFrustum point

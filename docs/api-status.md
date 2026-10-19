@@ -24,15 +24,15 @@ the API; "Consumers" lists code that uses the engine facility today.
 | GPU mesh | `Graphics/GpuMesh.hpp` | Graphics | pilot-validated (both) | Street `Render/GpuMesh`, car-simulator `Render/GpuMesh` | tests, example |
 | Render and GPU memory statistics | `Graphics/RenderStatistics.hpp` | Graphics | experimental | car-simulator `GpuMesh::Submissions` | tests, example |
 | Screen capture and screenshot queue | `Graphics/ScreenCapture.hpp` | Graphics | pilot-validated (car-simulator) | car-simulator `Render/Screenshot` | tests, example |
-| Materials | `Graphics/Material.hpp` | Graphics | experimental | Street material descriptions, car-simulator effect setup | tests |
-| Render items and queue (buckets, deterministic sorting) | `Graphics/RenderQueue.hpp` | Graphics | experimental | Street render submission model | tests |
-| Visibility policies and LOD selection | `Graphics/Visibility.hpp` | Graphics | experimental | Street culling/LOD, island-simulator culling | tests |
-| Forward renderer (buckets, passes, state restore, fallbacks) | `Graphics/ForwardRenderer.hpp` | Graphics | experimental | Street `SceneRenderer`, car-simulator world renderer | tests |
-| Material binders (interface, stock-effect binder) | `Graphics/MaterialBinder.hpp` | Graphics | experimental | Street `SceneRenderer::applyMaterial` | tests |
-| PBR material binder (CNA `PbrEffect`) | `Enhanced/PbrMaterialBinder.hpp` | EnhancedGraphics | experimental | Street `SceneRenderer::applyMaterial`, `Material` | tests |
+| Materials | `Graphics/Material.hpp` | Graphics | pilot-validated (both) | Street material descriptions, car-simulator effect setup | tests, both scene comparisons |
+| Render items and queue (buckets, deterministic sorting) | `Graphics/RenderQueue.hpp` | Graphics | pilot-validated (both) | Street render submission model | tests, both scene comparisons |
+| Visibility policies and LOD selection | `Graphics/Visibility.hpp` | Graphics | pilot-validated (both) | Street culling/LOD, island-simulator culling | tests, both scene comparisons |
+| Forward renderer (buckets, passes, state restore, fallbacks) | `Graphics/ForwardRenderer.hpp` | Graphics | pilot-validated (both) | Street `SceneRenderer`, car-simulator world renderer | tests, both scene comparisons |
+| Material binders (interface, stock-effect binder) | `Graphics/MaterialBinder.hpp` | Graphics | pilot-validated (stock: car-simulator) | Street `SceneRenderer::applyMaterial` | tests, car-simulator scene comparison |
+| PBR material binder (CNA `PbrEffect`) | `Enhanced/PbrMaterialBinder.hpp` | EnhancedGraphics | pilot-validated (Street) | Street `SceneRenderer::applyMaterial`, `Material` | tests, Street scene comparison |
 | Quality presets and capability resolution | `Graphics/Quality.hpp` | Graphics | experimental | car-simulator `QualityTier`, island-simulator quality profiles | tests, street_slice |
 | Quality schema (game-declared settings, presets, limits, persistence) | `Graphics/QualitySchema.hpp` | Graphics | pilot-validated (both) | car-simulator `QualityTier`, Street `RenderSettings` | tests, pilot probes |
-| Instancing (hardware + per-instance fallback) | `Graphics/Instancing.hpp` | Graphics | experimental | Street `InstancedMesh` | tests |
+| Instancing (hardware + per-instance fallback) | `Graphics/Instancing.hpp` | Graphics | pilot-validated (Street) | Street `InstancedMesh` | tests, Street instancing probe and scene comparison |
 | Asset registry | `Assets/AssetRegistry.hpp` | Graphics | pilot-validated (both) | Street `Assets/*Library`, house-simulator caches | tests |
 | World3D screen driven by engine input/camera | `Extended/EngineWorldScreen.hpp` | ExtendedIntegration | experimental | cna-extended `World3DScreenEXT` | tests, consumer probe |
 | World3D camera sync | `Extended/WorldCameraSync.hpp` | ExtendedIntegration | experimental | cna-extended `Camera3DEXT` | tests |

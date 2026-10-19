@@ -155,7 +155,10 @@ and persistence.
 
 ## Still open for this pilot
 
-- Materials and render queue with Street's PBR effect (needs CNA's CNAEXT
-  `PbrEffect` in an enhanced renderer; CNA is built with `CNA_CNAEXT=OFF` here).
-- Culling/LOD counts against Street's own scene.
-- One complete Street vertical slice (MILESTONE-2).
+Materials, the render queue, culling and instancing with Street's `PbrEffect`
+are covered by the scene comparison above. What remains:
+
+- Screenshot tolerances for MILESTONE-2, to be agreed with the owner (the
+  19/255 difference is Street's lighting model, see above).
+- Adoption inside Street (PILOT-001) — requires the owner's permission to
+  modify the pilot.
