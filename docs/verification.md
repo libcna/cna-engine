@@ -10,7 +10,7 @@ listed, never folded into a pass.
 pinned dependencies, baseline still enforced and matching) so that Street's
 whole core, which needs CNA's CNAEXT shader packages, compiles read-only.
 
-- Engine suite in that configuration: **all tests passed** (157 including
+- Engine suite in that configuration: **158 of 158 tests passed** (including
   `cna_engine.pilot.street_scene_comparison`), showing the engine also builds
   and runs against CNA with its extension layer enabled.
 - Street scene comparison (`docs/pilots/street-simulator.md`): identical
