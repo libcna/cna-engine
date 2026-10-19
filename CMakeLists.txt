@@ -46,6 +46,7 @@ include(CnaEngineTargets)
 # ---------------------------------------------------------------------------
 cna_engine_add_library(cna_engine_core Core
     src/Core/Version.cpp
+    src/Core/FixedStepClock.cpp
     src/Input/InputSnapshot.cpp
     src/Input/InputNames.cpp
     src/Input/ActionMap.cpp

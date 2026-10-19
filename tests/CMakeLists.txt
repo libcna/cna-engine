@@ -21,6 +21,7 @@ include(GoogleTest)
 # --- Strict unit tests: link only strict targets. -----------------------------
 add_executable(cna_engine_tests
     Core/VersionTests.cpp
+    Core/FixedStepClockTests.cpp
     Input/InputNamesTests.cpp
     Input/ActionMapTests.cpp
     Input/BindingCaptureTests.cpp
