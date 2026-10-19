@@ -87,3 +87,24 @@ if(EXISTS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/Camera.cpp")
 else()
     message(STATUS "cna-engine: street-simulator not found; Street pilot probes skipped")
 endif()
+
+# --- MILESTONE-2 scene comparison: all of Street's core, read-only. -----------
+option(CNA_ENGINE_STREET_SCENE_COMPARISON
+    "Build the Street scene comparison tool (compiles street-simulator's whole core read-only)" ON)
+# Street's sky uses CNA's CNAEXT shader packages, so the comparison needs a
+# build with -DCNA_ENGINE_CNA_CNAEXT=ON (build-probe/ is used for that).
+if(CNA_ENGINE_STREET_SCENE_COMPARISON AND CNA_CNAEXT
+   AND EXISTS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/SceneRenderer.cpp")
+    file(GLOB_RECURSE _street_core_sources CONFIGURE_DEPENDS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/*.cpp")
+    list(FILTER _street_core_sources EXCLUDE REGEX "/src/Main\\.cpp$")
+    add_library(cna_engine_pilot_street_core STATIC EXCLUDE_FROM_ALL ${_street_core_sources})
+    target_include_directories(cna_engine_pilot_street_core PUBLIC "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/include")
+    target_compile_definitions(cna_engine_pilot_street_core PUBLIC
+        CNA_STREET_VERSION="probe" CNA_STREET_RENDERER_NAME="${CNA_GRAPHICS_RENDERER}"
+        CNA_STREET_DEFAULT_ASSET_DIR="${CNA_ENGINE_STREET_SIMULATOR_DIR}/assets")
+    target_link_libraries(cna_engine_pilot_street_core PUBLIC CNA SharpRuntime::Text.Json)
+
+    add_executable(cna_engine_street_scene_comparison StreetSceneComparison.cpp)
+    target_link_libraries(cna_engine_street_scene_comparison PRIVATE
+        cna_engine_core cna_engine_graphics cna_engine_enhanced cna_engine_pilot_street_core)
+endif()

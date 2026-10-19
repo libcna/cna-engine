@@ -117,4 +117,35 @@ namespace CnaEngine::Graphics
         EXPECT_THROW(LodSelector({10.0f}, 1.0f), std::invalid_argument);
         EXPECT_NO_THROW(LodSelector({}, 0.0f));
     }
+
+    TEST(VisibilityTests, ItemsUseTheirBoxAndOwnCullDistance)
+    {
+        Camera camera = LookingDownNegativeZ();
+        const GpuMesh mesh;
+        Material material;
+        // A long facade along X, 20 units ahead: its sphere reaches far to the
+        // sides, its box is thin.
+        RenderItem facade;
+        facade.mesh = &mesh;
+        facade.material = &material;
+        facade.bounds = BoundingSphere(Vector3(0.0f, 0.0f, -20.0f), 30.0f);
+        facade.box = Microsoft::Xna::Framework::BoundingBox(Vector3(-30.0f, 0.0f, -21.0f), Vector3(30.0f, 5.0f, -19.0f));
+
+        VisibilitySettings settings;
+        settings.maxDistance = 25.0f;
+        EXPECT_EQ(Classify(facade, camera, settings), Visibility::Visible) << "nearest point of the box is 19 away";
+        facade.cullDistance = 15.0f;
+        EXPECT_EQ(Classify(facade, camera, settings), Visibility::RejectedByDistance) << "own limit is smaller";
+        facade.cullDistance = 0.0f;
+        settings.minDistance = 20.0f;
+        EXPECT_EQ(Classify(facade, camera, settings), Visibility::RejectedByDistance) << "closer than minDistance";
+        settings.minDistance = 0.0f;
+
+        // Behind the camera: the sphere would still touch the frustum, the box does not.
+        facade.box = Microsoft::Xna::Framework::BoundingBox(Vector3(-30.0f, 0.0f, 19.0f), Vector3(30.0f, 5.0f, 21.0f));
+        facade.bounds = BoundingSphere(Vector3(0.0f, 0.0f, 20.0f), 30.0f);
+        EXPECT_EQ(Classify(facade.bounds, 1, camera, VisibilitySettings{}), Visibility::Visible);
+        EXPECT_EQ(Classify(facade, camera, VisibilitySettings{}), Visibility::RejectedByFrustum);
+        EXPECT_FLOAT_EQ(DistanceToBox(Vector3(0.0f, 2.0f, 0.0f), *facade.box), 19.0f);
+    }
 }

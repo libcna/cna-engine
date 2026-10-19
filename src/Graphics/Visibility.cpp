@@ -10,6 +10,7 @@
 
 namespace CnaEngine::Graphics
 {
+    using Microsoft::Xna::Framework::BoundingBox;
     using Microsoft::Xna::Framework::BoundingSphere;
     using Microsoft::Xna::Framework::ContainmentType;
     using Microsoft::Xna::Framework::Vector3;
@@ -20,13 +21,47 @@ namespace CnaEngine::Graphics
         if ((layers & settings.layerMask) == 0) {
             return Visibility::RejectedByLayer;
         }
-        if (std::isfinite(settings.maxDistance)) {
+        if (std::isfinite(settings.maxDistance) || settings.minDistance > 0.0f) {
             const float distance = Vector3::Distance(bounds.Center, camera.Position()) - bounds.Radius;
-            if (distance > settings.maxDistance) {
+            if (distance > settings.maxDistance || (settings.minDistance > 0.0f && distance < settings.minDistance)) {
                 return Visibility::RejectedByDistance;
             }
         }
         if (settings.frustum && camera.Frustum().Contains(bounds) == ContainmentType::Disjoint) {
+            return Visibility::RejectedByFrustum;
+        }
+        return Visibility::Visible;
+    }
+
+    float DistanceToBox(const Vector3& point, const BoundingBox& box) noexcept
+    {
+        const float dx = std::max({box.Min.X - point.X, 0.0f, point.X - box.Max.X});
+        const float dy = std::max({box.Min.Y - point.Y, 0.0f, point.Y - box.Max.Y});
+        const float dz = std::max({box.Min.Z - point.Z, 0.0f, point.Z - box.Max.Z});
+        return std::sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    Visibility Classify(const RenderItem& item, const Camera& camera, const VisibilitySettings& settings)
+    {
+        if (!item.box) {
+            VisibilitySettings own = settings;
+            if (item.cullDistance > 0.0f) {
+                own.maxDistance = std::min(own.maxDistance, item.cullDistance);
+            }
+            return Classify(item.bounds, item.layers, camera, own);
+        }
+        if ((item.layers & settings.layerMask) == 0) {
+            return Visibility::RejectedByLayer;
+        }
+        const float limit = item.cullDistance > 0.0f ? std::min(settings.maxDistance, item.cullDistance)
+                                                     : settings.maxDistance;
+        if (std::isfinite(limit) || settings.minDistance > 0.0f) {
+            const float distance = DistanceToBox(camera.Position(), *item.box);
+            if (distance > limit || (settings.minDistance > 0.0f && distance < settings.minDistance)) {
+                return Visibility::RejectedByDistance;
+            }
+        }
+        if (settings.frustum && camera.Frustum().Contains(*item.box) == ContainmentType::Disjoint) {
             return Visibility::RejectedByFrustum;
         }
         return Visibility::Visible;
@@ -38,7 +73,7 @@ namespace CnaEngine::Graphics
         std::uint64_t visible = 0;
         for (const auto& item : candidates) {
             ++stats.considered;
-            switch (Classify(item.bounds, item.layers, camera, settings)) {
+            switch (Classify(item, camera, settings)) {
                 case Visibility::Visible:
                     ++visible;
                     queue.Submit(item);

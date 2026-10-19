@@ -4,6 +4,7 @@
 #include "CnaEngine/Graphics/GpuMesh.hpp"
 #include "CnaEngine/Graphics/Material.hpp"
 
+#include "Microsoft/Xna/Framework/BoundingBox.hpp"
 #include "Microsoft/Xna/Framework/BoundingSphere.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
@@ -38,6 +39,13 @@ namespace CnaEngine::Graphics
         Microsoft::Xna::Framework::Matrix world = Microsoft::Xna::Framework::Matrix::getIdentityProperty();
         /// World-space bounds used for culling and depth sorting.
         Microsoft::Xna::Framework::BoundingSphere bounds;
+        /// Optional tighter world-space box; when set, culling measures
+        /// distance to the box and tests the box against the frustum (long
+        /// facades, roads), the sphere is still used for sorting.
+        std::optional<Microsoft::Xna::Framework::BoundingBox> box;
+        /// Per-item distance limit (0 = none); combined with the visibility
+        /// settings' limit by taking the smaller.
+        float cullDistance = 0.0f;
         /// Bit set matched against visibility layer masks.
         std::uint32_t layers = 1;
         /// Coarse priority within a bucket: lower draws first.

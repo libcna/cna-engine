@@ -26,6 +26,11 @@ set_property(CACHE CNA_ENGINE_CNA_RENDERER PROPERTY STRINGS
 set(CNA_ENGINE_CNA_PLATFORM "HEADLESS"
     CACHE STRING "cna platform used by a standalone cna-engine build")
 set_property(CACHE CNA_ENGINE_CNA_PLATFORM PROPERTY STRINGS HEADLESS SDL3 SDL2 TERMINAL)
+# CNA's own built-in extension layer (CNA_CNAEXT: shader packages, post
+# effects, ...). No engine target needs it; it is ON only for builds that
+# compile code which does (the Street scene comparison probe).
+option(CNA_ENGINE_CNA_CNAEXT "Build CNA with its built-in extension layer (CNA_CNAEXT)" OFF)
+
 set(CNA_ENGINE_CNA_AUDIO_PLATFORM "NULL"
     CACHE STRING "cna audio platform used by a standalone cna-engine build")
 set_property(CACHE CNA_ENGINE_CNA_AUDIO_PLATFORM PROPERTY STRINGS NULL SDL3 SDL2)
@@ -76,11 +81,12 @@ else()
     endif()
 
     # Keep optional CNA surfaces out. CNA_CNAEXT is CNA's built-in extension
-    # layer; neither strict nor enhanced engine targets need it.
+    # layer; neither strict nor enhanced engine targets need it (see
+    # CNA_ENGINE_CNA_CNAEXT above).
     set(CNA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
     set(CNA_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(CNA_BUILD_C_API OFF CACHE BOOL "" FORCE)
-    set(CNA_CNAEXT OFF CACHE BOOL "" FORCE)
+    set(CNA_CNAEXT ${CNA_ENGINE_CNA_CNAEXT} CACHE BOOL "" FORCE)
     set(CNA_DEVICES OFF CACHE BOOL "" FORCE)
     set(CNA_ENABLE_NET OFF CACHE BOOL "" FORCE)
     set(CNA_ENABLE_DRACO OFF CACHE BOOL "" FORCE)

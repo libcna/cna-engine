@@ -21,6 +21,9 @@ namespace CnaEngine::Graphics
         std::uint32_t layerMask = 0xFFFFFFFFu;
         /// Items whose bounds lie entirely beyond this distance are rejected.
         float maxDistance = std::numeric_limits<float>::infinity();
+        /// Items whose nearest point is closer than this are rejected (0 =
+        /// none); for far-only representations such as impostor groups.
+        float minDistance = 0.0f;
         /// Reject items entirely outside the camera frustum.
         bool frustum = true;
     };
@@ -38,6 +41,13 @@ namespace CnaEngine::Graphics
     /// tested in the order layer, distance, frustum.
     [[nodiscard]] Visibility Classify(const Microsoft::Xna::Framework::BoundingSphere& bounds, std::uint32_t layers,
                                       const Camera& camera, const VisibilitySettings& settings);
+    /// Classifies a render item: uses its box when present and its own
+    /// cull distance (the smaller of it and the settings' limit).
+    [[nodiscard]] Visibility Classify(const RenderItem& item, const Camera& camera, const VisibilitySettings& settings);
+
+    /// Distance from `point` to the nearest point of `box` (0 inside).
+    [[nodiscard]] float DistanceToBox(const Microsoft::Xna::Framework::Vector3& point,
+                                      const Microsoft::Xna::Framework::BoundingBox& box) noexcept;
 
     /// Counts per rejection reason, for diagnostics.
     struct CullStatistics
