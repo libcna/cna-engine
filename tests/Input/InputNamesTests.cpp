@@ -70,6 +70,7 @@ namespace CnaEngine::Input
         const AxisBinding bindings[] = {
             AxisBinding::ForKeys(Keys::A, Keys::D),
             AxisBinding::ForGamePad(GamePadAxis::RightStickX, 0.15f, -2.0f),
+            AxisBinding::ForGamePad(GamePadAxis::LeftStickX, 0.0f, 1.0f, 1.6f),
             AxisBinding::ForMouse(MouseAxis::Wheel, 1.0f / 120.0f),
         };
         for (const auto& binding : bindings) {
@@ -79,5 +80,7 @@ namespace CnaEngine::Input
             EXPECT_EQ(*parsed, binding) << text;
         }
         EXPECT_FALSE(ParseAxisBinding("PadAxis:LeftStickX:1:1").has_value());
+        EXPECT_FALSE(ParseAxisBinding("PadAxis:LeftStickX:0:1:0").has_value());
+        EXPECT_EQ(FormatAxisBinding(AxisBinding::ForGamePad(GamePadAxis::LeftStickX, 0.2f)), "PadAxis:LeftStickX:0.2:1");
     }
 }

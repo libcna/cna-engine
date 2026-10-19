@@ -35,7 +35,9 @@ namespace CnaEngine::Input
     [[nodiscard]] std::optional<Binding> ParseBinding(std::string_view text);
 
     /// Text form of an axis binding:
-    /// "Keys:A:D:1", "PadAxis:LeftStickX:0.2:1", "MouseAxis:DeltaX:0.01".
+    /// "Keys:A:D:1", "PadAxis:LeftStickX:0.2:1" (dead zone, scale, and an
+    /// optional fifth field for a non-linear response exponent),
+    /// "MouseAxis:DeltaX:0.01".
     [[nodiscard]] std::string FormatAxisBinding(const AxisBinding& binding);
     [[nodiscard]] std::optional<AxisBinding> ParseAxisBinding(std::string_view text);
 }

@@ -96,8 +96,16 @@ namespace CnaEngine::Input
         [[nodiscard]] bool Held(ActionId action) const;
         [[nodiscard]] bool Pressed(ActionId action) const;
         [[nodiscard]] bool Released(ActionId action) const;
-        /// Key-pair and game-pad contributions are summed and clamped to
-        /// [-1, 1]; mouse contributions are added unclamped afterwards.
+        /// Axis value, combined as follows:
+        ///  - all key-pair bindings form one digital composite: the strongest
+        ///    push in each direction is taken, so opposite keys cancel and
+        ///    keys in the same direction do not add up (A + Right = 0,
+        ///    A + Left = -1);
+        ///  - game-pad bindings compete with each other and with the keys: the
+        ///    largest magnitude wins, keys win a tie, so a pressed key and a
+        ///    half-deflected stick give 1, not 1.5;
+        ///  - the result is clamped to [-1, 1]; mouse contributions are deltas
+        ///    and are added, unclamped, afterwards.
         [[nodiscard]] float Axis(AxisId axis) const;
 
         // --- Persistence ----------------------------------------------------

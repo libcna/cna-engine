@@ -59,6 +59,12 @@ if(CNA_ENGINE_WITH_EXTENDED)
         PROPERTIES LABELS "unit;enhanced")
 endif()
 
+# --- Pilot probes: compare engine facilities with pilot implementations. ------
+option(CNA_ENGINE_PILOT_PROBES "Build probes that compile pilot-project sources read-only" ON)
+if(CNA_ENGINE_PILOT_PROBES)
+    add_subdirectory(pilots)
+endif()
+
 # --- Public dependency-boundary checks (ENG-011). ------------------------------
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)

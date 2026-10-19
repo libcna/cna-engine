@@ -379,7 +379,8 @@ namespace CnaEngine::Input
                        + ":" + FormatFloat(binding.scale);
             case AxisBinding::Kind::GamePad:
                 return "PadAxis:" + std::string(GamePadAxisName(binding.padAxis)) + ":" + FormatFloat(binding.deadZone)
-                       + ":" + FormatFloat(binding.scale);
+                       + ":" + FormatFloat(binding.scale)
+                       + (binding.exponent != 1.0f ? ":" + FormatFloat(binding.exponent) : std::string());
             case AxisBinding::Kind::Mouse:
                 return "MouseAxis:" + std::string(MouseAxisName(binding.mouseAxis)) + ":" + FormatFloat(binding.scale);
         }
@@ -396,12 +397,13 @@ namespace CnaEngine::Input
             if (negative && positive && scale) {
                 return AxisBinding::ForKeys(*negative, *positive, *scale);
             }
-        } else if (parts.size() == 4 && EqualsIgnoreCase(parts[0], "PadAxis")) {
+        } else if ((parts.size() == 4 || parts.size() == 5) && EqualsIgnoreCase(parts[0], "PadAxis")) {
             const auto axis = GamePadAxisFromName(parts[1]);
             const auto deadZone = ParseFloat(parts[2]);
             const auto scale = ParseFloat(parts[3]);
-            if (axis && deadZone && scale && *deadZone >= 0.0f && *deadZone < 1.0f) {
-                return AxisBinding::ForGamePad(*axis, *deadZone, *scale);
+            const auto exponent = parts.size() == 5 ? ParseFloat(parts[4]) : std::optional<float>(1.0f);
+            if (axis && deadZone && scale && exponent && *deadZone >= 0.0f && *deadZone < 1.0f && *exponent > 0.0f) {
+                return AxisBinding::ForGamePad(*axis, *deadZone, *scale, *exponent);
             }
         } else if (parts.size() == 3 && EqualsIgnoreCase(parts[0], "MouseAxis")) {
             const auto axis = MouseAxisFromName(parts[1]);

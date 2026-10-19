@@ -168,10 +168,37 @@ namespace CnaEngine::Input
         map.Update(Pad(Vector2(-1.0f, 0.0f), 0.0f, {}));
         EXPECT_FLOAT_EQ(map.Axis(steer), -1.0f);
 
-        InputSnapshot both = Pad(Vector2(1.0f, 0.0f), 0.0f, {});
-        both.keyboard = KeyboardState({Keys::D});
+        InputSnapshot both = Pad(Vector2(0.4f, 0.0f), 0.0f, {});
+        both.keyboard = KeyboardState({Keys::A});
         map.Update(both);
-        EXPECT_FLOAT_EQ(map.Axis(steer), 1.0f) << "bounded contributions clamp to 1";
+        EXPECT_FLOAT_EQ(map.Axis(steer), -1.0f) << "largest magnitude wins, no summing";
+        both = Pad(Vector2(-0.9f, 0.0f), 0.0f, {});
+        both.keyboard = KeyboardState({});
+        map.Update(both);
+        EXPECT_NEAR(map.Axis(steer), -0.875f, 1e-6f);
+    }
+
+    TEST(ActionMapTests, KeyPairsFormOneComposite)
+    {
+        ActionMap map;
+        const AxisId steer = map.AddAxis("Steer");
+        map.BindAxis(steer, AxisBinding::ForKeys(Keys::A, Keys::D));
+        map.BindAxis(steer, AxisBinding::ForKeys(Keys::Left, Keys::Right));
+        map.Update(Keyboard({Keys::A, Keys::Right}));
+        EXPECT_FLOAT_EQ(map.Axis(steer), 0.0f) << "opposite keys cancel across pairs";
+        map.Update(Keyboard({Keys::A, Keys::Left}));
+        EXPECT_FLOAT_EQ(map.Axis(steer), -1.0f) << "same direction does not add up";
+    }
+
+    TEST(ActionMapTests, GamePadResponseCurve)
+    {
+        ActionMap map;
+        const AxisId steer = map.AddAxis("Steer");
+        map.BindAxis(steer, AxisBinding::ForGamePad(GamePadAxis::LeftStickX, 0.0f, 1.0f, 2.0f));
+        map.Update(Pad(Vector2(-0.5f, 0.0f), 0.0f, {}));
+        EXPECT_FLOAT_EQ(map.Axis(steer), -0.25f) << "sign kept, magnitude curved";
+        map.Update(Pad(Vector2(1.0f, 0.0f), 0.0f, {}));
+        EXPECT_FLOAT_EQ(map.Axis(steer), 1.0f) << "full deflection still reaches 1";
     }
 
     TEST(ActionMapTests, MouseAxesReportDeltasBetweenSnapshots)

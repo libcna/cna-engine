@@ -111,6 +111,10 @@ namespace CnaEngine::Input
         float deadZone = 0.0f;
         /// Multiplier applied after the dead zone. Negative inverts the axis.
         float scale = 1.0f;
+        /// GamePad only: response curve exponent applied to the magnitude
+        /// after the dead zone (1 = linear; > 1 gives finer control near the
+        /// centre while still reaching full deflection).
+        float exponent = 1.0f;
 
         [[nodiscard]] static AxisBinding ForKeys(Microsoft::Xna::Framework::Input::Keys negativeKey,
                                                  Microsoft::Xna::Framework::Input::Keys positiveKey,
@@ -123,13 +127,15 @@ namespace CnaEngine::Input
             b.scale = scale;
             return b;
         }
-        [[nodiscard]] static AxisBinding ForGamePad(GamePadAxis axis, float deadZone = 0.2f, float scale = 1.0f) noexcept
+        [[nodiscard]] static AxisBinding ForGamePad(GamePadAxis axis, float deadZone = 0.2f, float scale = 1.0f,
+                                                    float exponent = 1.0f) noexcept
         {
             AxisBinding b;
             b.kind = Kind::GamePad;
             b.padAxis = axis;
             b.deadZone = deadZone;
             b.scale = scale;
+            b.exponent = exponent;
             return b;
         }
         [[nodiscard]] static AxisBinding ForMouse(MouseAxis axis, float scale = 1.0f) noexcept

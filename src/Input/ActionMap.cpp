@@ -241,24 +241,37 @@ namespace CnaEngine::Input
     float ActionMap::AxisValue(const AxisState& axis, const InputSnapshot& snapshot, const float mouseDeltaX,
                                const float mouseDeltaY, const float wheelDelta)
     {
-        float bounded = 0.0f;
+        // Keys form one digital composite: the strongest push in each
+        // direction, so opposite keys cancel and same-direction keys do not add.
+        float keysPositive = 0.0f;
+        float keysNegative = 0.0f;
+        float analog = 0.0f;
         float unbounded = 0.0f;
+        auto push = [&](const float part) {
+            keysPositive = std::max(keysPositive, part);
+            keysNegative = std::min(keysNegative, part);
+        };
         for (const auto& binding : axis.bindings) {
             switch (binding.kind) {
-                case AxisBinding::Kind::KeyPair: {
-                    float value = 0.0f;
+                case AxisBinding::Kind::KeyPair:
                     if (binding.negative != Keys::None && snapshot.keyboard.IsKeyDown(binding.negative)) {
-                        value -= 1.0f;
+                        push(-binding.scale);
                     }
                     if (binding.positive != Keys::None && snapshot.keyboard.IsKeyDown(binding.positive)) {
-                        value += 1.0f;
+                        push(binding.scale);
                     }
-                    bounded += value * binding.scale;
+                    break;
+                case AxisBinding::Kind::GamePad: {
+                    float value = ApplyDeadZone(PadAxisValue(snapshot, binding.padAxis), binding.deadZone);
+                    if (binding.exponent != 1.0f && value != 0.0f) {
+                        value = std::copysign(std::pow(std::fabs(value), binding.exponent), value);
+                    }
+                    value *= binding.scale;
+                    if (std::fabs(value) > std::fabs(analog)) {
+                        analog = value;
+                    }
                     break;
                 }
-                case AxisBinding::Kind::GamePad:
-                    bounded += ApplyDeadZone(PadAxisValue(snapshot, binding.padAxis), binding.deadZone) * binding.scale;
-                    break;
                 case AxisBinding::Kind::Mouse: {
                     const float delta = binding.mouseAxis == MouseAxis::DeltaX   ? mouseDeltaX
                                         : binding.mouseAxis == MouseAxis::DeltaY ? mouseDeltaY
@@ -268,6 +281,9 @@ namespace CnaEngine::Input
                 }
             }
         }
+        const float keys = keysPositive + keysNegative;
+        // Keys and sticks compete: the larger magnitude wins; keys win a tie.
+        const float bounded = std::fabs(analog) > std::fabs(keys) ? analog : keys;
         return std::clamp(bounded, -1.0f, 1.0f) + unbounded;
     }
 

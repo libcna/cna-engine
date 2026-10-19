@@ -281,7 +281,8 @@ Blocked by: ENG-012.
 Result: `Input/ActionMap.hpp`, `Bindings.hpp`, `InputNames.hpp`,
 `BindingCapture.hpp`, `InputSnapshot.hpp` with unit tests for rebinding,
 conflicts, dead zones, focus loss and persistence. Open: express both pilots'
-core controls (pilot work).
+core controls (pilot work). Car-simulator: validated by an equivalence probe
+(`docs/pilots/car-simulator.md`); Street: open.
 
 ### ENG-021 — Implement camera data and controller interfaces `[~]`
 

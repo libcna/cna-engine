@@ -8,7 +8,7 @@ the API; "Consumers" lists code that uses the engine facility today.
 | --- | --- | --- | --- | --- | --- |
 | Version constants | `Core/Version.hpp` | Core | experimental | — | tests |
 | Input snapshot | `Input/InputSnapshot.hpp` | Core | experimental | car-simulator `InputMapper::Update` | tests |
-| Action map (actions, axes, rebinding, conflicts, focus loss, persistence) | `Input/ActionMap.hpp` | Core | experimental | car-simulator `InputMapper` (key names, overrides, pad snapshot) | tests, example |
+| Action map (actions, axes, rebinding, conflicts, focus loss, persistence) | `Input/ActionMap.hpp` | Core | experimental (car-simulator validated) | car-simulator `InputMapper` (key names, overrides, pad snapshot) | tests, example, car-simulator equivalence probe |
 | Binding names and text format | `Input/InputNames.hpp` | Core | experimental | car-simulator `KeyName`/`KeyFromName` | tests |
 | Binding capture (rebinding prompt) | `Input/BindingCapture.hpp` | Core | experimental | — | tests |
 | Frame statistics | `Diagnostics/FrameStatistics.hpp` | Core | experimental | Street/car-simulator benchmark overlays | tests, example |
