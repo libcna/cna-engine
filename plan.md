@@ -532,7 +532,7 @@ exactly (car-simulator's 3 tiers × 4 settings, Street's 4 presets × 26
 settings); on a limited device only declared limits change values, each
 recorded (`docs/pilots/`).
 
-### ENG-037 — Add optional debug presentation `[~]`
+### ENG-037 — Add optional debug presentation `[x]`
 
 Acceptance:
 
@@ -545,8 +545,8 @@ Blocked by: ENG-025 and ENG-030.
 Result: `Graphics/FormatDiagnostics()` makes every metric available without an
 overlay; `Extended/DebugOverlay.hpp` draws a panel and frame-time graph with
 cna-extended's shape drawing and text with a game-supplied `BitmapFont`.
-Open: a pixel test of the text path (no BMFont fixture with a page texture
-is available without modifying cna-extended).
+Pixel tests cover the panel, the budget-coloured graph and the text path
+(with a font built in code).
 
 ### MILESTONE-2 — Street rendering vertical slice `[ ]`
 

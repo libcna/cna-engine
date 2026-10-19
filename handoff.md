@@ -66,9 +66,7 @@ Done (see `plan.md` for per-task results):
    with the engine path, CPU/draw-call measurements with agreed tolerances.
 3. ENG-035 later steps only when a pilot needs them (Street currently draws no
    shadows; see `docs/pilots/street-simulator.md`).
-4. ENG-037: pixel test of the overlay text path (needs a BMFont with a page
-   texture that does not require modifying cna-extended).
-5. Upstream: UP-001 (no CNA package), UP-004 (BoundingFrustum point
+4. Upstream: UP-001 (no CNA package), UP-004 (BoundingFrustum point
    containment), UP-005 (cna-extended skinned test) — for their owners.
 
 ## Pointers
