@@ -31,6 +31,8 @@ namespace CnaEngine::Graphics
 
     [[nodiscard]] RenderBucket BucketFor(const Material& material) noexcept;
 
+    class InstanceSet;
+
     /// One draw: a mesh, how it looks, and where it is.
     struct RenderItem
     {
@@ -50,6 +52,13 @@ namespace CnaEngine::Graphics
         std::uint32_t layers = 1;
         /// Coarse priority within a bucket: lower draws first.
         std::int32_t order = 0;
+        /// Optional instances of `mesh` (borrowed): the item then stands for
+        /// every visible instance of the set, placed relative to `world`.
+        /// The renderer draws them with one hardware-instanced draw on a HiDef
+        /// device (CNA's effects read the per-instance stream), otherwise one
+        /// draw per instance. Cull the set itself (InstanceSet::Cull); `bounds`
+        /// should enclose all instances.
+        InstanceSet* instances = nullptr;
     };
 
     /// World-space bounds of `mesh` placed with `world` (conservative for

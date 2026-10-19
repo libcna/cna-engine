@@ -126,8 +126,8 @@ namespace CnaEngine::Graphics
         RenderTarget2D target(device, Size, Size);
         device.SetRenderTarget(&target);
         device.Clear(Color(0, 0, 0, 255));
-        // A stock effect ignores the instance stream, so every instance lands
-        // at the origin: this checks buffers, bindings and counts, not shading.
+        // Instances 1..4 are beyond the right edge; this checks buffers,
+        // bindings and counts (StockEffectsReadTheInstanceStream checks placement).
         BasicEffect effect(device);
         effect.setVertexColorEnabledProperty(true);
         effect.setViewProperty(Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 3.0f), Vector3::Zero, Vector3::Up));
@@ -151,5 +151,34 @@ namespace CnaEngine::Graphics
 
         InstanceSet empty(&box);
         EXPECT_FALSE(empty.DrawHardware(device));
+    }
+
+    TEST(InstancingTests, StockEffectsReadTheInstanceStream)
+    {
+        GraphicsDevice device;
+        device.SetGraphicsProfileEXT(GraphicsProfile::HiDef);
+        const GpuMesh box = SmallBox(device);
+        InstanceSet set(&box);
+        for (const float x : {-0.6f, 0.0f, 0.6f}) {
+            set.Add(Matrix::CreateTranslation(x, 0.0f, 0.0f));
+        }
+        RenderTarget2D target(device, Size, Size);
+        device.SetRenderTarget(&target);
+        device.Clear(Color(0, 0, 0, 255));
+        BasicEffect effect(device);
+        effect.setVertexColorEnabledProperty(true);
+        effect.setViewProperty(Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 3.0f), Vector3::Zero, Vector3::Up));
+        effect.setProjectionProperty(Matrix::CreateOrthographic(2.0f, 2.0f, 0.1f, 10.0f));
+        effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
+        ASSERT_TRUE(set.DrawHardware(device));
+        device.SetRenderTarget(nullptr);
+        std::vector<Color> pixels(static_cast<std::size_t>(Size * Size));
+        target.GetData(pixels.data(), static_cast<int>(pixels.size()));
+        const auto row = [&](int x) { return pixels[static_cast<std::size_t>(Size / 2 * Size + x)].getRProperty(); };
+        // Three separate boxes: CNA applies the per-instance world (TextureCoordinate 1-4).
+        EXPECT_GT(row(Size / 2), 128);
+        EXPECT_GT(row(Size / 2 - static_cast<int>(0.3f * Size)), 128);
+        EXPECT_GT(row(Size / 2 + static_cast<int>(0.3f * Size)), 128);
+        EXPECT_LT(row(Size / 2 - static_cast<int>(0.15f * Size)), 128) << "gap between boxes";
     }
 }

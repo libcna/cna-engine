@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 #include "CnaEngine/Graphics/ForwardRenderer.hpp"
 
+#include "CnaEngine/Graphics/Instancing.hpp"
+
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 
 #include <algorithm>
@@ -126,8 +129,33 @@ namespace CnaEngine::Graphics
                 device_.setBlendStateProperty(material.blend == BlendMode::Additive ? BlendState::Additive
                                                                                     : BlendState::AlphaBlend);
             }
-            if (binder_->Apply(device_, item, bucket, camera, sink_)) {
-                item.mesh->Draw(device_, &statistics);
+            if (item.instances == nullptr) {
+                if (binder_->Apply(device_, item, bucket, camera, sink_)) {
+                    item.mesh->Draw(device_, &statistics);
+                }
+                continue;
+            }
+            InstanceSet& set = *item.instances;
+            if (set.Mesh() != item.mesh) {
+                sink_(material, "instanced item ignored: its InstanceSet draws a different mesh");
+                continue;
+            }
+            if (device_.getGraphicsProfileProperty() == Microsoft::Xna::Framework::Graphics::GraphicsProfile::HiDef) {
+                // One draw: the effect's World is the shared base, the
+                // instance stream supplies each instance's own transform.
+                if (binder_->Apply(device_, item, bucket, camera, sink_)) {
+                    set.DrawHardware(device_, &statistics);
+                }
+                continue;
+            }
+            // Reach: one draw per instance through the binder.
+            RenderItem single = item;
+            single.instances = nullptr;
+            for (const Microsoft::Xna::Framework::Matrix& instance : set.VisibleWorlds()) {
+                single.world = instance * item.world;
+                if (binder_->Apply(device_, single, bucket, camera, sink_)) {
+                    item.mesh->Draw(device_, &statistics);
+                }
             }
         }
     }

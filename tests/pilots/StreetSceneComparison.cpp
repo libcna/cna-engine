@@ -23,6 +23,7 @@
 #include "CnaEngine/Graphics/Camera.hpp"
 #include "CnaEngine/Graphics/ForwardRenderer.hpp"
 #include "CnaEngine/Graphics/GpuMesh.hpp"
+#include "CnaEngine/Graphics/Instancing.hpp"
 #include "CnaEngine/Graphics/RenderQueue.hpp"
 #include "CnaEngine/Graphics/ScreenCapture.hpp"
 #include "CnaEngine/Graphics/Visibility.hpp"
@@ -270,7 +271,10 @@ int main(int argc, char** argv)
         std::uint64_t visibleInstances = 0;
         std::uint64_t totalInstances = 0;
         Graphics::CullStatistics instanceCulling;
-        for (const auto& group : groups) {
+        // One instanced render item per group, as Street draws them.
+        std::vector<Graphics::InstanceSet> sets(groups.size());
+        for (std::size_t g = 0; g < groups.size(); ++g) {
+            const auto& group = groups[g];
             if (group.shadowOnly) {
                 continue;
             }
@@ -294,14 +298,20 @@ int main(int argc, char** argv)
             const CnaStreet::GpuMesh* mesh =
                 group.lodMesh != nullptr && group.lodDistance > 0.0f && nearest > group.lodDistance ? group.lodMesh
                                                                                                      : group.mesh;
-            for (const std::size_t i : visible) {
-                Graphics::RenderItem e;
-                e.mesh = &meshFor(mesh);
-                e.material = &materialFor(group.material);
-                e.world = group.transforms[i];
-                e.bounds = group.spheres[i];
-                queue.Submit(e);
+            if (visible.empty()) {
+                continue;
             }
+            Graphics::InstanceSet& set = sets[g];
+            set.SetMesh(&meshFor(mesh));
+            for (const std::size_t i : visible) {
+                set.Add(group.transforms[i]);
+            }
+            Graphics::RenderItem e;
+            e.mesh = set.Mesh();
+            e.material = &materialFor(group.material);
+            e.bounds = group.spheres[visible.front()];
+            e.instances = &set;
+            queue.Submit(e);
         }
         queue.Sort(camera.Position());
 
@@ -336,7 +346,7 @@ int main(int argc, char** argv)
                     static_cast<unsigned long long>(itemCulling.visible));
         std::printf("visible instances: street %d, engine %llu\n", streetStats.visibleInstances,
                     static_cast<unsigned long long>(visibleInstances));
-        std::printf("draw calls:        street %d (instanced %d), engine %llu (per-instance path)\n",
+        std::printf("draw calls:        street %d (instanced %d), engine %llu\n",
                     streetStats.drawCalls, streetStats.instancedDrawCalls,
                     static_cast<unsigned long long>(engineStats.drawCalls));
         std::printf("cpu frame:         street %.1f ms, engine %.1f ms (software renderer, Debug)\n", streetMs, engineMs);

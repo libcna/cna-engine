@@ -102,7 +102,8 @@ traffic or pedestrians), and draws the first viewpoint twice into the same
    borrowed (`GpuMesh::Borrow(ModelMeshPart&)`), materials converted field by
    field, engine culling with Street's rules (box distance and per-item limits
    for items, sphere distance with min/max for instances, batch LOD from the
-   nearest instance), `ForwardRenderer` with the `PbrMaterialBinder`.
+   nearest instance), one instanced render item per group, `ForwardRenderer`
+   with the `PbrMaterialBinder`.
 
 Result (software renderer, Debug, CNA baseline `5a44d2c5`):
 
@@ -111,8 +112,8 @@ Result (software renderer, Debug, CNA baseline `5a44d2c5`):
 | Scene | 1,361 static items, 93 instance groups (661 instances) | same objects |
 | Visible items | 652 | **652** |
 | Visible instances | 192 | **192** |
-| Draw calls | 703 (51 instanced) | 844 (instances drawn one by one) |
-| CPU frame time | 6.2–7.2 s | 4.8–5.3 s |
+| Draw calls | 703 (51 instanced) | **703** (instanced render items) |
+| CPU frame time | 6.2–9.7 s | 4.8–8.2 s (engine faster in every run) |
 | Mean image difference | — | 19 / 255 per channel |
 
 The program fails if the visibility sets differ. The images
@@ -120,14 +121,14 @@ The program fails if the visibility sets differ. The images
 geometry, materials and composition; the remaining difference is Street's
 lighting model (image-based sky lighting, exposure, its own sun intensity),
 which is game art direction and stays in the game — a Street binder
-deriving from the engine's would carry it. The engine issues more draws
-because its PBR path has no instancing-capable effect; with one, the 192
-instances would collapse into Street's 51 instanced draws.
+deriving from the engine's would carry it.
 
 Generalizations made because of this comparison: `GpuMesh::Borrow` of model
 parts with vertex offset and start index; optional box bounds, per-item cull
 distance and minimum distance in visibility; `Material::keyLight` (Street's
-`sunlit`).
+`sunlit`); instanced render items (`RenderItem::instances`) drawn with one
+hardware draw on HiDef — CNA's effects read the per-instance stream and
+compose it with the effect's World, verified against the per-instance path.
 
 ## Shadows (ENG-035 step 3) — not required at present
 

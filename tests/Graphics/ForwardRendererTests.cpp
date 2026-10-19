@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 #include "CnaEngine/Graphics/ForwardRenderer.hpp"
 
+#include "CnaEngine/Graphics/Instancing.hpp"
 #include "CnaEngine/Graphics/MeshBuilder.hpp"
 
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/CullMode.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthFormat.hpp"
+#include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
@@ -241,5 +243,67 @@ namespace CnaEngine::Graphics
         EXPECT_TRUE(renderer.LastFallbacks().empty());
         // The next sunlit draw gets its light back.
         EXPECT_EQ(At(draw(sunlit), Size / 2, Size / 2), bright);
+    }
+
+    // Instanced items draw identically on both paths: one hardware draw on
+    // HiDef, one draw per instance on Reach, instances relative to the item's
+    // world in both.
+    TEST(ForwardRendererInstancingTests, InstancedItemsMatchAcrossProfiles)
+    {
+        auto render = [](Microsoft::Xna::Framework::Graphics::GraphicsProfile profile, RenderStatistics& stats) {
+            GraphicsDevice device;
+            device.SetGraphicsProfileEXT(profile);
+            RenderTarget2D target(device, Size, Size, false, SurfaceFormat::Color, DepthFormat::Depth24);
+            MeshBuilder builder({VertexAttribute::Position, VertexAttribute::Color});
+            builder.SetColor(Color(255, 64, 0, 255));
+            builder.AddBox(Vector3(-0.15f, -0.15f, -0.15f), Vector3(0.15f, 0.15f, 0.15f));
+            const GpuMesh box = GpuMesh::Upload(device, builder.Mesh(), VertexLayout::PositionColor());
+            InstanceSet instances(&box);
+            for (const float x : {-0.6f, 0.0f, 0.6f}) {
+                instances.Add(Matrix::CreateTranslation(x, 0.0f, 0.0f));
+            }
+            Material material;
+            material.name = "boxes";
+            material.shading = ShadingModel::Unlit;
+            material.vertexColors = true;
+            RenderItem item;
+            item.mesh = &box;
+            item.material = &material;
+            item.world = Matrix::CreateTranslation(0.0f, 0.4f, 0.0f); // shared base
+            item.bounds = Microsoft::Xna::Framework::BoundingSphere(Vector3(0.0f, 0.4f, 0.0f), 1.0f);
+            item.instances = &instances;
+            RenderQueue queue;
+            queue.Submit(item);
+            Camera camera;
+            camera.SetOrthographic(2.0f, 2.0f, 0.1f, 10.0f);
+            camera.SetPosition(Vector3(0.0f, 0.0f, 5.0f));
+            ForwardRenderer renderer(device);
+            device.SetRenderTarget(&target);
+            device.Clear(Color(0, 0, 0, 255));
+            renderer.Render(queue, camera, &stats);
+            device.SetRenderTarget(nullptr);
+            std::vector<Color> pixels(static_cast<std::size_t>(Size * Size));
+            target.GetData(pixels.data(), static_cast<int>(pixels.size()));
+            return pixels;
+        };
+        RenderStatistics hardware;
+        RenderStatistics perInstance;
+        const auto hiDef = render(Microsoft::Xna::Framework::Graphics::GraphicsProfile::HiDef, hardware);
+        const auto reach = render(Microsoft::Xna::Framework::Graphics::GraphicsProfile::Reach, perInstance);
+        EXPECT_EQ(hardware.drawCalls, 1u);
+        EXPECT_EQ(perInstance.drawCalls, 3u);
+        EXPECT_EQ(hardware.primitives, perInstance.primitives);
+        int lit = 0;
+        for (const auto& p : reach) {
+            lit += p.getRProperty() > 128 ? 1 : 0;
+        }
+        EXPECT_GT(lit, 20);
+        // Boxes sit 0.4 up (the base) at three x positions.
+        const auto at = [&](const std::vector<Color>& pixels, int x, int y) {
+            return pixels[static_cast<std::size_t>(y * Size + x)];
+        };
+        const int y = Size / 2 - static_cast<int>(0.4f * Size / 2.0f);
+        EXPECT_GT(at(reach, Size / 2, y).getRProperty(), 128) << "per-instance: base applied";
+        EXPECT_EQ(hiDef, reach) << "hardware and per-instance paths agree";
     }
 }

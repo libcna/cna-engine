@@ -452,7 +452,9 @@ Blocked by: ENG-023 and ENG-031.
 Result: `Graphics/RenderQueue.hpp` (buckets, deterministic material-grouped
 front-to-back, back-to-front transparent, stable overlay) and the
 `ForwardRenderer` state contract (states set per bucket, restored after
-`Render`). Skinned submissions remain with cna-extended's World3D systems.
+`Render`). Static, dynamic and instanced submissions share `RenderItem`
+(`instances` for instanced groups); skinned submissions remain with
+cna-extended's World3D systems.
 
 ### ENG-033 — Add visibility and LOD policy `[~]`
 
@@ -571,11 +573,11 @@ hysteresis and instanced lamps, with diagnostics and a PNG capture; it runs as
 a CTest example. Street's own camera, controls and tangent-frame meshes are
 validated by equivalence probes. A real Street scene (Street's own `CityScene`) is drawn by Street's
 `SceneRenderer` and by the engine over the same buffers: identical visibility
-(652 items, 192 instances), comparable CPU time (engine faster), mean image
+(652 items, 192 instances), identical draw calls (703, instanced groups as
+instanced render items), lower CPU frame time for the engine, mean image
 difference 19/255 attributable to Street's lighting model
 (`docs/pilots/street-simulator.md`). Open: agreed screenshot tolerances with
-the owner, an instancing-capable PBR effect to match Street's draw count, and
-adoption inside street-simulator (needs permission).
+the owner and adoption inside street-simulator (needs permission).
 
 ### PILOT-001 — Validate `cna-street` `[~]`
 

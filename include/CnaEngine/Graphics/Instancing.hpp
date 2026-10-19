@@ -63,6 +63,8 @@ namespace CnaEngine::Graphics
         /// Uses every instance (no culling).
         void UseAll();
         [[nodiscard]] std::size_t VisibleCount() const noexcept;
+        /// The world matrices that the next draw uses (after Cull/UseAll).
+        [[nodiscard]] std::vector<Microsoft::Xna::Framework::Matrix> VisibleWorlds() const;
 
         /// Chooses the hardware path when the device profile allows it and the
         /// caller states that its effect consumes the instance stream.

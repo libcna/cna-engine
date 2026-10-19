@@ -29,3 +29,9 @@ API snapshot baseline taken 2026-10-19 (12 headers).
   `BaseVertex()` and `StartIndex()`; borrowed meshes now draw from a vertex
   offset and start index. Reason: Street's meshes share buffers through model
   parts (MILESTONE-2 scene comparison). Additive; existing calls unchanged.
+
+### Other API additions (experimental headers)
+
+- `RenderItem::box`, `cullDistance`, `instances`; `VisibilitySettings::minDistance`;
+  `Classify(const RenderItem&, ...)`, `DistanceToBox`.
+- `Material::keyLight`; `InstanceSet::VisibleWorlds()`.

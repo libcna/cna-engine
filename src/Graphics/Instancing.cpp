@@ -92,6 +92,19 @@ namespace CnaEngine::Graphics
 
     std::size_t InstanceSet::VisibleCount() const noexcept { return cullActive_ ? visible_.size() : worlds_.size(); }
 
+    std::vector<Matrix> InstanceSet::VisibleWorlds() const
+    {
+        if (!cullActive_) {
+            return worlds_;
+        }
+        std::vector<Matrix> visible;
+        visible.reserve(visible_.size());
+        for (const auto index : visible_) {
+            visible.push_back(worlds_[index]);
+        }
+        return visible;
+    }
+
     InstancingPath InstanceSet::ChoosePath(const GraphicsDevice& device, const bool effectReadsInstanceStream)
     {
         return effectReadsInstanceStream && device.getGraphicsProfileProperty() == GraphicsProfile::HiDef
