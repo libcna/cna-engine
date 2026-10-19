@@ -38,6 +38,7 @@ add_executable(cna_engine_tests
     Graphics/ForwardRendererTests.cpp
     Graphics/QualityTests.cpp
     Graphics/InstancingTests.cpp
+    Graphics/DiagnosticsReportTests.cpp
     Assets/AssetRegistryTests.cpp
 )
 target_link_libraries(cna_engine_tests PRIVATE cna_engine_core cna_engine_graphics GTest::gtest_main)
@@ -49,6 +50,7 @@ gtest_discover_tests(cna_engine_tests
 # --- Enhanced tests: the only executable linking cna-extended. -----------------
 if(CNA_ENGINE_WITH_EXTENDED)
     add_executable(cna_engine_extended_tests
+        Extended/DebugOverlayTests.cpp
         Extended/EngineWorldScreenTests.cpp
         Extended/WorldCameraSyncTests.cpp
     )

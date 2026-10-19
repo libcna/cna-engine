@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+
+# Dependency refs must equal cmake/CnaEngineBaseline.cmake (ADR-002). The
+# configure step runs with CNA_ENGINE_ENFORCE_BASELINE=ON, so a mismatch fails
+# the build instead of silently testing another revision.
+env:
+  CNA_REF: 5a44d2c507cd5e49eab9ab35570a8a98c4b7a0f3
+  CNA_EXTENDED_REF: 0061e3e17c30b2a3a302bce617e64765883079aa
+  SHARP_RUNTIME_REF: f2aecfefeac171b331787e5cdc4849507363ef0e
+  # Workspace convention: at most three parallel compile and test jobs.
+  JOBS: 3
+
+jobs:
+  engine:
+    name: Engine build and tests (software/headless/null)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out cna-engine
+        uses: actions/checkout@v4
+        with:
+          path: cna-engine
+
+      - name: Check out cna
+        uses: actions/checkout@v4
+        with:
+          repository: libcna/cna
+          ref: ${{ env.CNA_REF }}
+          path: cna
+
+      - name: Check out cna-extended
+        uses: actions/checkout@v4
+        with:
+          repository: libcna/cna-extended
+          ref: ${{ env.CNA_EXTENDED_REF }}
+          path: cna-extended
+          submodules: true
+
+      - name: Check out sharp-runtime
+        uses: actions/checkout@v4
+        with:
+          repository: libcna/sharp-runtime
+          ref: ${{ env.SHARP_RUNTIME_REF }}
+          path: sharp-runtime
+
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build ccache
+
+      - name: Configure
+        working-directory: cna-engine
+        run: >
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache
+          -DCNA_ENGINE_ENFORCE_BASELINE=ON
+          -DCNA_ENGINE_PILOT_PROBES=OFF
+          -DCNA_ENABLE_SDL=OFF -DCNA_ENABLE_VIDEO=OFF
+
+      - name: Build
+        working-directory: cna-engine
+        run: cmake --build build --parallel "$JOBS"
+
+      # Separate, labelled steps so a failure names its category.
+      - name: Boundary checks
+        working-directory: cna-engine
+        run: ctest --test-dir build -L boundary --output-on-failure --parallel "$JOBS"
+
+      - name: Unit tests
+        working-directory: cna-engine
+        run: ctest --test-dir build -L unit --output-on-failure --parallel "$JOBS"
+
+      - name: Examples
+        working-directory: cna-engine
+        run: ctest --test-dir build -L example --output-on-failure --parallel "$JOBS"
+
+      - name: No test may be skipped silently
+        working-directory: cna-engine
+        shell: bash
+        run: |
+          ctest --test-dir build --parallel "$JOBS" --output-on-failure 2>&1 | tee ctest.log
+          if grep -Eq "Not Run|Disabled|Skipped" ctest.log; then
+            echo "::error::a test was skipped or disabled"; exit 1
+          fi
+
+      - name: Installed-package consumer probes
+        working-directory: cna-engine
+        run: CCACHE_NOHASHDIR=1 CNA_ENGINE_JOBS="$JOBS" tools/run_consumer_probes.sh build build-consumer

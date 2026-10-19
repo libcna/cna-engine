@@ -9,10 +9,12 @@
 #include "CnaEngine/Graphics/Camera.hpp"
 #include "CnaEngine/Graphics/GpuMesh.hpp"
 #include "CnaEngine/Graphics/MeshData.hpp"
+#include "CnaEngine/Graphics/ScreenCapture.hpp"
 
 #include "CarSim/Render/Camera.hpp"
 #include "CarSim/Render/GpuMesh.hpp"
 #include "CarSim/Render/MeshData.hpp"
+#include "CarSim/Render/Screenshot.hpp"
 
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthFormat.hpp"
@@ -24,10 +26,15 @@
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "System/IO/FileAccess.hpp"
+#include "System/IO/FileMode.hpp"
+#include "System/IO/FileStream.hpp"
 
 #include <gtest/gtest.h>
 
 #include <cmath>
+#include <filesystem>
+#include <string>
 #include <vector>
 
 namespace CnaEngine::Pilot
@@ -195,5 +202,54 @@ namespace CnaEngine::Pilot
         }
         EXPECT_GT(covered, Width * Height / 10) << "the scenery is actually on screen";
         EXPECT_EQ(enginePixels, pilotPixels) << "16-bit engine indices and 32-bit pilot indices draw the same image";
+    }
+
+    TEST(CarSimulatorRenderTests, ScreenshotsMatchThePilotCapture)
+    {
+        using Microsoft::Xna::Framework::Graphics::Texture2D;
+        const auto directory = std::filesystem::current_path() / "pilot_screenshots";
+        std::filesystem::remove_all(directory);
+        std::filesystem::create_directories(directory);
+        const std::string pilotPath = (directory / "pilot.png").string();
+        const std::string enginePath = (directory / "engine.png").string();
+
+        GraphicsDevice reach;
+        EXPECT_FALSE(CarSim::Render::SaveBackBufferPng(reach, pilotPath)) << "Reach cannot read the back buffer";
+        const auto refused = Graphics::CaptureBackBuffer(reach, Graphics::CaptureOptions{enginePath, false});
+        EXPECT_FALSE(refused.success);
+        EXPECT_FALSE(refused.error.empty()) << "the engine says why instead of printing to stderr";
+
+        GraphicsDevice device;
+        device.SetGraphicsProfileEXT(GraphicsProfile::HiDef);
+        const auto pilotMesh = PilotScenery();
+        const auto gpu = Graphics::GpuMesh::Upload(device, ToEngine(pilotMesh),
+                                                   Graphics::VertexLayout::PositionNormalTexture());
+        device.Clear(Color(90, 120, 150, 255));
+        device.setDepthStencilStateProperty(DepthStencilState::Default);
+        BasicEffect effect(device);
+        effect.EnableDefaultLighting();
+        CarSim::Render::CameraPose pose;
+        Graphics::Camera camera;
+        ApplyPose(pose, 4.0f / 3.0f, camera);
+        effect.setViewProperty(camera.View());
+        effect.setProjectionProperty(camera.Projection());
+        effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
+        gpu.Draw(device);
+
+        ASSERT_TRUE(CarSim::Render::SaveBackBufferPng(device, pilotPath));
+        const auto captured = Graphics::CaptureBackBuffer(device, Graphics::CaptureOptions{enginePath, true});
+        ASSERT_TRUE(captured.success) << captured.error;
+
+        auto decode = [&](const std::string& path) {
+            System::IO::FileStream stream(path, System::IO::FileMode::Open, System::IO::FileAccess::Read);
+            Texture2D texture = Texture2D::FromStream(device, stream);
+            std::vector<Color> pixels(static_cast<std::size_t>(texture.getWidthProperty() * texture.getHeightProperty()));
+            texture.GetData(pixels.data(), static_cast<int>(pixels.size()));
+            return pixels;
+        };
+        const auto pilotPixels = decode(pilotPath);
+        EXPECT_EQ(decode(enginePath), pilotPixels) << "both PNG files hold the same image";
+        EXPECT_EQ(captured.pixels, pilotPixels) << "and the in-memory capture matches the file";
+        std::filesystem::remove_all(directory);
     }
 }

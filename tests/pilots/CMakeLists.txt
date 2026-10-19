@@ -20,10 +20,11 @@ if(EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Input/InputMapper.cpp")
     add_library(cna_engine_pilot_carsim_render STATIC
         "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/Camera.cpp"
         "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/MeshData.cpp"
-        "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/GpuMesh.cpp")
+        "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/GpuMesh.cpp"
+        "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/Screenshot.cpp")
     target_include_directories(cna_engine_pilot_carsim_render PUBLIC
         "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/include")
-    target_link_libraries(cna_engine_pilot_carsim_render PUBLIC CNA::Math CNA::GraphicsCore)
+    target_link_libraries(cna_engine_pilot_carsim_render PUBLIC CNA::Math CNA::GraphicsCore CNA::Content)
 
     add_executable(cna_engine_pilot_tests CarSimulatorControlsTests.cpp CarSimulatorRenderTests.cpp)
     target_link_libraries(cna_engine_pilot_tests PRIVATE

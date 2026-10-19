@@ -4,6 +4,38 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-19 (later) — new CNA pin, pilots, cna-extended rerun
+
+Dependencies: CNA `next` `5a44d2c507cd5e49eab9ab35570a8a98c4b7a0f3` (new pin;
+tracked modifications only in `CNA_DEMOS_REPAIR_*` documents and
+`modules/c-api/tests/pure_c/GeometrySmoke.c`, none built here), Sharp Runtime
+`f2aecfef` (clean), cna-extended `0061e3e1` (clean). Pilots read-only:
+car-simulator `cd6d948e`, street-simulator `86b4a2e7`.
+
+Engine (`build/`, same configuration as below, plus `CCACHE_NOHASHDIR=1`):
+**133 of 133 tests passed** — unit, boundary, example, and pilot probes
+(car-simulator: controls, cameras, meshes, screenshots, checker allowance;
+street-simulator: camera, controls, tangent-frame meshes).
+
+Installed-package consumer probes (`tools/run_consumer_probes.sh`,
+`build-consumer/`): 2 of 2 passed; the strict consumer passes the boundary
+checker and its link closure contains no cna-extended target.
+
+cna-extended suite against the new pin (`build-probe/`, reconfigured from the
+2026-10-14 audit tree; rebuild 3 min 42 s with 3 jobs):
+2,371 tests — **2,368 passed, 1 failed, 2 skipped**.
+
+- Skipped (known): the two `OrthographicCameraTest.Contains*` cases — CNA
+  defect UP-004.
+- Failed (new since the audit): `AnimationSystem3DEXTTest.DifferentAnimationTimes_ProduceDifferentPixelOutput`
+  — a cna-extended test builds a skinned mesh from an undeclared vertex
+  buffer, which CNA rejects since `e7bd98e46` (2026-10-15). Test defect,
+  UP-005. Not fixed here (cna-extended is not modified from this repository).
+
+Street and car-simulator full suites were not rerun (their own build trees
+would be needed); the pilot probes above cover the facilities the engine
+takes over.
+
 ## 2026-10-19 — first engine build (ENG-010 … ENG-025 initial slice)
 
 Dependencies (configure-time baseline check):

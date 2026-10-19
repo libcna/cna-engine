@@ -105,3 +105,41 @@ for every plane, then `Contains`).
 
 Engine handling: engine culling uses sphere and box containment, not point
 containment, so it is unaffected; no workaround is added.
+
+## UP-005 — cna-extended skinned-animation test uses an undeclared vertex buffer
+
+- Repository: `libcna/cna-extended` (`develop` at `0061e3e1`), test
+  `tests/CNA/Extended/World3DEXT/AnimationSystem3DEXTTests.cpp`
+  (`MakeMovingTriangleModel`, line ~104)
+- Status: open
+- Found: 2026-10-19, ADR-002 rerun of the cna-extended suite against CNA
+  `5a44d2c5`
+
+`AnimationSystem3DEXTTest.DifferentAnimationTimes_ProduceDifferentPixelOutput`
+now fails deterministically with:
+
+> The current vertex declaration does not include all the elements required by
+> the current vertex shader. BlendIndices0 is missing (SkinnedEffect needs a
+> VertexDeclaration naming its elements).
+
+Cause: CNA commit `e7bd98e46` (2026-10-15, "XNA conformance gaps closed …
+stock-effect declaration inputs") rejects skinned draws from buffers created
+with the CNA-only `VertexBuffer(GraphicsDevice&, int)` constructor, which has
+no `VertexDeclaration`; XNA has no undeclared buffers. The test builds its
+skinned triangle that way, so this is a test defect exposed by an intentional
+CNA tightening, not a CNA regression. The 2026-10-14 audit ran against CNA
+`de310727`, which predates `e7bd98e46`.
+
+Suggested fix: construct the buffer with
+`VertexBuffer(graphicsDevice, VertexPositionNormalTextureSkinned::VertexDeclaration, 3, BufferUsage::None)`
+(or the type's declaration accessor).
+
+Related risk: four production files in cna-extended still create undeclared
+buffers for non-skinned geometry (`BillboardMeshEXT.cpp:44`,
+`Text3DEXT.cpp:117`, `DebugDrawSystemEXT.cpp:76`,
+`TilemapChunkRenderer3DEXT.cpp:226`). CNA still infers those layouts from the
+stride, but the same conformance direction would break them; declaring their
+layouts would make them XNA-conformant.
+
+Engine handling: engine GPU meshes always pass a `VertexDeclaration`
+(`VertexLayout::Declaration()`), so the engine is unaffected.

@@ -6,7 +6,7 @@
 # compares them with the checked-out dependency trees; a mismatch is a warning
 # by default and an error with -DCNA_ENGINE_ENFORCE_BASELINE=ON (CI).
 
-set(CNA_ENGINE_BASELINE_CNA "705ea232439135654ce93279dfe87c1ab047ef5c")
+set(CNA_ENGINE_BASELINE_CNA "5a44d2c507cd5e49eab9ab35570a8a98c4b7a0f3")
 set(CNA_ENGINE_BASELINE_CNA_BRANCH "next")
 set(CNA_ENGINE_BASELINE_EXTENDED "0061e3e17c30b2a3a302bce617e64765883079aa")
 set(CNA_ENGINE_BASELINE_EXTENDED_BRANCH "develop")

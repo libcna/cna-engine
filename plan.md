@@ -142,8 +142,9 @@ Blocked by: none. Complete before publishing engine API.
 
 Result: policy and pin accepted in `docs/adr/0002-compatibility-baseline.md`;
 `cmake/CnaEngineBaseline.cmake` checks the revisions at configure time
-(`CNA_ENGINE_ENFORCE_BASELINE=ON` for CI). Open: rerun cna-extended,
-street-simulator and car-simulator against the pin; CI job.
+(`CNA_ENGINE_ENFORCE_BASELINE=ON` for CI; `.github/workflows/ci.yml`). The
+cna-extended suite was rerun against the pin (one new test-defect failure,
+UP-005). Open: full street-simulator and car-simulator suites against the pin.
 
 ### EXT-001 — Correct read-only asset loading in `cna-extended` `[x]`
 
@@ -359,7 +360,7 @@ Result: `Assets/AssetRegistry.hpp` (normalized keys, typed loaders,
 ContentManager loader, fallbacks, failure records, invalidation). Open:
 replace a local cache in each pilot.
 
-### ENG-025 — Add diagnostics and screenshot capture `[~]`
+### ENG-025 — Add diagnostics and screenshot capture `[x]`
 
 Acceptance:
 
@@ -372,7 +373,10 @@ Blocked by: ENG-012.
 
 Result: `Diagnostics/FrameStatistics.hpp`, `ScopedTimer.hpp` (no clock
 read when disabled), `Graphics/RenderStatistics.hpp`, `ScreenCapture.hpp`
-(explicit results, deterministic names, Reach handling). Open: pilot use.
+(explicit results, deterministic names, Reach handling), and
+`Graphics/DiagnosticsReport.hpp` (metrics as text, locale-independent). The
+car-simulator probe shows engine captures are identical to the pilot's own
+screenshot files.
 
 ### MILESTONE-1 — Strict-compatible foundation `[ ]`
 
@@ -506,7 +510,7 @@ Result: `Graphics/Quality.hpp` (intent, capabilities from the XNA profile,
 resolved settings with recorded decisions, validated text persistence). Open:
 map both pilots' existing tiers.
 
-### ENG-037 — Add optional debug presentation `[ ]`
+### ENG-037 — Add optional debug presentation `[~]`
 
 Acceptance:
 
@@ -515,6 +519,12 @@ Acceptance:
 - game-specific benchmark UI remains outside the engine.
 
 Blocked by: ENG-025 and ENG-030.
+
+Result: `Graphics/FormatDiagnostics()` makes every metric available without an
+overlay; `Extended/DebugOverlay.hpp` draws a panel and frame-time graph with
+cna-extended's shape drawing and text with a game-supplied `BitmapFont`.
+Open: a pixel test of the text path (no BMFont fixture with a page texture
+is available without modifying cna-extended).
 
 ### MILESTONE-2 — Street rendering vertical slice `[ ]`
 

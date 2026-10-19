@@ -36,12 +36,17 @@ enables).
 
 | Dependency | Branch | Commit | Committed |
 | --- | --- | --- | --- |
-| CNA | `next` | `705ea232439135654ce93279dfe87c1ab047ef5c` | 2026-10-19 |
+| CNA | `next` | `5a44d2c507cd5e49eab9ab35570a8a98c4b7a0f3` | 2026-10-19 |
 | cna-extended | `develop` | `0061e3e17c30b2a3a302bce617e64765883079aa` | 2026-10-14 |
 | Sharp Runtime | `next` | `f2aecfefeac171b331787e5cdc4849507363ef0e` | 2026-10-14 |
 
 cna-extended's pin is the read-only loader fix (EXT-001) and matches
 `origin/develop`.
+
+History: the first pin (`705ea232`, 2026-10-19) was replaced the same day by
+`5a44d2c5` after CNA `next` advanced by five math-conformance commits; the
+engine suite and the cna-extended suite were rerun against the new revision
+(`docs/verification.md`).
 
 ### Updating the pin
 

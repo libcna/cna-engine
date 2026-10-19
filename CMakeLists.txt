@@ -67,6 +67,7 @@ cna_engine_add_library(cna_engine_graphics Graphics
     src/Graphics/ForwardRenderer.cpp
     src/Graphics/Quality.cpp
     src/Graphics/Instancing.cpp
+    src/Graphics/DiagnosticsReport.cpp
     src/Assets/AssetRegistry.cpp
 )
 target_link_libraries(cna_engine_graphics PUBLIC cna_engine_core)
@@ -79,6 +80,7 @@ set(CNA_ENGINE_EXPORTED_TARGETS cna_engine_core cna_engine_graphics)
 # ---------------------------------------------------------------------------
 if(CNA_ENGINE_WITH_EXTENDED)
     cna_engine_add_library(cna_engine_extended ExtendedIntegration
+        src/Extended/DebugOverlay.cpp
         src/Extended/EngineWorldScreen.cpp
         src/Extended/WorldCameraSync.cpp
     )
