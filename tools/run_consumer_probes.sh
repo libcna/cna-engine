@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+#
+# Installs the engine from build/ and builds/runs the installed-package
+# consumer probes (tests/consumer) in build-consumer/ (ENG-012).
+#
+#   tools/run_consumer_probes.sh [engine-build-dir] [consumer-build-dir]
+#
+# Uses the shared ccache and at most 3 build jobs (workspace rules).
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+engine_build="${1:-$root/build}"
+consumer_build="${2:-$root/build-consumer}"
+prefix="$consumer_build/install"
+jobs="${CNA_ENGINE_JOBS:-3}"
+
+export CCACHE_DIR="${CCACHE_DIR:-/rv/cnaccache}"
+export CCACHE_BASEDIR="${CCACHE_BASEDIR:-/rv}"
+# Debug builds hash the working directory unless told otherwise, so without
+# this no object compiled in build/ could be reused here (upstream-issues.md UP-003).
+export CCACHE_NOHASHDIR="${CCACHE_NOHASHDIR:-1}"
+launcher=()
+if command -v ccache >/dev/null; then
+    launcher=(-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache)
+else
+    echo "warning: ccache not found; building without it" >&2
+fi
+
+dirs() { cmake -L -N "$engine_build" 2>/dev/null | sed -n "s/^$1:PATH=//p"; }
+cna_dir="$(dirs CNA_ENGINE_CNA_DIR)"
+sharp_dir="$(dirs CNA_ENGINE_SHARP_RUNTIME_DIR)"
+extended_dir="$(dirs CNA_ENGINE_EXTENDED_DIR)"
+
+rm -rf "$prefix"
+cmake --install "$engine_build" --prefix "$prefix"
+
+# The consumer must not see the engine's source tree: check the installed
+# package before using it.
+if grep -rq "$root/include\|$root/src" "$prefix/lib/cmake/CnaEngine"; then
+    echo "error: installed package refers to the engine source tree" >&2
+    exit 1
+fi
+
+cmake -S "$root/tests/consumer" -B "$consumer_build" -G Ninja \
+    -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}" \
+    -DCMAKE_PREFIX_PATH="$prefix" \
+    -DPROBE_CNA_DIR="$cna_dir" -DPROBE_SHARP_RUNTIME_DIR="$sharp_dir" -DPROBE_EXTENDED_DIR="$extended_dir" \
+    "${launcher[@]}"
+cmake --build "$consumer_build" --parallel "$jobs"
+ctest --test-dir "$consumer_build" --output-on-failure --parallel "$jobs"
+python3 "$root/tools/check_strict_boundary.py" --root "$root" "$root/tests/consumer/strict_consumer.cpp"

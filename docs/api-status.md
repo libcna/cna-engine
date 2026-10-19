@@ -21,5 +21,12 @@ the API; "Consumers" lists code that uses the engine facility today.
 | GPU mesh | `Graphics/GpuMesh.hpp` | Graphics | experimental | Street `Render/GpuMesh`, car-simulator `Render/GpuMesh` | tests, example |
 | Render and GPU memory statistics | `Graphics/RenderStatistics.hpp` | Graphics | experimental | car-simulator `GpuMesh::Submissions` | tests, example |
 | Screen capture and screenshot queue | `Graphics/ScreenCapture.hpp` | Graphics | experimental | car-simulator `Render/Screenshot` | tests, example |
+| Materials | `Graphics/Material.hpp` | Graphics | experimental | Street material descriptions, car-simulator effect setup | tests |
+| Render items and queue (buckets, deterministic sorting) | `Graphics/RenderQueue.hpp` | Graphics | experimental | Street render submission model | tests |
+| Visibility policies and LOD selection | `Graphics/Visibility.hpp` | Graphics | experimental | Street culling/LOD, island-simulator culling | tests |
+| Forward renderer over stock effects (passes, state restore, fallbacks) | `Graphics/ForwardRenderer.hpp` | Graphics | experimental | Street `SceneRenderer`, car-simulator world renderer | tests |
+| Quality presets and capability resolution | `Graphics/Quality.hpp` | Graphics | experimental | car-simulator `QualityTier`, island-simulator quality profiles | tests |
+| Instancing (hardware + per-instance fallback) | `Graphics/Instancing.hpp` | Graphics | experimental | Street `InstancedMesh` | tests |
 | Asset registry | `Assets/AssetRegistry.hpp` | Graphics | experimental | Street `Assets/*Library`, house-simulator caches | tests |
+| World3D screen driven by engine input/camera | `Extended/EngineWorldScreen.hpp` | ExtendedIntegration | experimental | cna-extended `World3DScreenEXT` | tests, consumer probe |
 | World3D camera sync | `Extended/WorldCameraSync.hpp` | ExtendedIntegration | experimental | cna-extended `Camera3DEXT` | tests |

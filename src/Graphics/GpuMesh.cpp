@@ -42,6 +42,7 @@ namespace CnaEngine::Graphics
         vertices_ = std::exchange(other.vertices_, nullptr);
         indices_ = std::exchange(other.indices_, nullptr);
         owned_ = std::exchange(other.owned_, false);
+        attributes_ = std::exchange(other.attributes_, AttributeMask{});
         vertexCount_ = std::exchange(other.vertexCount_, 0);
         primitiveCount_ = std::exchange(other.primitiveCount_, 0);
         indexSize_ = other.indexSize_;
@@ -62,6 +63,7 @@ namespace CnaEngine::Graphics
         vertices_ = nullptr;
         indices_ = nullptr;
         owned_ = false;
+        attributes_ = AttributeMask{};
         vertexCount_ = 0;
         primitiveCount_ = 0;
         vertexBytes_ = 0;
@@ -94,6 +96,7 @@ namespace CnaEngine::Graphics
         }
 
         GpuMesh gpu;
+        gpu.attributes_ = layout.Attributes();
         gpu.vertexCount_ = interleaved.vertexCount;
         gpu.primitiveCount_ = static_cast<int>(mesh.TriangleCount());
         gpu.bounds_ = mesh.Bounds();
@@ -131,7 +134,7 @@ namespace CnaEngine::Graphics
     }
 
     GpuMesh GpuMesh::Borrow(VertexBuffer& vertices, IndexBuffer& indices, const int vertexCount,
-                            const int primitiveCount, const BoundingBox& bounds)
+                            const int primitiveCount, const BoundingBox& bounds, const AttributeMask attributes)
     {
         if (vertexCount <= 0 || primitiveCount <= 0) {
             throw std::invalid_argument("GpuMesh::Borrow: counts must be positive");
@@ -139,6 +142,8 @@ namespace CnaEngine::Graphics
         GpuMesh gpu;
         gpu.vertices_ = &vertices;
         gpu.indices_ = &indices;
+        gpu.attributes_ = attributes;
+        gpu.attributes_.Add(VertexAttribute::Position);
         gpu.vertexCount_ = vertexCount;
         gpu.primitiveCount_ = primitiveCount;
         gpu.indexSize_ = indices.getIndexElementSizeProperty();

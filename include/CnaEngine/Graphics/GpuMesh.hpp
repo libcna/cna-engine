@@ -61,10 +61,13 @@ namespace CnaEngine::Graphics
                                             const GpuMeshOptions& options = {});
 
         /// Wraps buffers owned elsewhere (e.g. a Model's mesh part).
+        /// `attributes` describes the vertex buffer's elements for renderers
+        /// that adapt to them.
         [[nodiscard]] static GpuMesh Borrow(Microsoft::Xna::Framework::Graphics::VertexBuffer& vertices,
                                             Microsoft::Xna::Framework::Graphics::IndexBuffer& indices,
                                             int vertexCount, int primitiveCount,
-                                            const Microsoft::Xna::Framework::BoundingBox& bounds);
+                                            const Microsoft::Xna::Framework::BoundingBox& bounds,
+                                            AttributeMask attributes = {VertexAttribute::Position});
 
         /// Releases owned buffers (no-op for borrowed ones) and empties the mesh.
         void Reset() noexcept;
@@ -78,6 +81,8 @@ namespace CnaEngine::Graphics
 
         [[nodiscard]] bool IsDrawable() const noexcept;
         [[nodiscard]] bool OwnsBuffers() const noexcept { return owned_; }
+        /// Attributes present in the vertex buffer (the layout's elements).
+        [[nodiscard]] AttributeMask Attributes() const noexcept { return attributes_; }
         [[nodiscard]] int VertexCount() const noexcept { return vertexCount_; }
         [[nodiscard]] int PrimitiveCount() const noexcept { return primitiveCount_; }
         [[nodiscard]] Microsoft::Xna::Framework::Graphics::IndexElementSize IndexSize() const noexcept
@@ -102,6 +107,7 @@ namespace CnaEngine::Graphics
         Microsoft::Xna::Framework::Graphics::VertexBuffer* vertices_ = nullptr;
         Microsoft::Xna::Framework::Graphics::IndexBuffer* indices_ = nullptr;
         bool owned_ = false;
+        AttributeMask attributes_;
         int vertexCount_ = 0;
         int primitiveCount_ = 0;
         Microsoft::Xna::Framework::Graphics::IndexElementSize indexSize_ =

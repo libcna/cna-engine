@@ -13,8 +13,8 @@ validated by both pilot games (see `plan.md` and `docs/api-status.md`).
 | Target | Profile | What it offers |
 | --- | --- | --- |
 | `CnaEngine::Core` | strict | named input actions and axes, rebinding, binding capture, frame statistics, CPU profiler |
-| `CnaEngine::Graphics` | strict | camera state and fly/walk controllers, CPU mesh data and builders, vertex layouts, RAII GPU meshes, render statistics, screenshots, typed asset registry |
-| `CnaEngine::ExtendedIntegration` | enhanced | adapters to cna-extended (World3D camera sync) |
+| `CnaEngine::Graphics` | strict | camera state and fly/walk controllers, CPU mesh data and builders, vertex layouts, RAII GPU meshes, materials, render queues, culling and LOD, a forward renderer over XNA's stock effects, render statistics, screenshots, typed asset registry |
+| `CnaEngine::ExtendedIntegration` | enhanced | adapters to cna-extended (`EngineWorldScreen`, World3D camera sync) |
 | `CnaEngine::Engine` | enhanced | everything above |
 
 *Strict* code uses only XNA 4.0 types of CNA, Sharp Runtime and the standard
@@ -67,6 +67,7 @@ ADR-001 for why. The pinned revisions are in `cmake/CnaEngineBaseline.cmake`
 
 ```sh
 export CCACHE_DIR=/rv/cnaccache CCACHE_BASEDIR=/rv   # this workspace's shared cache
+export CCACHE_NOHASHDIR=1   # share Debug objects between build trees (upstream-issues.md UP-003)
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache
 cmake --build build --parallel 3

@@ -2,7 +2,7 @@
 
 Date: 2026-10-14
 
-Status: proposed
+Status: in progress (implementation started 2026-10-19; see the per-task results)
 
 This plan translates the targeted gap audit into implementation tasks. It does
 not authorize implementation by itself. The work begins only after the initial
@@ -56,7 +56,9 @@ check. `ExtendedIntegration` is explicitly outside that boundary.
 
 ## Status legend
 
-- `[x]` completed by the analysis/audit phase
+- `[x]` completed (acceptance criteria met)
+- `[~]` implemented in the engine; acceptance criteria that need pilot
+  projects or other repositories are still open (named in the result)
 - `[ ]` not started
 - `Blocked by` names hard dependencies, not merely preferred ordering
 
@@ -101,7 +103,7 @@ sample-map performance assertion exceeded its six-second budget. These results
 are retained as environmental/performance follow-up rather than hidden or
 misreported as a clean pass.
 
-### ADR-001 — Approve the strict/enhanced dependency boundary `[ ]`
+### ADR-001 — Approve the strict/enhanced dependency boundary `[x]`
 
 Decide:
 
@@ -120,7 +122,12 @@ Acceptance:
 
 Blocked by: none. This is the first implementation gate.
 
-### ADR-002 — Select and pin the CNA compatibility baseline `[ ]`
+Result: accepted in `docs/adr/0001-strict-enhanced-boundary.md` (targets,
+prefixes, namespaces, versioning, car-simulator checker contract). Strict and
+enhanced consumer probes configure (`tests/consumer`); the strict boundary test
+fails deliberately on `tests/boundary/violations/LeakyHeader.hpp`.
+
+### ADR-002 — Select and pin the CNA compatibility baseline `[~]`
 
 Acceptance:
 
@@ -132,6 +139,11 @@ Acceptance:
 Blocked by: none. Complete before publishing engine API.
 
 ## Phase 1 — upstream prerequisites
+
+Result: policy and pin accepted in `docs/adr/0002-compatibility-baseline.md`;
+`cmake/CnaEngineBaseline.cmake` checks the revisions at configure time
+(`CNA_ENGINE_ENFORCE_BASELINE=ON` for CI). Open: rerun cna-extended,
+street-simulator and car-simulator against the pin; CI job.
 
 ### EXT-001 — Correct read-only asset loading in `cna-extended` `[x]`
 
@@ -167,6 +179,12 @@ Acceptance:
 
 Blocked by: ADR-002. Not a blocker for the first engine skeleton.
 
+Disposition (2026-10-19, analysis only; cna-extended and CNA are not modified
+from this repository): both skipped cases are an implementation defect in CNA's
+`BoundingFrustum::Contains(Vector3)`, which deviates from the XNA 4.0 reference
+(no `1E-05f` tolerance, `Intersects` for on-plane points, early `break`). See
+`upstream-issues.md` UP-004. Remaining: CNA fix, then re-enable the tests.
+
 ### EXT-003 — Establish an upstream compatibility lane `[ ]`
 
 Acceptance:
@@ -180,7 +198,7 @@ Blocked by: ADR-002.
 
 ## Phase 2 — repository and boundary skeleton
 
-### ENG-010 — Create the C++23 CMake project skeleton `[ ]`
+### ENG-010 — Create the C++23 CMake project skeleton `[x]`
 
 Acceptance:
 
@@ -191,7 +209,12 @@ Acceptance:
 
 Blocked by: ADR-001 and ADR-002.
 
-### ENG-011 — Add public dependency-boundary checks `[ ]`
+Result: `CMakeLists.txt` and `cmake/`; four targets with aliases, install and
+`CnaEngineConfig.cmake` export; warnings only on engine targets; tests and
+examples optional. Build-tree and installed-package consumers both build
+(`tools/run_consumer_probes.sh`).
+
+### ENG-011 — Add public dependency-boundary checks `[x]`
 
 Acceptance:
 
@@ -202,7 +225,12 @@ Acceptance:
 
 Blocked by: ENG-010.
 
-### ENG-012 — Add minimal strict and enhanced consumer projects `[ ]`
+Result: `tools/check_strict_boundary.py` (car-simulator rules plus "no
+enhanced engine headers") as CTest tests, a deliberate-leak fixture, and
+`cna_engine_strict_header_check`, which compiles every strict header alone
+against strict targets only.
+
+### ENG-012 — Add minimal strict and enhanced consumer projects `[x]`
 
 Acceptance:
 
@@ -214,7 +242,13 @@ Acceptance:
 
 Blocked by: ENG-010 and ENG-011.
 
-### ENG-013 — Define API stability and ownership conventions `[ ]`
+Result: `tests/consumer` is a separate project using the installed package;
+the strict consumer links only strict targets (its link closure is checked for
+cna-extended targets) and passes the boundary checker; the enhanced consumer
+runs an `EngineWorldScreen`. Both run in the software/headless/null
+configuration.
+
+### ENG-013 — Define API stability and ownership conventions `[x]`
 
 Acceptance:
 
@@ -227,7 +261,9 @@ Blocked by: ADR-001.
 
 ## Phase 3 — first strict-compatible vertical slice
 
-### ENG-020 — Implement input actions and rebinding `[ ]`
+Result: `docs/conventions.md` and `docs/api-status.md`.
+
+### ENG-020 — Implement input actions and rebinding `[~]`
 
 Generalize the proven Car Simulator action map without importing its domain
 commands.
@@ -242,7 +278,12 @@ Acceptance:
 
 Blocked by: ENG-012.
 
-### ENG-021 — Implement camera data and controller interfaces `[ ]`
+Result: `Input/ActionMap.hpp`, `Bindings.hpp`, `InputNames.hpp`,
+`BindingCapture.hpp`, `InputSnapshot.hpp` with unit tests for rebinding,
+conflicts, dead zones, focus loss and persistence. Open: express both pilots'
+core controls (pilot work).
+
+### ENG-021 — Implement camera data and controller interfaces `[~]`
 
 Acceptance:
 
@@ -256,7 +297,11 @@ Acceptance:
 
 Blocked by: ENG-012. Coordinate with EXT-002.
 
-### ENG-022 — Define generic CPU mesh data `[ ]`
+Result: `Graphics/Camera.hpp` (lazy derived values, `Revision()`),
+`CameraControllers.hpp` (fly, walk, `ICameraController`). Open: coordinate
+with EXT-002 and validate in a pilot.
+
+### ENG-022 — Define generic CPU mesh data `[~]`
 
 Acceptance:
 
@@ -269,7 +314,12 @@ Acceptance:
 
 Blocked by: ENG-013.
 
-### ENG-023 — Add RAII GPU mesh upload and drawing `[ ]`
+Result: `Graphics/MeshData.hpp` (attribute streams, 32-bit indices, bounds,
+append, transform, winding, angle-weighted normals, tangents),
+`MeshBuilder.hpp`, `VertexLayouts.hpp` (explicit conversion with
+missing/dropped/narrowed report). Open: pilot validation.
+
+### ENG-023 — Add RAII GPU mesh upload and drawing `[~]`
 
 Acceptance:
 
@@ -282,7 +332,11 @@ Acceptance:
 
 Blocked by: ENG-022.
 
-### ENG-024 — Add typed asset registry and lifetime policy `[ ]`
+Result: `Graphics/GpuMesh.hpp` (owned/borrowed buffers, disposal handling,
+16/32-bit indices with Reach-profile checks, statistics and GPU memory tally),
+software-renderer pixel tests. Open: pilot validation.
+
+### ENG-024 — Add typed asset registry and lifetime policy `[~]`
 
 Acceptance:
 
@@ -294,7 +348,11 @@ Acceptance:
 
 Blocked by: ENG-012. EXT-001 is complete.
 
-### ENG-025 — Add diagnostics and screenshot capture `[ ]`
+Result: `Assets/AssetRegistry.hpp` (normalized keys, typed loaders,
+ContentManager loader, fallbacks, failure records, invalidation). Open:
+replace a local cache in each pilot.
+
+### ENG-025 — Add diagnostics and screenshot capture `[~]`
 
 Acceptance:
 
@@ -304,6 +362,10 @@ Acceptance:
 - software/headless tests verify output metadata and image dimensions.
 
 Blocked by: ENG-012.
+
+Result: `Diagnostics/FrameStatistics.hpp`, `ScopedTimer.hpp` (no clock
+read when disabled), `Graphics/RenderStatistics.hpp`, `ScreenCapture.hpp`
+(explicit results, deterministic names, Reach handling). Open: pilot use.
 
 ### MILESTONE-1 — Strict-compatible foundation `[ ]`
 
@@ -319,7 +381,7 @@ integration feedback.
 
 ## Phase 4 — enhanced scene and rendering layer
 
-### ENG-030 — Integrate `cna-extended` lifecycle and World3D `[ ]`
+### ENG-030 — Integrate `cna-extended` lifecycle and World3D `[~]`
 
 Acceptance:
 
@@ -330,7 +392,11 @@ Acceptance:
 
 Blocked by: ENG-012. EXT-001 is complete.
 
-### ENG-031 — Define materials and shader-facing parameters `[ ]`
+Result: `Extended/EngineWorldScreen.hpp` (a World3DScreenEXT whose update
+order is documented and tested) and `Extended/WorldCameraSync.hpp` for games
+that opt out. Open: particles/animation adapters once a pilot needs them.
+
+### ENG-031 — Define materials and shader-facing parameters `[~]`
 
 Acceptance:
 
@@ -342,7 +408,12 @@ Acceptance:
 
 Blocked by: ENG-023 and ENG-024.
 
-### ENG-032 — Define render items, queues, and state contracts `[ ]`
+Result: `Graphics/Material.hpp` (unlit/lit/PBR description, blend modes,
+borrowed textures, no GPU state); stock-effect translation with deterministic,
+reported fallbacks in `ForwardRenderer`. Open: PBR rendering on the enhanced
+path and one migrated Street material family.
+
+### ENG-032 — Define render items, queues, and state contracts `[~]`
 
 Acceptance:
 
@@ -354,7 +425,12 @@ Acceptance:
 
 Blocked by: ENG-023 and ENG-031.
 
-### ENG-033 — Add visibility and LOD policy `[ ]`
+Result: `Graphics/RenderQueue.hpp` (buckets, deterministic material-grouped
+front-to-back, back-to-front transparent, stable overlay) and the
+`ForwardRenderer` state contract (states set per bucket, restored after
+`Render`). Skinned submissions remain with cna-extended's World3D systems.
+
+### ENG-033 — Add visibility and LOD policy `[~]`
 
 Acceptance:
 
@@ -365,7 +441,11 @@ Acceptance:
 
 Blocked by: ENG-021 and ENG-032.
 
-### ENG-034 — Add instanced rendering `[ ]`
+Result: `Graphics/Visibility.hpp` (independent layer/distance/frustum
+policies, conservative classification, per-reason statistics, LOD selection
+with hysteresis). Open: Street culling/LOD counts through engine diagnostics.
+
+### ENG-034 — Add instanced rendering `[~]`
 
 Acceptance:
 
@@ -377,7 +457,11 @@ Acceptance:
 
 Blocked by: ENG-032 and ENG-033.
 
-### ENG-035 — Add pass orchestration incrementally `[ ]`
+Result: `Graphics/Instancing.hpp` (per-instance world stream, HiDef hardware
+path via `DrawInstancedPrimitives`, per-instance fallback, culling,
+upload-on-change). Open: instancing-capable effect and a measured Street group.
+
+### ENG-035 — Add pass orchestration incrementally `[~]`
 
 Deliver in this order:
 
@@ -396,7 +480,11 @@ Acceptance:
 
 Blocked by: ENG-032. Later substeps depend on ENG-033 and ENG-034 as needed.
 
-### ENG-036 — Add quality profiles and capability resolution `[ ]`
+Result: substeps 1–2 (opaque, alpha-tested, transparent) plus overlay and
+custom passes at four points in `ForwardRenderer`. Open: shadows/cascades,
+post-processing hooks, reflection probes (only when a pilot requires them).
+
+### ENG-036 — Add quality profiles and capability resolution `[~]`
 
 Acceptance:
 
@@ -406,6 +494,10 @@ Acceptance:
 - both pilots can map existing quality tiers without silently changing them.
 
 Blocked by: ENG-035.
+
+Result: `Graphics/Quality.hpp` (intent, capabilities from the XNA profile,
+resolved settings with recorded decisions, validated text persistence). Open:
+map both pilots' existing tiers.
 
 ### ENG-037 — Add optional debug presentation `[ ]`
 

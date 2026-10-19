@@ -62,6 +62,11 @@ cna_engine_add_library(cna_engine_graphics Graphics
     src/Graphics/GpuMesh.cpp
     src/Graphics/RenderStatistics.cpp
     src/Graphics/ScreenCapture.cpp
+    src/Graphics/RenderQueue.cpp
+    src/Graphics/Visibility.cpp
+    src/Graphics/ForwardRenderer.cpp
+    src/Graphics/Quality.cpp
+    src/Graphics/Instancing.cpp
     src/Assets/AssetRegistry.cpp
 )
 target_link_libraries(cna_engine_graphics PUBLIC cna_engine_core)

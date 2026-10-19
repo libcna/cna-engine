@@ -33,6 +33,11 @@ add_executable(cna_engine_tests
     Graphics/VertexLayoutsTests.cpp
     Graphics/GpuMeshTests.cpp
     Graphics/ScreenCaptureTests.cpp
+    Graphics/RenderQueueTests.cpp
+    Graphics/VisibilityTests.cpp
+    Graphics/ForwardRendererTests.cpp
+    Graphics/QualityTests.cpp
+    Graphics/InstancingTests.cpp
     Assets/AssetRegistryTests.cpp
 )
 target_link_libraries(cna_engine_tests PRIVATE cna_engine_core cna_engine_graphics GTest::gtest_main)
