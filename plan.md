@@ -574,7 +574,7 @@ the owner's permission to touch street-simulator, or a larger read-only probe
 of its SceneRenderer), screenshot tolerances and CPU/draw comparisons against
 Street's renderer.
 
-### PILOT-001 — Validate `cna-street` `[ ]`
+### PILOT-001 — Validate `cna-street` `[~]`
 
 Acceptance:
 
@@ -585,7 +585,13 @@ Acceptance:
 
 Blocked by: MILESTONE-2.
 
-### PILOT-002 — Validate strict-XNA Car Simulator `[ ]`
+Progress: equivalence probes against Street's own code (camera, fly
+controls, tangent-frame meshes and upload, instancing, quality presets,
+derived-material cache) — `docs/pilots/street-simulator.md`. Open: migrating a
+vertical slice inside street-simulator itself, which needs the owner's
+permission to modify that repository.
+
+### PILOT-002 — Validate strict-XNA Car Simulator `[~]`
 
 Migrate or probe input actions, camera data, mesh data/upload, diagnostics, and
 screenshot capture. Do not migrate vehicle physics or domain rendering policy.
@@ -600,7 +606,14 @@ Acceptance:
 
 Blocked by: MILESTONE-1 and ADR-001.
 
-### PILOT-003 — Stabilize only proven APIs `[ ]`
+Progress: equivalence probes against car-simulator's own code (controls,
+chase camera, meshes and upload, screenshots, plate cache, quality tiers) and
+its unmodified strict checker accepting the engine's strict surface with the
+ADR-001 allowance — `docs/pilots/car-simulator.md`. Open: an integration
+branch of car-simulator (owner's permission needed); its display smoke tests
+and full suite in an environment with a suitable renderer budget.
+
+### PILOT-003 — Stabilize only proven APIs `[~]`
 
 Acceptance:
 
@@ -613,6 +626,11 @@ Acceptance:
 Blocked by: PILOT-001 and PILOT-002.
 
 ## Phase 6 — release readiness
+
+Progress: facilities validated by both pilots are marked `pilot-validated`
+in `docs/api-status.md`, their headers are fingerprinted
+(`docs/api-snapshot.txt`, test `cna_engine.api_snapshot`) and changes go to
+`CHANGELOG.md`. `stable` status waits for adoption in the pilots.
 
 ### REL-001 — Package and version the library `[ ]`
 

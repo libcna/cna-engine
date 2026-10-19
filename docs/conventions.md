@@ -67,6 +67,10 @@ Plan item: `ENG-013`. Applies to every public header under `include/CnaEngine/`.
 - `docs/api-status.md` lists each public facility with its status
   (`experimental`, `pilot-validated`, `stable`) and the consumers that
   exercise it.
+- Pilot-validated headers are fingerprinted in `docs/api-snapshot.txt`; the
+  `cna_engine.api_snapshot` test fails on any declaration change until the
+  snapshot is regenerated (`tools/api_snapshot.py --update`) and the change is
+  recorded in `CHANGELOG.md`.
 
 ## ABI
 
