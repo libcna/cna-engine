@@ -74,7 +74,10 @@ its own builds.
 - Repository: `libcna/cna`, `modules/math/src/BoundingFrustum.cpp`
   (`Contains(const Vector3&, ContainmentType&)`, around line 140 at
   `705ea232`)
-- Status: open
+- Status: open — on 2026-10-20 the shared CNA worktree had uncommitted work
+  in progress implementing XNA's tolerance in `Contains(Vector3)` (and XNA's
+  GJK query for `Intersects(BoundingSphere)`, see
+  `docs/pilots/car-simulator.md`); re-check when it is committed
 - Found: 2026-10-19, while dispositioning plan item EXT-002
 
 XNA 4.0 (`xna4-decomp/reference/xna4/decompiled/windows/Microsoft.Xna.Framework/Microsoft.Xna.Framework/BoundingFrustum.cs`,
@@ -168,3 +171,25 @@ Engine handling: the Street probe links Street's core against CNA's static
 module targets (the same ones the engine uses). A game adopting the engine
 must do the same (or configure `CNA_SHARED_LIBRARY=OFF`); this is recorded in
 `docs/guide-enhanced.md`.
+
+## UP-007 — The pinned CNA revision is not published
+
+- Repository: `libcna/cna` (remote `github.com/libcna/cna`)
+- Status: open (blocks the engine's CI, not local work)
+- Found: 2026-10-20, while adding the EXT-003 upstream lane
+
+The engine's baseline CNA revision (`5a44d2c5`, ADR-002) is on the local
+`next` branch of the shared worktree, which is far ahead of what the remote
+has: `git ls-remote` on 2026-10-20 showed `next` at `688f3f23`
+(2026-10-17), `main` at `10a4ef1c` and `develop` at `72b85561`, and none of
+them contains the pin. Every CI job that checks out `libcna/cna` at the pin
+(`.github/workflows/ci.yml`: the engine job and the cna-extended lane) cannot
+fetch it until CNA's owner pushes. The Sharp Runtime pin (`origin/next`) and
+the cna-extended pin (`origin/develop`) are published.
+
+Suggestion: push CNA's `next`, or move the engine's pin to a published
+revision (ADR-002 "Moving the baseline": re-run the baseline evidence first).
+
+Engine handling: none needed locally (`~/deps/cna-baseline` is a clone of the
+local worktree at the pin). The weekly canary job checks out the remote
+`next` head and is unaffected.

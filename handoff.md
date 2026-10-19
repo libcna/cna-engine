@@ -79,7 +79,8 @@ Done (see `plan.md` for per-task results):
    shadows; see `docs/pilots/street-simulator.md`).
 4. Upstream: UP-001 (no CNA package), UP-004 (BoundingFrustum point
    containment), UP-005 (cna-extended skinned test), UP-006 (CNA umbrella vs
-   module targets) — for their owners.
+   module targets), UP-007 (the pinned CNA revision is not pushed, so CI
+   cannot run) — for their owners.
 
 ## Pointers
 

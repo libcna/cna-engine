@@ -186,7 +186,7 @@ from this repository): both skipped cases are an implementation defect in CNA's
 (no `1E-05f` tolerance, `Intersects` for on-plane points, early `break`). See
 `upstream-issues.md` UP-004. Remaining: CNA fix, then re-enable the tests.
 
-### EXT-003 — Establish an upstream compatibility lane `[ ]`
+### EXT-003 — Establish an upstream compatibility lane `[~]`
 
 Acceptance:
 
@@ -196,6 +196,17 @@ Acceptance:
 - an engine integration probe detects an upstream API break early.
 
 Blocked by: ADR-002.
+
+Result (2026-10-20): `.github/workflows/ci.yml` job `cna-extended` builds
+cna-extended standalone at its pin against the pinned CNA with three jobs,
+tests and examples as separately reported steps; the known upstream defects
+(UP-004 skips, UP-005 failure) are allowed by exact name only and reported
+when they disappear. Job `upstream-canary` (weekly and on demand) builds and
+tests the engine and its installed-package consumers against CNA `next`,
+cna-extended `develop` and Sharp Runtime `next`. Open: neither has run yet —
+the pinned CNA revision is not on the remote (UP-007); the skip filter was
+checked locally against a synthetic ctest log, the lane's build commands
+mirror the 2026-10-19 local cna-extended run.
 
 ## Phase 2 — repository and boundary skeleton
 
