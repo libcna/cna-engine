@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: MIT
+@PACKAGE_INIT@
+
+# CNA and cna-extended export no CMake package (upstream-issues.md UP-001).
+# A consumer adds them as source trees (or otherwise defines their targets)
+# BEFORE find_package(CnaEngine); this file only verifies that they exist.
+set(CnaEngine_HAS_EXTENDED @CNA_ENGINE_PACKAGE_HAS_EXTENDED@)
+
+set(_cna_engine_required_targets CNA::Core CNA::Math CNA::Input CNA::GraphicsCore CNA::Content)
+set(_cna_engine_missing "")
+foreach(_cna_engine_target IN LISTS _cna_engine_required_targets)
+    if(NOT TARGET ${_cna_engine_target})
+        list(APPEND _cna_engine_missing ${_cna_engine_target})
+    endif()
+endforeach()
+
+# Components: Core, Graphics (strict); ExtendedIntegration (enhanced).
+set(_cna_engine_wants_extended OFF)
+if("ExtendedIntegration" IN_LIST CnaEngine_FIND_COMPONENTS)
+    set(_cna_engine_wants_extended ON)
+endif()
+if(_cna_engine_wants_extended AND NOT CnaEngine_HAS_EXTENDED)
+    set(CnaEngine_FOUND FALSE)
+    set(CnaEngine_NOT_FOUND_MESSAGE
+        "this CnaEngine installation was built without ExtendedIntegration (CNA_ENGINE_WITH_EXTENDED=OFF)")
+    return()
+endif()
+if(CnaEngine_HAS_EXTENDED AND NOT TARGET CNA::Extended)
+    # The exported ExtendedIntegration target names CNA::Extended; it is only
+    # usable when the consumer provides it.
+    if(_cna_engine_wants_extended)
+        list(APPEND _cna_engine_missing CNA::Extended)
+    endif()
+endif()
+
+if(_cna_engine_missing)
+    set(CnaEngine_FOUND FALSE)
+    set(CnaEngine_NOT_FOUND_MESSAGE
+        "define these targets before find_package(CnaEngine), e.g. by add_subdirectory() of the CNA/cna-extended source trees: ${_cna_engine_missing}")
+    return()
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/CnaEngineTargets.cmake")
+
+# Re-attach the dependency links that cannot be exported.
+set_property(TARGET CnaEngine::Core APPEND PROPERTY INTERFACE_LINK_LIBRARIES @CNA_ENGINE_PACKAGE_CORE_LINKS@)
+set_property(TARGET CnaEngine::Graphics APPEND PROPERTY INTERFACE_LINK_LIBRARIES @CNA_ENGINE_PACKAGE_GRAPHICS_LINKS@)
+if(TARGET CnaEngine::ExtendedIntegration AND TARGET CNA::Extended)
+    set_property(TARGET CnaEngine::ExtendedIntegration APPEND PROPERTY INTERFACE_LINK_LIBRARIES @CNA_ENGINE_PACKAGE_EXTENDED_LINKS@)
+endif()
+
+foreach(_cna_engine_component IN LISTS CnaEngine_FIND_COMPONENTS)
+    if(TARGET CnaEngine::${_cna_engine_component})
+        set(CnaEngine_${_cna_engine_component}_FOUND TRUE)
+    else()
+        set(CnaEngine_${_cna_engine_component}_FOUND FALSE)
+    endif()
+endforeach()
+check_required_components(CnaEngine)
