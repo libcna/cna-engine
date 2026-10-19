@@ -7,6 +7,7 @@
 #include "CnaEngine/Graphics/RenderStatistics.hpp"
 
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
+#include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 
 #include <cstdint>
 #include <functional>
@@ -40,7 +41,7 @@ namespace CnaEngine::Graphics
     /// and rasterizer states it needs (opaque/alpha-tested: Opaque blend,
     /// Default depth, counter-clockwise culling; transparent: material blend,
     /// DepthRead; overlay: AlphaBlend, no depth); double-sided materials
-    /// disable culling. Custom passes receive the device in the state of the
+    /// disable culling and biased materials get a biased rasterizer state. Custom passes receive the device in the state of the
     /// preceding bucket. After Render() the blend, depth-stencil and rasterizer
     /// states are restored to what they were before the call.
     ///
@@ -97,5 +98,15 @@ namespace CnaEngine::Graphics
         std::vector<Pass> passes_;
         std::vector<std::string> fallbacks_;
         FallbackSink sink_;
+        /// Rasterizer states for biased materials, created on first use.
+        struct BiasedState
+        {
+            bool doubleSided;
+            float depthBias;
+            float slopeScale;
+            std::unique_ptr<Microsoft::Xna::Framework::Graphics::RasterizerState> state;
+        };
+        std::vector<BiasedState> biasedStates_;
+        const Microsoft::Xna::Framework::Graphics::RasterizerState& RasterizerFor(const Material& material);
     };
 }

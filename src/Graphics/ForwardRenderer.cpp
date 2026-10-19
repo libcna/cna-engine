@@ -4,6 +4,7 @@
 #include "CnaEngine/Graphics/Instancing.hpp"
 
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/CullMode.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
@@ -101,6 +102,27 @@ namespace CnaEngine::Graphics
         RunPasses(PassPoint::AfterOverlay, camera, stats);
     }
 
+    const RasterizerState& ForwardRenderer::RasterizerFor(const Material& material)
+    {
+        if (material.depthBias == 0.0f && material.slopeScaleDepthBias == 0.0f) {
+            return material.doubleSided ? RasterizerState::CullNone : RasterizerState::CullCounterClockwise;
+        }
+        for (const auto& biased : biasedStates_) {
+            if (biased.doubleSided == material.doubleSided && biased.depthBias == material.depthBias
+                && biased.slopeScale == material.slopeScaleDepthBias) {
+                return *biased.state;
+            }
+        }
+        auto state = std::make_unique<RasterizerState>();
+        state->setCullModeProperty(material.doubleSided ? Microsoft::Xna::Framework::Graphics::CullMode::None
+                                                        : Microsoft::Xna::Framework::Graphics::CullMode::CullCounterClockwiseFace);
+        state->setDepthBiasProperty(material.depthBias);
+        state->setSlopeScaleDepthBiasProperty(material.slopeScaleDepthBias);
+        biasedStates_.push_back(BiasedState{material.doubleSided, material.depthBias, material.slopeScaleDepthBias,
+                                            std::move(state)});
+        return *biasedStates_.back().state;
+    }
+
     void ForwardRenderer::DrawBucket(const std::span<const RenderItem> items, const RenderBucket bucket,
                                      const Camera& camera, RenderStatistics& statistics)
     {
@@ -123,8 +145,7 @@ namespace CnaEngine::Graphics
         device_.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
         for (const auto& item : items) {
             const Material& material = *item.material;
-            device_.setRasterizerStateProperty(material.doubleSided ? RasterizerState::CullNone
-                                                                    : RasterizerState::CullCounterClockwise);
+            device_.setRasterizerStateProperty(RasterizerFor(material));
             if (bucket == RenderBucket::Transparent) {
                 device_.setBlendStateProperty(material.blend == BlendMode::Additive ? BlendState::Additive
                                                                                     : BlendState::AlphaBlend);

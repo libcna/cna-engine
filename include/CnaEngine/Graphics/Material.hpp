@@ -53,6 +53,11 @@ namespace CnaEngine::Graphics
         bool vertexColors = false;
         /// Draw both faces (no back-face culling).
         bool doubleSided = false;
+        /// Depth bias for coplanar decals such as road markings (XNA
+        /// RasterizerState::DepthBias / SlopeScaleDepthBias; negative pulls
+        /// the surface towards the camera).
+        float depthBias = 0.0f;
+        float slopeScaleDepthBias = 0.0f;
         /// Lit by the scene's key (directional) light. Interiors seen through
         /// windows turn it off and live on ambient, fill and emissive light.
         bool keyLight = true;

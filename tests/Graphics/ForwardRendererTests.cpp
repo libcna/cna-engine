@@ -349,4 +349,25 @@ namespace CnaEngine::Graphics
         EXPECT_GT(at(reach, Size / 2, y).getRProperty(), 128) << "per-instance: base applied";
         EXPECT_EQ(hiDef, reach) << "hardware and per-instance paths agree";
     }
+
+    TEST_F(Fixture, DepthBiasPullsDecalsInFront)
+    {
+        // A white "marking" a hair behind the grey "road": hidden without
+        // bias, visible with the bias car-simulator uses for markings.
+        const Material road = Unlit("road", Vector3(0.3f, 0.3f, 0.3f));
+        Material marking = Unlit("marking", Vector3(1.0f, 1.0f, 1.0f));
+        auto draw = [&](const Material& decal) {
+            RenderQueue queue;
+            queue.Submit(Item(road, 0.0f));
+            RenderItem item = Item(decal, -0.0001f, 0.5f);
+            item.order = 1;
+            queue.Submit(item);
+            return At(Draw(queue), Size / 2, Size / 2);
+        };
+        EXPECT_TRUE(Near(draw(marking), 77, 77, 77)) << "behind the road";
+        marking.depthBias = -0.00002f;
+        marking.slopeScaleDepthBias = -1.0f;
+        EXPECT_TRUE(Near(draw(marking), 255, 255, 255)) << "biased in front";
+        EXPECT_EQ(device.getRasterizerStateProperty().getDepthBiasProperty(), 0.0f) << "state restored";
+    }
 }

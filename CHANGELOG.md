@@ -40,3 +40,4 @@ API snapshot baseline taken 2026-10-19 (12 headers).
   (XNA `DualTextureEffect` in the stock binder). `keyLight == false` now
   switches off only the key light; fill lights and ambient stay (Street's
   `sunlit`, car-simulator's three-light rig).
+- `Material::depthBias` and `slopeScaleDepthBias` (decals such as road markings).
