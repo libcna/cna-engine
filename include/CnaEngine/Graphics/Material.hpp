@@ -15,9 +15,19 @@ namespace CnaEngine::Graphics
         Opaque,
         /// Pixels with alpha below Material::alphaCutoff are discarded.
         AlphaTest,
-        /// Straight alpha blending, drawn back to front after opaque geometry.
+        /// The surface covers what is behind it by its alpha,
+        /// `color * alpha + behind * (1 - alpha)` (a colored filter). Drawn
+        /// back to front after opaque geometry, like every blended mode.
         AlphaBlend,
+        /// Adds the surface's color, weighted by its alpha, to what is behind.
         Additive,
+        /// `color + behind * (1 - alpha)`: the surface adds its full color and
+        /// lets `1 - alpha` of what is behind through. Glass, whose
+        /// reflection is not weakened by its transparency (Street's
+        /// `premultipliedBlend`). XNA's stock effects multiply the color by
+        /// `Material::alpha` regardless, which the stock binder reports when
+        /// alpha < 1.
+        PremultipliedAlpha,
     };
 
     enum class ShadingModel : std::uint8_t

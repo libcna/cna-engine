@@ -7,6 +7,7 @@
 
 #include "Microsoft/Xna/Framework/Graphics/AlphaTestEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
+#include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DualTextureEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
@@ -79,6 +80,15 @@ namespace CnaEngine::Graphics
         /// false to skip the item (nothing is drawn).
         virtual bool Apply(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device, const RenderItem& item,
                            RenderBucket bucket, const Camera& camera, const FallbackSink& fallback) = 0;
+
+        /// The blend state the renderer sets for `item` in the blended
+        /// buckets (Transparent, Overlay). It depends on what the binder's
+        /// effect writes: XNA's stock effects multiply their color by the
+        /// material alpha (premultiplied output), CNA's PbrEffect does not
+        /// (straight output). The default is XNA's convention: `Additive`
+        /// for BlendMode::Additive, `AlphaBlend` otherwise.
+        [[nodiscard]] virtual const Microsoft::Xna::Framework::Graphics::BlendState&
+        BlendStateFor(const RenderItem& item) const;
     };
 
     /// Binder over XNA's stock effects (BasicEffect, AlphaTestEffect); the
@@ -94,7 +104,9 @@ namespace CnaEngine::Graphics
     ///  - PhysicallyBased draws Lit (stock effects have no PBR);
     ///  - a texture on a mesh without TexCoord0, or a disposed texture, is ignored;
     ///  - vertex colors on a mesh without a Color attribute are ignored;
-    ///  - AlphaTest draws through AlphaTestEffect, which is unlit in XNA.
+    ///  - AlphaTest draws through AlphaTestEffect, which is unlit in XNA;
+    ///  - PremultipliedAlpha with alpha < 1 draws as AlphaBlend (stock
+    ///    effects scale their color by the alpha).
     class StockMaterialBinder final : public IMaterialBinder
     {
     public:

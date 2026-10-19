@@ -22,6 +22,12 @@ namespace CnaEngine::Graphics
     using Microsoft::Xna::Framework::Graphics::IEffectFog;
     using Microsoft::Xna::Framework::Graphics::Texture2D;
 
+    const Microsoft::Xna::Framework::Graphics::BlendState& IMaterialBinder::BlendStateFor(const RenderItem& item) const
+    {
+        using Microsoft::Xna::Framework::Graphics::BlendState;
+        return item.material->blend == BlendMode::Additive ? BlendState::Additive : BlendState::AlphaBlend;
+    }
+
     StockMaterialBinder::StockMaterialBinder(GraphicsDevice& device)
         : basic_(std::make_unique<BasicEffect>(device)),
           alphaTest_(std::make_unique<AlphaTestEffect>(device)),
@@ -86,6 +92,9 @@ namespace CnaEngine::Graphics
         if (vertexColors && !attributes.Has(VertexAttribute::Color)) {
             fallback(material, "vertex colors ignored: mesh has no Color attribute");
             vertexColors = false;
+        }
+        if (material.blend == BlendMode::PremultipliedAlpha && material.alpha < 1.0f) {
+            fallback(material, "premultiplied blending drawn as AlphaBlend (stock effects scale the color by alpha)");
         }
 
         if (bucket == RenderBucket::AlphaTested) {

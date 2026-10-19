@@ -15,7 +15,9 @@
 #include <gtest/gtest.h>
 
 #include <cstdlib>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace CnaEngine::Graphics
@@ -369,5 +371,67 @@ namespace CnaEngine::Graphics
         marking.slopeScaleDepthBias = -1.0f;
         EXPECT_TRUE(Near(draw(marking), 255, 255, 255)) << "biased in front";
         EXPECT_EQ(device.getRasterizerStateProperty().getDepthBiasProperty(), 0.0f) << "state restored";
+    }
+
+    TEST_F(Fixture, TheBinderChoosesTheBlendStateOfBlendedItems)
+    {
+        // A binder whose effect writes straight alpha would answer
+        // NonPremultiplied; this one answers Additive to make it visible.
+        class AdditiveBinder final : public IMaterialBinder
+        {
+        public:
+            explicit AdditiveBinder(std::shared_ptr<StockMaterialBinder> stock) : stock_(std::move(stock)) {}
+            void BeginFrame(GraphicsDevice& device, const Camera& camera, const ForwardLighting& lighting) override
+            {
+                stock_->BeginFrame(device, camera, lighting);
+            }
+            bool Apply(GraphicsDevice& device, const RenderItem& item, RenderBucket bucket, const Camera& camera,
+                       const FallbackSink& fallback) override
+            {
+                return stock_->Apply(device, item, bucket, camera, fallback);
+            }
+            const BlendState& BlendStateFor(const RenderItem& item) const override
+            {
+                asked.push_back(item.material->name);
+                return BlendState::Additive;
+            }
+            mutable std::vector<std::string> asked;
+
+        private:
+            std::shared_ptr<StockMaterialBinder> stock_;
+        };
+
+        const Material red = Unlit("red", Vector3(1.0f, 0.0f, 0.0f));
+        Material glass = Unlit("glass", Vector3(0.0f, 0.0f, 1.0f));
+        glass.blend = BlendMode::AlphaBlend;
+        const Material label = Unlit("label", Vector3(0.0f, 1.0f, 0.0f));
+        auto binder = std::make_shared<AdditiveBinder>(renderer.StockBinder());
+        renderer.SetMaterialBinder(binder);
+
+        RenderQueue queue;
+        queue.Submit(Item(red, 0.0f));
+        queue.Submit(Item(glass, 1.0f, 0.5f));
+        queue.Submit(Item(label, 2.0f, 0.25f), RenderBucket::Overlay);
+        const auto pixels = Draw(queue);
+        EXPECT_EQ(binder->asked, (std::vector<std::string>{"glass", "label"})) << "blended buckets only";
+        EXPECT_TRUE(Near(At(pixels, Size / 2, Size / 2), 255, 255, 255)) << "red + blue + green, added";
+        EXPECT_TRUE(Near(At(pixels, Size / 2 - 6, Size / 2), 255, 0, 255)) << "red + blue";
+    }
+
+    TEST_F(Fixture, StockEffectsReportPremultipliedTransparency)
+    {
+        Material pane = Unlit("pane", Vector3(0.0f, 0.0f, 1.0f));
+        pane.blend = BlendMode::PremultipliedAlpha;
+        RenderQueue queue;
+        queue.Submit(Item(pane, 0.0f));
+        (void)Draw(queue);
+        EXPECT_TRUE(renderer.LastFallbacks().empty()) << "opaque alpha: nothing is lost";
+
+        pane.alpha = 0.5f;
+        const auto pixels = Draw(queue);
+        ASSERT_EQ(renderer.LastFallbacks().size(), 1u);
+        EXPECT_EQ(renderer.LastFallbacks()[0],
+                  "material 'pane': premultiplied blending drawn as AlphaBlend (stock effects scale the color by alpha)");
+        EXPECT_TRUE(Near(At(pixels, Size / 2, Size / 2), 0, 0, 128, 4)) << "half blue over black";
     }
 }

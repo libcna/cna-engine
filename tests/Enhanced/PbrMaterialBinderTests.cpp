@@ -8,6 +8,7 @@
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
+#include "Microsoft/Xna/Framework/Graphics/TextureCube.hpp"
 
 #include <gtest/gtest.h>
 
@@ -195,5 +196,87 @@ namespace CnaEngine::Enhanced
         EXPECT_NE(At(pixels, Size / 2, Size / 2), Background) << "still drawn";
         ASSERT_FALSE(renderer.LastFallbacks().empty());
         EXPECT_EQ(renderer.LastFallbacks()[0], "material 'bare': drawn unlit: mesh has no normals");
+    }
+
+    TEST_F(PbrFixture, BlendedSurfacesUseStraightAlpha)
+    {
+        // Emission only (no light reaches it), so the surface's color is
+        // exactly its emissive red.
+        renderer.Lighting().ambientColor = Vector3::Zero;
+        Material glow = Pbr("glow", Vector3::Zero, 0.0f, 1.0f);
+        glow.keyLight = false;
+        glow.emissiveColor = Vector3(1.0f, 0.0f, 0.0f);
+        glow.alpha = 0.5f;
+
+        glow.blend = Graphics::BlendMode::AlphaBlend;
+        const Color filtered = At(Draw(glow, sphere), Size / 2, Size / 2);
+        // color * alpha + behind * (1 - alpha) = 255 * 0.5 + 10 * 0.5.
+        EXPECT_NEAR(filtered.getRProperty(), 132, 2);
+        EXPECT_NEAR(filtered.getGProperty(), 5, 2);
+
+        glow.blend = Graphics::BlendMode::PremultipliedAlpha;
+        const Color glass = At(Draw(glow, sphere), Size / 2, Size / 2);
+        // color + behind * (1 - alpha): the surface's own color at full strength.
+        EXPECT_EQ(glass.getRProperty(), 255);
+        EXPECT_NEAR(glass.getGProperty(), 5, 2);
+        EXPECT_TRUE(renderer.LastFallbacks().empty());
+    }
+
+    TEST_F(PbrFixture, DelegatedMaterialsKeepTheStockBlend)
+    {
+        Material tint;
+        tint.name = "tint";
+        tint.shading = ShadingModel::Unlit;
+        tint.diffuseColor = Vector3(1.0f, 0.0f, 0.0f);
+        tint.alpha = 0.5f;
+        tint.blend = Graphics::BlendMode::AlphaBlend;
+        // BasicEffect premultiplies: 255 * 0.5 + 10 * 0.5, not 255 * 0.25 + 10 * 0.5.
+        EXPECT_NEAR(At(Draw(tint, sphere), Size / 2, Size / 2).getRProperty(), 132, 2);
+    }
+
+    TEST_F(PbrFixture, ExposureScalesEveryLight)
+    {
+        renderer.Lighting().ambientColor = Vector3(0.05f, 0.05f, 0.05f);
+        const Material matte = Pbr("matte", Vector3(1.0f, 1.0f, 1.0f), 0.0f, 1.0f);
+        const Color normal = At(Draw(matte, sphere), Size / 2 + 8, Size / 2 + 8);
+        binder->Settings().exposure = 3.0f;
+        const Color bright = At(Draw(matte, sphere), Size / 2 + 8, Size / 2 + 8);
+        binder->Settings().exposure = 0.0f;
+        const Color dark = At(Draw(matte, sphere), Size / 2 + 8, Size / 2 + 8);
+        EXPECT_GT(bright.getRProperty(), normal.getRProperty() + 20);
+        EXPECT_EQ(dark, Color(0, 0, 0, 255)) << "no light at all, ambient included";
+    }
+
+    TEST_F(PbrFixture, EnvironmentReplacesTheFlatAmbient)
+    {
+        using Microsoft::Xna::Framework::Graphics::CubeMapFace;
+        using Microsoft::Xna::Framework::Graphics::TextureCube;
+        renderer.Lighting().ambientColor = Vector3(0.4f, 0.0f, 0.0f);
+        Material matte = Pbr("matte", Vector3(1.0f, 1.0f, 1.0f), 0.0f, 1.0f);
+        matte.keyLight = false;
+        const Color flat = At(Draw(matte, sphere), Size / 2, Size / 2);
+        EXPECT_GT(flat.getRProperty(), 40);
+        EXPECT_LT(flat.getGProperty(), 5);
+
+        // A uniform green environment; a zero BRDF table leaves only its diffuse part.
+        TextureCube irradiance(device, 1, false, SurfaceFormat::Color);
+        TextureCube prefiltered(device, 1, false, SurfaceFormat::Color);
+        const Color green(0, 160, 0, 255);
+        for (int face = 0; face < 6; ++face) {
+            irradiance.SetData(static_cast<CubeMapFace>(face), &green, 1);
+            prefiltered.SetData(static_cast<CubeMapFace>(face), &green, 1);
+        }
+        Texture2D lut(device, 1, 1);
+        const Color zero(0, 0, 0, 255);
+        lut.SetData(&zero, 1);
+        binder->Settings().environment.Irradiance = &irradiance;
+        binder->Settings().environment.PrefilteredSpecular = &prefiltered;
+        binder->Settings().environment.BrdfLut = &lut;
+        const Color lit = At(Draw(matte, sphere), Size / 2, Size / 2);
+        EXPECT_GT(lit.getGProperty(), 40);
+        EXPECT_LT(lit.getRProperty(), 5) << "the environment replaces the red ambient";
+
+        binder->Settings().environment = {};
+        EXPECT_EQ(At(Draw(matte, sphere), Size / 2, Size / 2), flat) << "and leaves no trace";
     }
 }

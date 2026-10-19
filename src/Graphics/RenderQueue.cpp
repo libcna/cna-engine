@@ -17,7 +17,8 @@ namespace CnaEngine::Graphics
             case BlendMode::Opaque: return RenderBucket::Opaque;
             case BlendMode::AlphaTest: return RenderBucket::AlphaTested;
             case BlendMode::AlphaBlend:
-            case BlendMode::Additive: return RenderBucket::Transparent;
+            case BlendMode::Additive:
+            case BlendMode::PremultipliedAlpha: return RenderBucket::Transparent;
         }
         return RenderBucket::Opaque;
     }

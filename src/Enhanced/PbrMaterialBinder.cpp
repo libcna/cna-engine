@@ -2,6 +2,7 @@
 #include "CnaEngine/Enhanced/PbrMaterialBinder.hpp"
 
 #include "Microsoft/Xna/Framework/Graphics/AlphaModeEXT.hpp"
+#include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DirectionalLight.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectPass.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
@@ -14,6 +15,7 @@ namespace CnaEngine::Enhanced
 {
     using Microsoft::Xna::Framework::Vector3;
     using Microsoft::Xna::Framework::Graphics::AlphaModeEXT;
+    using Microsoft::Xna::Framework::Graphics::BlendState;
     using Microsoft::Xna::Framework::Graphics::GraphicsDevice;
     using Microsoft::Xna::Framework::Graphics::PbrEffect;
     using Microsoft::Xna::Framework::Graphics::Texture2D;
@@ -37,7 +39,7 @@ namespace CnaEngine::Enhanced
         auto& key = effect.getDirectionalLight0Property();
         key.setEnabledProperty(true);
         key.setDirectionProperty(Vector3::Normalize(lighting.lightDirection));
-        keyColor_ = lighting.lightColor * settings_.lightIntensity;
+        keyColor_ = lighting.lightColor * settings_.exposure;
         key.setDiffuseColorProperty(keyColor_);
         key.setSpecularColorProperty(keyColor_);
         Microsoft::Xna::Framework::Graphics::DirectionalLight* fills[2] = {&effect.getDirectionalLight1Property(),
@@ -47,11 +49,14 @@ namespace CnaEngine::Enhanced
             fills[i]->setEnabledProperty(enabled);
             if (enabled) {
                 fills[i]->setDirectionProperty(Vector3::Normalize(lighting.fillLights[i].direction));
-                fills[i]->setDiffuseColorProperty(lighting.fillLights[i].diffuse * settings_.lightIntensity);
-                fills[i]->setSpecularColorProperty(lighting.fillLights[i].specular * settings_.lightIntensity);
+                fills[i]->setDiffuseColorProperty(lighting.fillLights[i].diffuse * settings_.exposure);
+                fills[i]->setSpecularColorProperty(lighting.fillLights[i].specular * settings_.exposure);
             }
         }
-        effect.setAmbientLightColorProperty(lighting.ambientColor);
+        effect.setAmbientLightColorProperty(lighting.ambientColor * settings_.exposure);
+        auto environment = settings_.environment;
+        environment.Intensity *= settings_.exposure;
+        effect.setImageBasedLightEXT(environment);
         effect.setFogEnabledProperty(lighting.fogEnabled);
         effect.setFogColorProperty(lighting.fogColor);
         effect.setFogStartProperty(lighting.fogStart);
@@ -67,10 +72,7 @@ namespace CnaEngine::Enhanced
         const Graphics::Material& material = *item.material;
         const Graphics::AttributeMask attributes = item.mesh->Attributes();
 
-        if (material.shading == Graphics::ShadingModel::Unlit || material.vertexColors) {
-            return fallback_->Apply(device, item, bucket, camera, fallback);
-        }
-        if (!attributes.Has(VertexAttribute::Normal)) {
+        if (Delegated(item)) {
             return fallback_->Apply(device, item, bucket, camera, fallback);
         }
 
@@ -141,5 +143,27 @@ namespace CnaEngine::Enhanced
 
         effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         return true;
+    }
+
+    const BlendState& PbrMaterialBinder::BlendStateFor(const Graphics::RenderItem& item) const
+    {
+        if (Delegated(item)) {
+            return fallback_->BlendStateFor(item);
+        }
+        switch (item.material->blend) {
+            case Graphics::BlendMode::Additive: return BlendState::Additive;
+            case Graphics::BlendMode::PremultipliedAlpha: return BlendState::AlphaBlend;
+            case Graphics::BlendMode::Opaque:
+            case Graphics::BlendMode::AlphaTest:
+            case Graphics::BlendMode::AlphaBlend: break;
+        }
+        return BlendState::NonPremultiplied;
+    }
+
+    bool PbrMaterialBinder::Delegated(const Graphics::RenderItem& item)
+    {
+        const Graphics::Material& material = *item.material;
+        return material.shading == Graphics::ShadingModel::Unlit || material.vertexColors
+               || !item.mesh->Attributes().Has(Graphics::VertexAttribute::Normal);
     }
 }

@@ -146,9 +146,9 @@ namespace CnaEngine::Graphics
         for (const auto& item : items) {
             const Material& material = *item.material;
             device_.setRasterizerStateProperty(RasterizerFor(material));
-            if (bucket == RenderBucket::Transparent) {
-                device_.setBlendStateProperty(material.blend == BlendMode::Additive ? BlendState::Additive
-                                                                                    : BlendState::AlphaBlend);
+            if (bucket == RenderBucket::Transparent || bucket == RenderBucket::Overlay) {
+                // What the binder's effect writes decides the blend (premultiplied or straight).
+                device_.setBlendStateProperty(binder_->BlendStateFor(item));
             }
             if (item.instances == nullptr) {
                 if (binder_->Apply(device_, item, bucket, camera, sink_)) {

@@ -43,3 +43,13 @@ API snapshot baseline taken 2026-10-19 (12 headers).
 - `Material::depthBias` and `slopeScaleDepthBias` (decals such as road markings).
 - `Core/FixedStepClock.hpp`: fixed-step simulation policy (car-simulator's
   vehicle step loop).
+- `BlendMode::PremultipliedAlpha` (glass: `color + behind * (1 - alpha)`) and
+  `IMaterialBinder::BlendStateFor`: the binder, which knows whether its effect
+  writes premultiplied or straight color, chooses the blend state of
+  Transparent and Overlay items. Fix: PBR transparent surfaces were blended
+  with XNA's premultiplied `AlphaBlend` although CNA's `PbrEffect` writes
+  straight alpha, so they came out too bright; they now use
+  `NonPremultiplied`. Overlay items now honor `Additive` materials.
+- `PbrSettings::environment` (image-based lighting) and
+  `PbrSettings::exposure`, which replaces `lightIntensity` and also scales
+  the ambient color and the environment (Street's exposure).
