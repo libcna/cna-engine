@@ -503,7 +503,7 @@ no shadows (CNA's cascaded shadow map was removed upstream; see
 `docs/pilots/street-simulator.md`). Post-processing hooks and reflection
 probes likewise wait for a pilot that needs them.
 
-### ENG-036 — Add quality profiles and capability resolution `[~]`
+### ENG-036 — Add quality profiles and capability resolution `[x]`
 
 Acceptance:
 
@@ -515,8 +515,12 @@ Acceptance:
 Blocked by: ENG-035.
 
 Result: `Graphics/Quality.hpp` (intent, capabilities from the XNA profile,
-resolved settings with recorded decisions, validated text persistence). Open:
-map both pilots' existing tiers.
+resolved settings with recorded decisions, validated text persistence) and
+`Graphics/QualitySchema.hpp`, where a game declares its own typed settings,
+bounds and device limits and defines presets as data. Both pilots' tiers map
+exactly (car-simulator's 3 tiers × 4 settings, Street's 4 presets × 26
+settings); on a limited device only declared limits change values, each
+recorded (`docs/pilots/`).
 
 ### ENG-037 — Add optional debug presentation `[~]`
 

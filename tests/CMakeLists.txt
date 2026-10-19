@@ -37,6 +37,7 @@ add_executable(cna_engine_tests
     Graphics/VisibilityTests.cpp
     Graphics/ForwardRendererTests.cpp
     Graphics/QualityTests.cpp
+    Graphics/QualitySchemaTests.cpp
     Graphics/InstancingTests.cpp
     Graphics/DiagnosticsReportTests.cpp
     Assets/AssetRegistryTests.cpp

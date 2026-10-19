@@ -29,7 +29,8 @@ the API; "Consumers" lists code that uses the engine facility today.
 | Forward renderer (buckets, passes, state restore, fallbacks) | `Graphics/ForwardRenderer.hpp` | Graphics | experimental | Street `SceneRenderer`, car-simulator world renderer | tests |
 | Material binders (interface, stock-effect binder) | `Graphics/MaterialBinder.hpp` | Graphics | experimental | Street `SceneRenderer::applyMaterial` | tests |
 | PBR material binder (CNA `PbrEffect`) | `Enhanced/PbrMaterialBinder.hpp` | EnhancedGraphics | experimental | Street `SceneRenderer::applyMaterial`, `Material` | tests |
-| Quality presets and capability resolution | `Graphics/Quality.hpp` | Graphics | experimental | car-simulator `QualityTier`, island-simulator quality profiles | tests |
+| Quality presets and capability resolution | `Graphics/Quality.hpp` | Graphics | experimental | car-simulator `QualityTier`, island-simulator quality profiles | tests, street_slice |
+| Quality schema (game-declared settings, presets, limits, persistence) | `Graphics/QualitySchema.hpp` | Graphics | pilot-validated (both) | car-simulator `QualityTier`, Street `RenderSettings` | tests, pilot probes |
 | Instancing (hardware + per-instance fallback) | `Graphics/Instancing.hpp` | Graphics | experimental | Street `InstancedMesh` | tests |
 | Asset registry | `Assets/AssetRegistry.hpp` | Graphics | experimental | Street `Assets/*Library`, house-simulator caches | tests |
 | World3D screen driven by engine input/camera | `Extended/EngineWorldScreen.hpp` | ExtendedIntegration | experimental | cna-extended `World3DScreenEXT` | tests, consumer probe |

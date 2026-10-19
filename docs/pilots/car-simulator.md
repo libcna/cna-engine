@@ -105,6 +105,14 @@ repeats, pixels identical to a direct upload.
 Generalization made because of this pilot: `SetNormalizeKeys(false)` for
 registries keyed by text rather than asset paths.
 
+## Quality tiers (ENG-036) — validated
+
+`CarSimulatorQualityTests` declares the pilot's four tier settings in an
+engine `QualitySchema` and defines the presets from the pilot's own
+`SettingsFor()`; every tier resolves to exactly the pilot's values on Reach
+and HiDef, with no decisions, and the preset names parse with the pilot's
+`QualityFromName()`.
+
 ## Still open for this pilot
 - The strict checker allowance (ADR-001) applied in an integration branch of
   the pilot — requires the owner's permission to touch car-simulator.

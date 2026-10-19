@@ -88,11 +88,24 @@ requires them"). CNA keeps the receiver side (`IShadowReceiverEXT` on
 BasicEffect/PbrEffect: a light-space distance map plus matrices), which an
 engine shadow pass would feed.
 
+## Quality presets (ENG-036) — validated
+
+`StreetQualityTests` declares the 26 settings Street's `applyPreset()` writes
+(read through member pointers into Street's own `RenderSettings`) and defines
+the four presets from it. On HiDef every preset resolves to Street's values
+with no decisions; on Reach only the declared multisampling limit changes a
+value and it is recorded. Player overrides persist and resolve.
+
+Generalization made because of the pilots: the fixed-field `QualityIntent` was
+not enough for either game; `QualitySchema` lets a game declare its own
+settings while the engine keeps presets, overrides, limits, the decision log
+and persistence.
+
 ## Still open for this pilot
 
 - Materials and render queue with Street's PBR effect (needs CNA's CNAEXT
   `PbrEffect` in an enhanced renderer; CNA is built with `CNA_CNAEXT=OFF` here).
-- Culling/LOD counts and quality tiers against Street's own settings.
+- Culling/LOD counts against Street's own scene.
 - Asset registry: Street's caches (`CharacterLibrary`, `ModelLibrary`) are
   tied to its `MaterialLibrary` and glTF import; a probe needs those pieces
   compiled read-only first.
