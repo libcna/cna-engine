@@ -54,6 +54,16 @@ with Street's `GpuMesh`, both render a **pixel-identical** image with
 BasicEffect lighting; the conversion report shows nothing dropped or
 narrowed.
 
+## Asset registry (ENG-024) — validated
+
+`StreetAssetsTests` reproduces `MaterialLibrary::derive`'s cache (one derived
+material per name, first definition wins, shared name space with
+`deriveTinted`) with `AssetRegistry::GetOrCreate` over Street's own base
+materials; identity and content match Street's results.
+
+Generalization made because of this pilot: `GetOrCreate(key, factory)` for
+assets whose recipe is not derivable from the key.
+
 ## Instancing (ENG-034) — validated on the hardware path
 
 `StreetSimulatorTests.InstancingMatchesStreetInstancedMesh` wraps the same
@@ -106,7 +116,4 @@ and persistence.
 - Materials and render queue with Street's PBR effect (needs CNA's CNAEXT
   `PbrEffect` in an enhanced renderer; CNA is built with `CNA_CNAEXT=OFF` here).
 - Culling/LOD counts against Street's own scene.
-- Asset registry: Street's caches (`CharacterLibrary`, `ModelLibrary`) are
-  tied to its `MaterialLibrary` and glTF import; a probe needs those pieces
-  compiled read-only first.
 - One complete Street vertical slice (MILESTONE-2).

@@ -104,6 +104,20 @@ namespace CnaEngine::Assets
             return std::static_pointer_cast<T>(GetErased(std::type_index(typeid(T)), typeid(T).name(), key, false));
         }
 
+        /// Returns the cached asset for `key`, or creates it with `create`
+        /// (instead of the type's loader) and caches it. For assets whose
+        /// recipe is not derivable from the key ("derived material X from
+        /// base Y with these parameters"): the first definition of a key wins
+        /// and later calls return it unchanged. Failures follow Get().
+        template <typename T, typename Create>
+        [[nodiscard]] std::shared_ptr<T> GetOrCreate(std::string_view key, Create&& create)
+        {
+            std::function<std::shared_ptr<void>(const std::string&)> factory =
+                [&create](const std::string&) -> std::shared_ptr<void> { return std::shared_ptr<T>(create()); };
+            return std::static_pointer_cast<T>(
+                GetErased(std::type_index(typeid(T)), typeid(T).name(), key, true, &factory));
+        }
+
         template <typename T>
         [[nodiscard]] bool Contains(std::string_view key) const
         {
@@ -150,7 +164,8 @@ namespace CnaEngine::Assets
             bool isFallback = false;
         };
 
-        std::shared_ptr<void> GetErased(std::type_index type, const char* typeName, std::string_view key, bool throwOnFailure);
+        std::shared_ptr<void> GetErased(std::type_index type, const char* typeName, std::string_view key, bool throwOnFailure,
+                                        const std::function<std::shared_ptr<void>(const std::string&)>* factory = nullptr);
         [[nodiscard]] std::string KeyFor(std::string_view key) const
         {
             return normalizeKeys_ ? NormalizeKey(key) : std::string(key);

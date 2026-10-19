@@ -65,12 +65,18 @@ if(EXISTS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/Camera.cpp")
         "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Geometry/MeshBuilder.cpp"
         "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/GpuMesh.cpp"
         "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/InstancedMesh.cpp"
-        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/RenderSettings.cpp")
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/RenderSettings.cpp"
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/MaterialLibrary.cpp"
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Assets/SignFactory.cpp"
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Assets/TextureFactory.cpp"
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Assets/Canvas.cpp"
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Assets/Image.cpp"
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Core/Rng.cpp")
     target_include_directories(cna_engine_pilot_street PUBLIC
         "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/include")
-    target_link_libraries(cna_engine_pilot_street PUBLIC CNA::Math CNA::Input CNA::GraphicsCore CNA::Core SharpRuntime::Text.Json)
+    target_link_libraries(cna_engine_pilot_street PUBLIC CNA::Math CNA::Input CNA::GraphicsCore CNA::Core CNA::Content SharpRuntime::Text.Json)
 
-    add_executable(cna_engine_pilot_street_tests StreetSimulatorTests.cpp StreetQualityTests.cpp)
+    add_executable(cna_engine_pilot_street_tests StreetSimulatorTests.cpp StreetQualityTests.cpp StreetAssetsTests.cpp)
     target_link_libraries(cna_engine_pilot_street_tests PRIVATE
         cna_engine_core cna_engine_graphics cna_engine_pilot_street GTest::gtest_main)
     gtest_discover_tests(cna_engine_pilot_street_tests

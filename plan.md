@@ -344,7 +344,7 @@ Result: `Graphics/GpuMesh.hpp` (owned/borrowed buffers, disposal handling,
 software-renderer pixel tests. Both pilots' meshes render pixel-identically
 through the engine upload and the pilot's own upload (`docs/pilots/`).
 
-### ENG-024 — Add typed asset registry and lifetime policy `[~]`
+### ENG-024 — Add typed asset registry and lifetime policy `[x]`
 
 Acceptance:
 
@@ -358,8 +358,9 @@ Blocked by: ENG-012. EXT-001 is complete.
 
 Result: `Assets/AssetRegistry.hpp` (normalized keys, typed loaders,
 ContentManager loader, fallbacks, failure records, invalidation, exact text
-keys). Car-simulator's plate-texture cache is replaced without behaviour
-change (`docs/pilots/car-simulator.md`); Street: open.
+keys, `GetOrCreate` for recipes not derivable from the key). Car-simulator's
+plate-texture cache and Street's derived-material cache are reproduced
+without behaviour change (`docs/pilots/`).
 
 ### ENG-025 — Add diagnostics and screenshot capture `[x]`
 
@@ -379,7 +380,7 @@ read when disabled), `Graphics/RenderStatistics.hpp`, `ScreenCapture.hpp`
 car-simulator probe shows engine captures are identical to the pilot's own
 screenshot files.
 
-### MILESTONE-1 — Strict-compatible foundation `[ ]`
+### MILESTONE-1 — Strict-compatible foundation `[x]`
 
 Exit criteria:
 
@@ -392,6 +393,15 @@ Estimated active AI-agent effort: 90–150 hours including Phase 2 and pilot
 integration feedback.
 
 ## Phase 4 — enhanced scene and rendering layer
+
+Result (2026-10-19): ENG-020 … ENG-025 meet their acceptance criteria.
+Car-simulator exercises input actions, camera data, mesh data and upload,
+screenshots and the asset registry through integration probes that compile
+its sources read-only (`tests/pilots/`); its own strict checker accepts the
+engine's strict surface with only the ADR-001 include allowance
+(`cna_engine.pilot.car_simulator_checker_allowance`); no strict target
+reaches cna-extended (boundary tests and the consumer probe's link-closure
+check).
 
 ### ENG-030 — Integrate `cna-extended` lifecycle and World3D `[~]`
 

@@ -28,8 +28,9 @@ namespace CnaEngine::Assets
         normalizeKeys_ = normalize;
     }
 
-    std::shared_ptr<void> AssetRegistry::GetErased(const std::type_index type, const char* typeName,
-                                                   const std::string_view key, const bool throwOnFailure)
+    std::shared_ptr<void> AssetRegistry::GetErased(
+        const std::type_index type, const char* typeName, const std::string_view key, const bool throwOnFailure,
+        const std::function<std::shared_ptr<void>(const std::string&)>* factory)
     {
         EntryKey entryKey{type, KeyFor(key)};
         if (const auto it = entries_.find(entryKey); it != entries_.end()) {
@@ -39,12 +40,14 @@ namespace CnaEngine::Assets
 
         std::string error;
         std::shared_ptr<void> asset;
-        if (const auto loader = loaders_.find(type); loader == loaders_.end()) {
+        const auto loader = loaders_.find(type);
+        const auto* load = factory != nullptr ? factory : loader != loaders_.end() ? &loader->second : nullptr;
+        if (load == nullptr) {
             error = "no loader registered for this type";
         } else {
             ++statistics_.loads;
             try {
-                asset = loader->second(entryKey.key);
+                asset = (*load)(entryKey.key);
                 if (!asset) {
                     error = "loader returned no asset";
                 }

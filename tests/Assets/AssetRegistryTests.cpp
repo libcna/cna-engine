@@ -127,4 +127,24 @@ namespace CnaEngine::Assets
         registry.InvalidateAll();
         EXPECT_NO_THROW(registry.SetNormalizeKeys(true));
     }
+
+    TEST(AssetRegistryTests, GetOrCreateKeepsTheFirstDefinition)
+    {
+        AssetRegistry registry;
+        int created = 0;
+        const auto first = registry.GetOrCreate<Mesh>("window", [&] {
+            ++created;
+            return std::make_shared<Mesh>(Mesh{"first recipe"});
+        });
+        const auto second = registry.GetOrCreate<Mesh>("window", [&] {
+            ++created;
+            return std::make_shared<Mesh>(Mesh{"second recipe"});
+        });
+        EXPECT_EQ(first, second);
+        EXPECT_EQ(second->source, "first recipe");
+        EXPECT_EQ(created, 1);
+        EXPECT_EQ(registry.Get<Mesh>("window"), first) << "cached like any other asset";
+        EXPECT_THROW((void)registry.GetOrCreate<Sound>("x", []() -> std::shared_ptr<Sound> { return nullptr; }),
+                     std::runtime_error);
+    }
 }
