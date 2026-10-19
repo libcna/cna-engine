@@ -97,7 +97,7 @@ if(CNA_ENGINE_STREET_SCENE_COMPARISON AND CNA_CNAEXT
    AND EXISTS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/SceneRenderer.cpp")
     file(GLOB_RECURSE _street_core_sources CONFIGURE_DEPENDS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/*.cpp")
     list(FILTER _street_core_sources EXCLUDE REGEX "/src/Main\\.cpp$")
-    add_library(cna_engine_pilot_street_core STATIC EXCLUDE_FROM_ALL ${_street_core_sources})
+    add_library(cna_engine_pilot_street_core STATIC ${_street_core_sources})
     target_include_directories(cna_engine_pilot_street_core PUBLIC "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/include")
     target_compile_definitions(cna_engine_pilot_street_core PUBLIC
         CNA_STREET_VERSION="probe" CNA_STREET_RENDERER_NAME="${CNA_GRAPHICS_RENDERER}"
@@ -107,4 +107,8 @@ if(CNA_ENGINE_STREET_SCENE_COMPARISON AND CNA_CNAEXT
     add_executable(cna_engine_street_scene_comparison StreetSceneComparison.cpp)
     target_link_libraries(cna_engine_street_scene_comparison PRIVATE
         cna_engine_core cna_engine_graphics cna_engine_enhanced cna_engine_pilot_street_core)
+    add_test(NAME cna_engine.pilot.street_scene_comparison
+        COMMAND cna_engine_street_scene_comparison "${CMAKE_CURRENT_BINARY_DIR}/street_scene_comparison")
+    # Building Street's procedural city in a Debug software-rendered build is slow.
+    set_tests_properties(cna_engine.pilot.street_scene_comparison PROPERTIES LABELS pilot TIMEOUT 3600)
 endif()
