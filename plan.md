@@ -495,8 +495,11 @@ Acceptance:
 Blocked by: ENG-032. Later substeps depend on ENG-033 and ENG-034 as needed.
 
 Result: substeps 1–2 (opaque, alpha-tested, transparent) plus overlay and
-custom passes at four points in `ForwardRenderer`. Open: shadows/cascades,
-post-processing hooks, reflection probes (only when a pilot requires them).
+custom passes at four points in `ForwardRenderer`; material binders make the
+effect side replaceable. Shadows/cascades are deferred: Street currently draws
+no shadows (CNA's cascaded shadow map was removed upstream; see
+`docs/pilots/street-simulator.md`). Post-processing hooks and reflection
+probes likewise wait for a pilot that needs them.
 
 ### ENG-036 — Add quality profiles and capability resolution `[~]`
 
@@ -544,6 +547,16 @@ Estimated active AI-agent effort from project start: 180–300 hours for a usefu
 MVP; 320–500 hours for the complete Phase 4 scope with robust tests.
 
 ## Phase 5 — two-consumer validation and staged migration
+
+Progress (2026-10-19): `examples/street_slice` renders a procedural street
+block through engine camera/input, generic meshes, PBR materials
+(`EnhancedGraphics`), render queues, frustum/distance culling, LOD with
+hysteresis and instanced lamps, with diagnostics and a PNG capture; it runs as
+a CTest example. Street's own camera, controls and tangent-frame meshes are
+validated by equivalence probes. Open: migrating a real Street scene (needs
+the owner's permission to touch street-simulator, or a larger read-only probe
+of its SceneRenderer), screenshot tolerances and CPU/draw comparisons against
+Street's renderer.
 
 ### PILOT-001 — Validate `cna-street` `[ ]`
 

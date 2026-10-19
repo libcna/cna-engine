@@ -57,7 +57,9 @@ pass->Apply();
 sphere.Draw(device, &frameStats);
 ```
 
-`examples/orbit_scene/main.cpp` is a complete, runnable headless program.
+`examples/orbit_scene/main.cpp` (strict profile) and
+`examples/street_slice/main.cpp` (enhanced profile: PBR, culling, LOD,
+instancing, diagnostics) are complete, runnable headless programs.
 
 ## Building
 

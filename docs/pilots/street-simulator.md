@@ -54,6 +54,16 @@ with Street's `GpuMesh`, both render a **pixel-identical** image with
 BasicEffect lighting; the conversion report shows nothing dropped or
 narrowed.
 
+## Shadows (ENG-035 step 3) — not required at present
+
+Street still carries shadow settings and statistics, but CNA's
+`CascadedShadowMap` was removed in CNA's graphics-ext scope reduction and
+Street's renderer never sets `drewShadows` or counts a shadow draw. Shadow
+passes therefore stay deferred under the plan's rule ("only when a pilot
+requires them"). CNA keeps the receiver side (`IShadowReceiverEXT` on
+BasicEffect/PbrEffect: a light-space distance map plus matrices), which an
+engine shadow pass would feed.
+
 ## Still open for this pilot
 
 - Materials and render queue with Street's PBR effect (needs CNA's CNAEXT
