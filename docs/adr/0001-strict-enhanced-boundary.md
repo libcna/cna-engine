@@ -129,6 +129,26 @@ installed `CnaEngineConfig.cmake` requires the consumer to define the CNA
 module targets before `find_package(CnaEngine)` and fails with a clear message
 otherwise.
 
+## Addendum (2026-10-19) — `CnaEngine::EnhancedGraphics`
+
+Enhanced rendering needs CNA's own graphics extensions (`PbrEffect`, alpha
+modes, texture transforms) without needing cna-extended. A second enhanced
+target is therefore added:
+
+| CMake target | Alias | Depends on | Profile |
+| --- | --- | --- | --- |
+| `cna_engine_enhanced` | `CnaEngine::EnhancedGraphics` | `CnaEngine::Graphics`, CNA graphics extensions | enhanced |
+
+- Include prefix `CnaEngine/Enhanced/`, namespace `CnaEngine::Enhanced`;
+  built when `CNA_ENGINE_WITH_ENHANCED_GRAPHICS=ON` (default) and part of
+  `CnaEngine::Engine`.
+- It must not include `CNA/Extended/` headers; `ExtendedIntegration` stays
+  the only cna-extended user.
+- Strict code reaches enhanced rendering only through the strict
+  `IMaterialBinder` interface (`Graphics/MaterialBinder.hpp`): the strict
+  `ForwardRenderer` never names `PbrEffect`, and the strict boundary check is
+  unchanged.
+
 ## Consequences
 
 - Strict consumers link `CnaEngine::Core` and/or `CnaEngine::Graphics` only.

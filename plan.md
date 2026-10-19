@@ -420,9 +420,11 @@ Acceptance:
 Blocked by: ENG-023 and ENG-024.
 
 Result: `Graphics/Material.hpp` (unlit/lit/PBR description, blend modes,
-borrowed textures, no GPU state); stock-effect translation with deterministic,
-reported fallbacks in `ForwardRenderer`. Open: PBR rendering on the enhanced
-path and one migrated Street material family.
+borrowed textures, no GPU state, glTF metallic-roughness fields matching
+Street's `Material`); `IMaterialBinder` with a strict stock-effect binder and
+an enhanced `PbrMaterialBinder` over CNA's `PbrEffect`, both with reported
+fallbacks. Open: one migrated Street material family with a visual
+comparison against Street's own `applyMaterial`.
 
 ### ENG-032 — Define render items, queues, and state contracts `[~]`
 

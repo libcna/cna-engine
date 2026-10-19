@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 
 #include <cstdint>
@@ -56,9 +57,27 @@ namespace CnaEngine::Graphics
         /// Base color texture (needs TexCoord0); null means untextured.
         Microsoft::Xna::Framework::Graphics::Texture2D* baseTexture = nullptr;
 
-        // PhysicallyBased parameters, ignored by stock-effect renderers.
+        /// Base-color and emissive textures hold sRGB-encoded color (normal and
+        /// occlusion-roughness-metallic maps are always linear).
+        bool colorTexturesAreSrgb = true;
+        /// Texture-coordinate transform applied to every texture of the
+        /// material (atlas addressing; the mesh UVs carry the tiling).
+        Microsoft::Xna::Framework::Vector2 uvScale = Microsoft::Xna::Framework::Vector2(1.0f, 1.0f);
+        Microsoft::Xna::Framework::Vector2 uvOffset = Microsoft::Xna::Framework::Vector2(0.0f, 0.0f);
+
+        // PhysicallyBased parameters (glTF metallic-roughness), ignored by the
+        // stock-effect binder.
         float metallic = 0.0f;
         float roughness = 1.0f;
+        /// Tangent-space normal map (needs Tangent and TexCoord0 attributes).
         Microsoft::Xna::Framework::Graphics::Texture2D* normalTexture = nullptr;
+        float normalScale = 1.0f;
+        /// glTF packing: R occlusion, G roughness, B metallic.
+        Microsoft::Xna::Framework::Graphics::Texture2D* occlusionRoughnessMetallicTexture = nullptr;
+        float occlusionStrength = 1.0f;
+        Microsoft::Xna::Framework::Graphics::Texture2D* emissiveTexture = nullptr;
+        /// KHR_materials_ior and KHR_materials_specular.
+        float ior = 1.5f;
+        float specularFactor = 1.0f;
     };
 }

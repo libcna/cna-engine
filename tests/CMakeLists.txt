@@ -61,6 +61,18 @@ if(CNA_ENGINE_WITH_EXTENDED)
         PROPERTIES LABELS "unit;enhanced")
 endif()
 
+# --- Enhanced graphics tests (CNA extensions, no cna-extended). ----------------
+if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
+    add_executable(cna_engine_enhanced_tests
+        Enhanced/PbrMaterialBinderTests.cpp
+    )
+    target_link_libraries(cna_engine_enhanced_tests PRIVATE cna_engine_enhanced GTest::gtest_main)
+    gtest_discover_tests(cna_engine_enhanced_tests
+        TEST_PREFIX "cna_engine_enhanced."
+        DISCOVERY_MODE PRE_TEST
+        PROPERTIES LABELS "unit;enhanced")
+endif()
+
 # --- Pilot probes: compare engine facilities with pilot implementations. ------
 option(CNA_ENGINE_PILOT_PROBES "Build probes that compile pilot-project sources read-only" ON)
 if(CNA_ENGINE_PILOT_PROBES)

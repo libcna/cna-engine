@@ -14,7 +14,7 @@ foreach(_cna_engine_target IN LISTS _cna_engine_required_targets)
     endif()
 endforeach()
 
-# Components: Core, Graphics (strict); ExtendedIntegration (enhanced).
+# Components: Core, Graphics (strict); EnhancedGraphics, ExtendedIntegration (enhanced).
 set(_cna_engine_wants_extended OFF)
 if("ExtendedIntegration" IN_LIST CnaEngine_FIND_COMPONENTS)
     set(_cna_engine_wants_extended ON)
@@ -45,6 +45,9 @@ include("${CMAKE_CURRENT_LIST_DIR}/CnaEngineTargets.cmake")
 # Re-attach the dependency links that cannot be exported.
 set_property(TARGET CnaEngine::Core APPEND PROPERTY INTERFACE_LINK_LIBRARIES @CNA_ENGINE_PACKAGE_CORE_LINKS@)
 set_property(TARGET CnaEngine::Graphics APPEND PROPERTY INTERFACE_LINK_LIBRARIES @CNA_ENGINE_PACKAGE_GRAPHICS_LINKS@)
+if(TARGET CnaEngine::EnhancedGraphics)
+    set_property(TARGET CnaEngine::EnhancedGraphics APPEND PROPERTY INTERFACE_LINK_LIBRARIES @CNA_ENGINE_PACKAGE_ENHANCED_LINKS@)
+endif()
 if(TARGET CnaEngine::ExtendedIntegration AND TARGET CNA::Extended)
     set_property(TARGET CnaEngine::ExtendedIntegration APPEND PROPERTY INTERFACE_LINK_LIBRARIES @CNA_ENGINE_PACKAGE_EXTENDED_LINKS@)
 endif()

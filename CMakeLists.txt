@@ -25,6 +25,8 @@ option(CNA_ENGINE_BUILD_TESTS "Build cna-engine unit and boundary tests" ${CNA_E
 option(CNA_ENGINE_BUILD_EXAMPLES "Build cna-engine examples" ${CNA_ENGINE_IS_TOP_LEVEL})
 option(CNA_ENGINE_WITH_EXTENDED
     "Build CnaEngine::ExtendedIntegration (the only target that depends on cna-extended)" ON)
+option(CNA_ENGINE_WITH_ENHANCED_GRAPHICS
+    "Build CnaEngine::EnhancedGraphics (CNA graphics extensions such as PbrEffect; no cna-extended)" ON)
 option(CNA_ENGINE_INSTALL "Generate install and package-export rules" ${CNA_ENGINE_IS_TOP_LEVEL})
 option(CNA_ENGINE_WARNINGS_AS_ERRORS "Treat warnings in cna-engine's own targets as errors" ON)
 option(CNA_ENGINE_ENFORCE_BASELINE
@@ -68,12 +70,25 @@ cna_engine_add_library(cna_engine_graphics Graphics
     src/Graphics/Quality.cpp
     src/Graphics/Instancing.cpp
     src/Graphics/DiagnosticsReport.cpp
+    src/Graphics/MaterialBinder.cpp
     src/Assets/AssetRegistry.cpp
 )
 target_link_libraries(cna_engine_graphics PUBLIC cna_engine_core)
 cna_engine_link_external(cna_engine_graphics CNA::GraphicsCore CNA::Content)
 
 set(CNA_ENGINE_EXPORTED_TARGETS cna_engine_core cna_engine_graphics)
+
+# ---------------------------------------------------------------------------
+# Enhanced graphics: CNA extension APIs (PbrEffect, ...), never cna-extended.
+# ---------------------------------------------------------------------------
+if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
+    cna_engine_add_library(cna_engine_enhanced EnhancedGraphics
+        src/Enhanced/PbrMaterialBinder.cpp
+    )
+    target_link_libraries(cna_engine_enhanced PUBLIC cna_engine_graphics)
+    cna_engine_link_external(cna_engine_enhanced CNA::GraphicsCore)
+    list(APPEND CNA_ENGINE_EXPORTED_TARGETS cna_engine_enhanced)
+endif()
 
 # ---------------------------------------------------------------------------
 # Enhanced target: the sole dependency on cna-extended.
@@ -94,6 +109,9 @@ add_library(cna_engine INTERFACE)
 add_library(CnaEngine::Engine ALIAS cna_engine)
 set_target_properties(cna_engine PROPERTIES EXPORT_NAME Engine)
 target_link_libraries(cna_engine INTERFACE cna_engine_core cna_engine_graphics)
+if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
+    target_link_libraries(cna_engine INTERFACE cna_engine_enhanced)
+endif()
 if(CNA_ENGINE_WITH_EXTENDED)
     target_link_libraries(cna_engine INTERFACE cna_engine_extended)
 endif()

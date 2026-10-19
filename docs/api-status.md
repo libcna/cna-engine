@@ -26,7 +26,9 @@ the API; "Consumers" lists code that uses the engine facility today.
 | Materials | `Graphics/Material.hpp` | Graphics | experimental | Street material descriptions, car-simulator effect setup | tests |
 | Render items and queue (buckets, deterministic sorting) | `Graphics/RenderQueue.hpp` | Graphics | experimental | Street render submission model | tests |
 | Visibility policies and LOD selection | `Graphics/Visibility.hpp` | Graphics | experimental | Street culling/LOD, island-simulator culling | tests |
-| Forward renderer over stock effects (passes, state restore, fallbacks) | `Graphics/ForwardRenderer.hpp` | Graphics | experimental | Street `SceneRenderer`, car-simulator world renderer | tests |
+| Forward renderer (buckets, passes, state restore, fallbacks) | `Graphics/ForwardRenderer.hpp` | Graphics | experimental | Street `SceneRenderer`, car-simulator world renderer | tests |
+| Material binders (interface, stock-effect binder) | `Graphics/MaterialBinder.hpp` | Graphics | experimental | Street `SceneRenderer::applyMaterial` | tests |
+| PBR material binder (CNA `PbrEffect`) | `Enhanced/PbrMaterialBinder.hpp` | EnhancedGraphics | experimental | Street `SceneRenderer::applyMaterial`, `Material` | tests |
 | Quality presets and capability resolution | `Graphics/Quality.hpp` | Graphics | experimental | car-simulator `QualityTier`, island-simulator quality profiles | tests |
 | Instancing (hardware + per-instance fallback) | `Graphics/Instancing.hpp` | Graphics | experimental | Street `InstancedMesh` | tests |
 | Asset registry | `Assets/AssetRegistry.hpp` | Graphics | experimental | Street `Assets/*Library`, house-simulator caches | tests |

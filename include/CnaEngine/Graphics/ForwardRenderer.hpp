@@ -2,15 +2,11 @@
 #pragma once
 
 #include "CnaEngine/Graphics/Camera.hpp"
-#include "CnaEngine/Graphics/Material.hpp"
+#include "CnaEngine/Graphics/MaterialBinder.hpp"
 #include "CnaEngine/Graphics/RenderQueue.hpp"
 #include "CnaEngine/Graphics/RenderStatistics.hpp"
 
-#include "Microsoft/Xna/Framework/Graphics/AlphaTestEffect.hpp"
-#include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
-#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
-#include "Microsoft/Xna/Framework/Vector3.hpp"
 
 #include <cstdint>
 #include <functional>
@@ -30,42 +26,26 @@ namespace CnaEngine::Graphics
         AfterOverlay,
     };
 
-    /// Scene-wide lighting for the stock effects.
-    struct ForwardLighting
-    {
-        /// XNA's default three-light rig (BasicEffect::EnableDefaultLighting).
-        /// When false the lights are left as configured through LitEffect().
-        bool defaultLighting = true;
-        Microsoft::Xna::Framework::Vector3 ambientColor = Microsoft::Xna::Framework::Vector3(0.05333332f, 0.09882354f,
-                                                                                             0.1819608f);
-        bool fogEnabled = false;
-        Microsoft::Xna::Framework::Vector3 fogColor = Microsoft::Xna::Framework::Vector3::Zero;
-        float fogStart = 0.0f;
-        float fogEnd = 1.0f;
-    };
-
-    /// A small forward renderer over XNA's stock effects (BasicEffect and
-    /// AlphaTestEffect), usable by strict-XNA games.
+    /// A small forward renderer: ordering, buckets, render states and custom
+    /// passes. How a material becomes effect parameters is delegated to an
+    /// IMaterialBinder — by default the StockMaterialBinder over XNA's
+    /// BasicEffect/AlphaTestEffect, so strict-XNA games can use it as is.
     ///
     /// Pass order: [BeforeOpaque] Opaque, AlphaTested [AfterOpaque]
     /// Transparent [AfterTransparent] Overlay [AfterOverlay]. Custom passes run
     /// in insertion order at their point and may draw anything with CNA
     /// directly.
     ///
-    /// State contract: before each bucket the renderer sets blend, depth and
-    /// rasterizer states it needs (opaque/alpha-tested: Opaque blend, Default
-    /// depth, counter-clockwise culling; transparent: material blend, DepthRead;
-    /// overlay: AlphaBlend, no depth); double-sided materials disable culling.
-    /// Custom passes receive the device in the state of the preceding bucket.
-    /// After Render() the blend, depth-stencil and rasterizer states are
-    /// restored to what they were before the call.
+    /// State contract: before each bucket the renderer sets the blend, depth
+    /// and rasterizer states it needs (opaque/alpha-tested: Opaque blend,
+    /// Default depth, counter-clockwise culling; transparent: material blend,
+    /// DepthRead; overlay: AlphaBlend, no depth); double-sided materials
+    /// disable culling. Custom passes receive the device in the state of the
+    /// preceding bucket. After Render() the blend, depth-stencil and rasterizer
+    /// states are restored to what they were before the call.
     ///
-    /// Fallbacks are deterministic and reported in LastFallbacks():
-    ///  - Lit/PhysicallyBased without normals in the mesh draws Unlit;
-    ///  - PhysicallyBased draws Lit (stock effects have no PBR);
-    ///  - a texture on a mesh without TexCoord0, or a disposed texture, is ignored;
-    ///  - vertex colors on a mesh without a Color attribute are ignored;
-    ///  - AlphaTest draws through AlphaTestEffect, which is unlit in XNA.
+    /// Fallbacks taken by the binder are deterministic and reported, once each,
+    /// in LastFallbacks().
     class ForwardRenderer
     {
     public:
@@ -75,9 +55,18 @@ namespace CnaEngine::Graphics
         explicit ForwardRenderer(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device);
 
         [[nodiscard]] ForwardLighting& Lighting() noexcept { return lighting_; }
-        /// The BasicEffect used for Opaque/Transparent/Overlay items, for custom
-        /// light setups (escape hatch; per-item parameters are overwritten).
-        [[nodiscard]] Microsoft::Xna::Framework::Graphics::BasicEffect& LitEffect() noexcept { return *basic_; }
+
+        /// Replaces the material binder; null restores the stock binder.
+        void SetMaterialBinder(std::shared_ptr<IMaterialBinder> binder);
+        [[nodiscard]] IMaterialBinder& MaterialBinder() noexcept { return *binder_; }
+        /// The built-in stock binder (also when another binder is active);
+        /// enhanced binders delegate unsupported materials to it.
+        [[nodiscard]] const std::shared_ptr<StockMaterialBinder>& StockBinder() const noexcept { return stock_; }
+        /// The stock BasicEffect, for custom light setups (escape hatch).
+        [[nodiscard]] Microsoft::Xna::Framework::Graphics::BasicEffect& LitEffect() noexcept
+        {
+            return stock_->LitEffect();
+        }
 
         void AddPass(PassPoint point, std::string name, PassCallback callback);
         /// Removes every custom pass called `name`; returns how many were removed.
@@ -100,16 +89,13 @@ namespace CnaEngine::Graphics
         void RunPasses(PassPoint point, const Camera& camera, RenderStatistics& statistics);
         void DrawBucket(std::span<const RenderItem> items, RenderBucket bucket, const Camera& camera,
                         RenderStatistics& statistics);
-        void DrawItem(const RenderItem& item, RenderBucket bucket, const Camera& camera, RenderStatistics& statistics);
-        void Fallback(const Material& material, const std::string& what);
 
         Microsoft::Xna::Framework::Graphics::GraphicsDevice& device_;
-        std::unique_ptr<Microsoft::Xna::Framework::Graphics::BasicEffect> basic_;
-        std::unique_ptr<Microsoft::Xna::Framework::Graphics::AlphaTestEffect> alphaTest_;
-        /// 1x1 white texture for untextured alpha-tested materials.
-        std::unique_ptr<Microsoft::Xna::Framework::Graphics::Texture2D> white_;
+        std::shared_ptr<StockMaterialBinder> stock_;
+        std::shared_ptr<IMaterialBinder> binder_;
         ForwardLighting lighting_;
         std::vector<Pass> passes_;
         std::vector<std::string> fallbacks_;
+        FallbackSink sink_;
     };
 }

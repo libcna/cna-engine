@@ -14,6 +14,7 @@ validated by both pilot games (see `plan.md` and `docs/api-status.md`).
 | --- | --- | --- |
 | `CnaEngine::Core` | strict | named input actions and axes, rebinding, binding capture, frame statistics, CPU profiler |
 | `CnaEngine::Graphics` | strict | camera state and fly/walk controllers, CPU mesh data and builders, vertex layouts, RAII GPU meshes, materials, render queues, culling and LOD, a forward renderer over XNA's stock effects, render statistics, screenshots, typed asset registry |
+| `CnaEngine::EnhancedGraphics` | enhanced | PBR material binder over CNA's `PbrEffect` (no cna-extended) |
 | `CnaEngine::ExtendedIntegration` | enhanced | adapters to cna-extended (`EngineWorldScreen`, World3D camera sync) |
 | `CnaEngine::Engine` | enhanced | everything above |
 
@@ -79,6 +80,8 @@ Options:
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `CNA_ENGINE_WITH_EXTENDED` | `ON` | build the cna-extended integration |
+| `CNA_ENGINE_WITH_ENHANCED_GRAPHICS` | `ON` | build the CNA-extension (PBR) graphics target |
+| `CNA_ENGINE_PILOT_PROBES` | `ON` | build probes comparing engine code with the pilots (read-only) |
 | `CNA_ENGINE_BUILD_TESTS` / `_EXAMPLES` | top level | tests and examples |
 | `CNA_ENGINE_ENFORCE_BASELINE` | `OFF` | fail configuration off the pinned revisions |
 | `CNA_ENGINE_CNA_RENDERER` / `_PLATFORM` / `_AUDIO_PLATFORM` | `SOFTWARE` / `HEADLESS` / `NULL` | CNA axes for a standalone build |
