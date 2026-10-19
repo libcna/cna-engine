@@ -4,6 +4,25 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-19 (night) — CNAEXT configuration and the Street scene comparison
+
+`build-probe/` reconfigured with `-DCNA_ENGINE_CNA_CNAEXT=ON` (same clean
+pinned dependencies, baseline still enforced and matching) so that Street's
+whole core, which needs CNA's CNAEXT shader packages, compiles read-only.
+
+- Engine suite in that configuration: **all tests passed** (157 including
+  `cna_engine.pilot.street_scene_comparison`), showing the engine also builds
+  and runs against CNA with its extension layer enabled.
+- Street scene comparison (`docs/pilots/street-simulator.md`): identical
+  visible items (652), visible instances (192) and draw calls (703); engine CPU
+  frame time lower in every run; mean image difference 19/255 from Street's
+  lighting model.
+- Found and recorded UP-006: Street's `CNA` umbrella (libcna.so) plus the
+  engine's static CNA modules duplicated CNA's statics and crashed at exit;
+  the probe links Street against the static modules.
+
+Day-to-day `build/` (shared CNA worktree, CNAEXT off): 157/157.
+
 ## 2026-10-19 (baseline) — clean pinned dependencies, enforced
 
 The CNA worktree used by the earlier runs carries other agents' uncommitted

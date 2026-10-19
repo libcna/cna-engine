@@ -31,7 +31,7 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
 | Directory | Content |
 | --- | --- |
 | `build/` | day-to-day engine build against the shared `../cna` worktree (which other agents edit; not baseline evidence) |
-| `build-probe/` | baseline build against `~/deps/cna-baseline` (clean clone at the pinned CNA revision) with `CNA_ENGINE_ENFORCE_BASELINE=ON` |
+| `build-probe/` | baseline build against `~/deps/cna-baseline` (clean clone at the pinned CNA revision) with `CNA_ENGINE_ENFORCE_BASELINE=ON` and `CNA_ENGINE_CNA_CNAEXT=ON`; the only tree that builds the Street scene comparison |
 | `build-consumer/` | installed-package consumer probes (`tools/run_consumer_probes.sh`) |
 
 `~/deps/cna-baseline` is a local clone of CNA at the pin; move it with
@@ -62,12 +62,14 @@ Done (see `plan.md` for per-task results):
 
 1. Pilot adoption (PILOT-001/002) — needs the owner's permission to modify the
    pilots; until then, probes are the evidence.
-2. MILESTONE-2 remainder: compare a real Street scene (its `SceneRenderer`)
-   with the engine path, CPU/draw-call measurements with agreed tolerances.
+2. MILESTONE-2 remainder: the real Street scene already matches Street's
+   visibility and draw calls through the engine (`docs/pilots/street-simulator.md`);
+   screenshot tolerances must be agreed with the owner.
 3. ENG-035 later steps only when a pilot needs them (Street currently draws no
    shadows; see `docs/pilots/street-simulator.md`).
 4. Upstream: UP-001 (no CNA package), UP-004 (BoundingFrustum point
-   containment), UP-005 (cna-extended skinned test) — for their owners.
+   containment), UP-005 (cna-extended skinned test), UP-006 (CNA umbrella vs
+   module targets) — for their owners.
 
 ## Pointers
 
