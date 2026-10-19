@@ -32,7 +32,8 @@ namespace CnaEngine::Graphics
 
         float Speed(const FirstPersonSettings& settings, const CameraControlInput& input)
         {
-            return settings.speed * (input.fast ? settings.fastMultiplier : 1.0f);
+            return settings.speed * (input.fast ? settings.fastMultiplier : 1.0f)
+                   * (input.slow ? settings.slowMultiplier : 1.0f);
         }
 
         void Turn(const FirstPersonSettings& settings, const CameraControlInput& input, float& yaw, float& pitch)
@@ -42,14 +43,23 @@ namespace CnaEngine::Graphics
         }
     }
 
-    CameraControlInput ReadCameraInput(const Input::ActionMap& actions, const CameraInputAxes& axes)
+    CameraControlInput ReadCameraInput(const Input::ActionMap& actions, const CameraInputAxes& axes,
+                                       const float elapsedSeconds)
     {
         CameraControlInput input;
         input.move = Vector3(actions.Axis(axes.moveRight), axes.hasMoveUp ? actions.Axis(axes.moveUp) : 0.0f,
                              actions.Axis(axes.moveForward));
         input.yaw = actions.Axis(axes.lookYaw) * axes.lookScale;
         input.pitch = actions.Axis(axes.lookPitch) * axes.lookScale;
+        const float rate = axes.lookRate * elapsedSeconds;
+        if (axes.lookYawRate) {
+            input.yaw += actions.Axis(*axes.lookYawRate) * rate;
+        }
+        if (axes.lookPitchRate) {
+            input.pitch += actions.Axis(*axes.lookPitchRate) * rate;
+        }
         input.fast = axes.fast && actions.Held(*axes.fast);
+        input.slow = axes.slow && actions.Held(*axes.slow);
         return input;
     }
 
@@ -61,9 +71,13 @@ namespace CnaEngine::Graphics
     {
         Turn(settings_, input, yaw_, pitch_);
         camera.SetYawPitchRoll(yaw_, pitch_, 0.0f);
-        const Vector3 move = camera.Right() * input.move.X + camera.Up() * input.move.Y + camera.Forward() * input.move.Z;
-        if (move.LengthSquared() > 0.0f) {
-            camera.SetPosition(camera.Position() + move * (Speed(settings_, input) * elapsedSeconds));
+        const Vector3 up = settings_.worldUpVertical ? Vector3::Up : camera.Up();
+        const Vector3 direction = camera.Right() * input.move.X + up * input.move.Y + camera.Forward() * input.move.Z;
+        const float lengthSquared = direction.LengthSquared();
+        if (lengthSquared > 1e-12f) {
+            const float amount = std::min(1.0f, input.move.Length());
+            const Vector3 step = direction * (amount * Speed(settings_, input) * elapsedSeconds / std::sqrt(lengthSquared));
+            camera.SetPosition(camera.Position() + step);
         }
     }
 

@@ -24,11 +24,17 @@ namespace CnaEngine::Graphics
         float pitch = 0.0f;
         /// Applies the controller's fast multiplier.
         bool fast = false;
+        /// Applies the controller's slow multiplier (combines with `fast`).
+        bool slow = false;
     };
 
-    /// Builds a CameraControlInput from ActionMap axes and an optional "fast"
-    /// action. Look axes are multiplied by `lookScale` (radians per axis unit),
-    /// so mouse-delta axes and stick axes can share one controller.
+    /// Which ActionMap axes and actions feed a camera controller.
+    ///
+    /// Look comes from two kinds of axes: per-update deltas (`lookYaw`,
+    /// `lookPitch`, typically mouse axes) multiplied by `lookScale` radians
+    /// per unit, and rates (`lookYawRate`, `lookPitchRate`, typically keys or
+    /// sticks) multiplied by `lookRate` radians per second and the elapsed
+    /// time. Either kind may be absent.
     struct CameraInputAxes
     {
         Input::AxisId moveRight = 0;
@@ -36,11 +42,16 @@ namespace CnaEngine::Graphics
         Input::AxisId moveForward = 0;
         Input::AxisId lookYaw = 0;
         Input::AxisId lookPitch = 0;
+        std::optional<Input::AxisId> lookYawRate;
+        std::optional<Input::AxisId> lookPitchRate;
         std::optional<Input::ActionId> fast;
+        std::optional<Input::ActionId> slow;
         bool hasMoveUp = false;
         float lookScale = 1.0f;
+        float lookRate = 1.5f;
     };
-    [[nodiscard]] CameraControlInput ReadCameraInput(const Input::ActionMap& actions, const CameraInputAxes& axes);
+    [[nodiscard]] CameraControlInput ReadCameraInput(const Input::ActionMap& actions, const CameraInputAxes& axes,
+                                                     float elapsedSeconds = 0.0f);
 
     /// Policy that moves a Camera; the camera stays a passive state object.
     /// Game-specific controllers (chase, cockpit, cinematic) implement this in
@@ -61,9 +72,18 @@ namespace CnaEngine::Graphics
         float speed = 5.0f;           ///< world units per second
         float fastMultiplier = 4.0f;
         float maxPitch = 1.53f;       ///< radians, just under 90 degrees
+        float slowMultiplier = 0.25f;
+        /// Fly: climb along world +Y (true) or along the camera's up vector.
+        bool worldUpVertical = true;
     };
 
-    /// Free flight: moves along the camera's own axes, no gravity, no ground.
+    /// Free flight, no gravity, no ground.
+    ///
+    /// The direction is right * move.X + up * move.Y + forward * move.Z
+    /// (forward follows pitch; up is world +Y or the camera's up), normalized,
+    /// and the speed is scaled by min(1, |move|): combined digital keys are
+    /// never faster than one key, while a half-deflected stick moves at half
+    /// speed.
     class FlyCameraController final : public ICameraController
     {
     public:

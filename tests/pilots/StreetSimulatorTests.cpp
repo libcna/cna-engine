@@ -4,6 +4,8 @@
 // through the engine's Camera, MeshData and GpuMesh, compared with Street's own
 // Camera and GpuMesh (compiled read-only from the pilot checkout).
 #include "CnaEngine/Graphics/Camera.hpp"
+#include "CnaEngine/Graphics/CameraControllers.hpp"
+#include "CnaEngine/Input/ActionMap.hpp"
 #include "CnaEngine/Graphics/GpuMesh.hpp"
 #include "CnaEngine/Graphics/MeshData.hpp"
 
@@ -27,6 +29,8 @@
 
 #include <cmath>
 #include <initializer_list>
+#include <random>
+#include <unordered_set>
 #include <vector>
 
 namespace CnaEngine::Pilot
@@ -208,5 +212,96 @@ namespace CnaEngine::Pilot
         }
         EXPECT_GT(covered, Width * Height / 10) << "the props are on screen";
         EXPECT_EQ(enginePixels, streetPixels);
+    }
+
+    // ENG-020 for Street: the controls Street's fly mode reads directly from
+    // the keyboard and mouse, expressed as engine actions and axes and run
+    // through the engine fly controller, follow the same trajectory.
+    TEST(StreetSimulatorTests, FlyControlsExpressedAsEngineActions)
+    {
+        constexpr float Sensitivity = 0.0022f; // Street's default mouse sensitivity
+        Input::ActionMap actions;
+        Graphics::CameraInputAxes axes;
+        axes.moveForward = actions.AddAxis("MoveForward");
+        axes.moveRight = actions.AddAxis("MoveRight");
+        axes.moveUp = actions.AddAxis("MoveUp");
+        axes.hasMoveUp = true;
+        axes.lookYaw = actions.AddAxis("LookYaw");
+        axes.lookPitch = actions.AddAxis("LookPitch");
+        axes.lookYawRate = actions.AddAxis("TurnKeys");
+        axes.lookPitchRate = actions.AddAxis("TiltKeys");
+        axes.fast = actions.AddAction("Fast");
+        axes.slow = actions.AddAction("Slow");
+        axes.lookRate = 1.5f;
+        actions.BindAxis(axes.moveForward, Input::AxisBinding::ForKeys(Keys::S, Keys::W));
+        actions.BindAxis(axes.moveRight, Input::AxisBinding::ForKeys(Keys::A, Keys::D));
+        actions.BindAxis(axes.moveUp, Input::AxisBinding::ForKeys(Keys::Q, Keys::E));
+        // Street turns right for +X mouse motion and looks up for -Y; engine
+        // yaw is counter-clockwise, so both mouse axes are negated.
+        actions.BindAxis(axes.lookYaw, Input::AxisBinding::ForMouse(Input::MouseAxis::DeltaX, -Sensitivity));
+        actions.BindAxis(axes.lookPitch, Input::AxisBinding::ForMouse(Input::MouseAxis::DeltaY, -Sensitivity));
+        actions.BindAxis(*axes.lookYawRate, Input::AxisBinding::ForKeys(Keys::Right, Keys::Left));
+        actions.BindAxis(*axes.lookPitchRate, Input::AxisBinding::ForKeys(Keys::Down, Keys::Up));
+        actions.Bind(*axes.fast, Input::Binding::ForKey(Keys::LeftShift));
+        actions.Bind(*axes.fast, Input::Binding::ForKey(Keys::RightShift));
+        actions.Bind(*axes.slow, Input::Binding::ForKey(Keys::LeftControl));
+        actions.Bind(*axes.slow, Input::Binding::ForKey(Keys::RightControl));
+
+        CnaStreet::Camera street;
+        CnaStreet::CameraController controller;
+        controller.setCamera(&street);
+        controller.setMode(CnaStreet::CameraMode::Fly);
+        controller.setMouseCaptured(true);
+
+        Graphics::Camera camera;
+        ApplyStreetCamera(street, camera);
+        Graphics::FirstPersonSettings settings;
+        settings.speed = controller.moveSpeed();
+        settings.fastMultiplier = 4.0f;
+        settings.slowMultiplier = 0.22f;
+        settings.maxPitch = 1.55334303f; // Street's 89-degree limit
+        Graphics::FlyCameraController fly(settings);
+        fly.SyncFrom(camera);
+
+        std::mt19937 random(5);
+        const Keys pool[] = {Keys::W, Keys::A, Keys::S, Keys::D, Keys::Q, Keys::E, Keys::Left, Keys::Right,
+                             Keys::Up, Keys::Down, Keys::LeftShift, Keys::LeftControl};
+        std::unordered_set<Keys> held;
+        KeyboardState previousKeys;
+        int mouseX = 0;
+        int mouseY = 0;
+        MouseState previousMouse = Mouse(mouseX, mouseY);
+        constexpr float Dt = 1.0f / 60.0f;
+        for (int frame = 0; frame < 600; ++frame) {
+            for (const Keys key : pool) {
+                if (std::bernoulli_distribution(0.06)(random) && !held.erase(key)) {
+                    held.insert(key);
+                }
+            }
+            mouseX += std::uniform_int_distribution<int>(-6, 6)(random);
+            mouseY += std::uniform_int_distribution<int>(-3, 3)(random);
+            const KeyboardState keyboard(held);
+            const MouseState mouse = Mouse(mouseX, mouseY);
+
+            controller.update(Dt, keyboard, previousKeys, mouse, previousMouse);
+            Input::InputSnapshot snapshot;
+            snapshot.keyboard = keyboard;
+            snapshot.mouse = mouse;
+            if (frame == 0) {
+                // Street differences against the previous mouse it is given;
+                // give the engine the same reference.
+                Input::InputSnapshot reference;
+                reference.mouse = previousMouse;
+                actions.Update(reference);
+            }
+            actions.Update(snapshot);
+            fly.Update(camera, Graphics::ReadCameraInput(actions, axes, Dt), Dt);
+            previousKeys = keyboard;
+            previousMouse = mouse;
+
+            ASSERT_LT(Vector3::Distance(camera.Position(), street.position()), 1e-3f) << "frame " << frame;
+            ASSERT_LT(Vector3::Distance(camera.Forward(), street.forward()), 1e-4f) << "frame " << frame;
+        }
+        EXPECT_GT(street.position().Length(), 3.0f) << "the camera moved";
     }
 }

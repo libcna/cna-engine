@@ -31,7 +31,7 @@ namespace CnaEngine::Extended
         UpdateScreen(gameTime);
         if (controller_) {
             const auto elapsed = static_cast<float>(gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
-            controller_->Update(camera_, Graphics::ReadCameraInput(actions_, axes_), elapsed);
+            controller_->Update(camera_, Graphics::ReadCameraInput(actions_, axes_, elapsed), elapsed);
         }
         SyncToWorldCamera(camera_, GetCamera3DEXT());
         World3DScreenEXT::Update(gameTime);

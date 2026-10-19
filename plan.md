@@ -263,7 +263,7 @@ Blocked by: ADR-001.
 
 Result: `docs/conventions.md` and `docs/api-status.md`.
 
-### ENG-020 — Implement input actions and rebinding `[~]`
+### ENG-020 — Implement input actions and rebinding `[x]`
 
 Generalize the proven Car Simulator action map without importing its domain
 commands.
@@ -281,10 +281,11 @@ Blocked by: ENG-012.
 Result: `Input/ActionMap.hpp`, `Bindings.hpp`, `InputNames.hpp`,
 `BindingCapture.hpp`, `InputSnapshot.hpp` with unit tests for rebinding,
 conflicts, dead zones, focus loss and persistence. Open: express both pilots'
-core controls (pilot work). Car-simulator: validated by an equivalence probe
-(`docs/pilots/car-simulator.md`); Street: open.
+core controls: car-simulator's InputMapper and Street's fly controls are
+reproduced exactly by engine actions, axes and the fly controller
+(`docs/pilots/`).
 
-### ENG-021 — Implement camera data and controller interfaces `[~]`
+### ENG-021 — Implement camera data and controller interfaces `[x]`
 
 Acceptance:
 
@@ -304,7 +305,7 @@ with EXT-002. Both pilots validated: car-simulator chase-camera poses and
 Street's fly controller drive the engine camera with matching matrices
 (`docs/pilots/`).
 
-### ENG-022 — Define generic CPU mesh data `[~]`
+### ENG-022 — Define generic CPU mesh data `[x]`
 
 Acceptance:
 
@@ -324,7 +325,7 @@ missing/dropped/narrowed report). Both pilots validated: car-simulator's
 multi-layout meshes and Street's tangent-frame meshes convert without loss
 (`docs/pilots/`).
 
-### ENG-023 — Add RAII GPU mesh upload and drawing `[~]`
+### ENG-023 — Add RAII GPU mesh upload and drawing `[x]`
 
 Acceptance:
 

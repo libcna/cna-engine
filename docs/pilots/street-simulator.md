@@ -22,6 +22,24 @@ Street's fly/walk/cinematic controller (collision probes, wheel speed,
 viewpoints) stays in the game: it is policy around the camera, and the engine's
 `ICameraController` lets the game keep it while using the engine camera.
 
+## Controls (ENG-020) — validated
+
+Street reads WASD/QE, arrows, Shift, Ctrl and relative mouse directly. The
+probe expresses them as engine axes and actions (mouse axes for look deltas,
+key axes for look rates, `Fast`/`Slow` actions) and drives an engine
+`FlyCameraController`; over 600 frames of random input its camera position
+stays within 1e-3 and its view direction within 1e-4 of Street's own
+controller.
+
+Generalizations made because of this pilot: the fly controller normalizes the
+movement direction (diagonals are not faster) and scales speed by the input
+magnitude (analog sticks keep partial speed), climbs along world +Y by
+default, has a slow multiplier, and `CameraInputAxes` separates per-update
+look deltas (mouse) from look rates (keys, sticks; radians per second).
+
+Street's mouse-wheel speed and Walk/Cinematic modes (collision, gravity,
+viewpoints) stay game policy.
+
 ## Tangent-frame geometry and upload (ENG-022/023) — validated
 
 Street's `MeshBuilder` box, cylinder and sphere (the `VertexPositionNormalTangentTexture`
