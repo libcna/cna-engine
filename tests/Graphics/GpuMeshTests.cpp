@@ -7,6 +7,7 @@
 #include "Microsoft/Xna/Framework/Graphics/EffectPass.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
+#include "Microsoft/Xna/Framework/Graphics/ModelMeshPart.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 
@@ -212,5 +213,40 @@ namespace CnaEngine::Graphics
         EXPECT_EQ(mesh.VertexBytes(), static_cast<std::int64_t>(sphere.VertexCount()) * 48);
         EXPECT_TRUE(mesh.ConversionReport().missing.Empty());
         EXPECT_TRUE(mesh.ConversionReport().dropped.Empty());
+    }
+
+    TEST(GpuMeshTests, BorrowedModelPartsHonourOffsets)
+    {
+        GraphicsDevice device;
+        // Two quads in one buffer: a blue one off screen, then the red one.
+        MeshBuilder builder({VertexAttribute::Position, VertexAttribute::Color});
+        builder.SetColor(Color(0, 0, 255, 255));
+        builder.AddBox(Vector3(5.0f, 5.0f, -0.01f), Vector3(6.0f, 6.0f, 0.01f));
+        builder.SetColor(Color(255, 0, 0, 255));
+        builder.AddBox(Vector3(-0.5f, -0.5f, -0.01f), Vector3(0.5f, 0.5f, 0.01f));
+        MeshData both = builder.Take();
+        // Make the second box's indices local to its own vertices, as a
+        // content-pipeline part would store them.
+        for (std::size_t i = 36; i < both.indices.size(); ++i) {
+            both.indices[i] -= 24;
+        }
+        // Upload cannot validate local indices; build the buffers through a
+        // valid mesh and reuse them.
+        MeshData valid = both;
+        for (std::size_t i = 36; i < valid.indices.size(); ++i) {
+            valid.indices[i] += 24;
+        }
+        const GpuMesh owner = GpuMesh::Upload(device, valid, VertexLayout::PositionColor());
+        // Rewrite the second half of the index buffer with part-local indices.
+        std::vector<std::uint16_t> local(both.indices.begin(), both.indices.end());
+        owner.Indices()->SetData(local.data(), static_cast<int>(local.size()));
+
+        const Microsoft::Xna::Framework::Graphics::ModelMeshPart part(owner.Vertices(), owner.Indices(), 24, 12, 36, 24);
+        const GpuMesh redOnly = GpuMesh::Borrow(part, BoundingBox(), AttributeMask{VertexAttribute::Position,
+                                                                                  VertexAttribute::Color});
+        EXPECT_EQ(redOnly.BaseVertex(), 24);
+        EXPECT_EQ(redOnly.StartIndex(), 36);
+        const auto pixels = Render(device, redOnly, nullptr);
+        EXPECT_EQ(At(pixels, Size / 2, Size / 2), Color(255, 0, 0, 255));
     }
 }

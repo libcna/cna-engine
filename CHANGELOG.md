@@ -22,3 +22,10 @@ First development line. Highlights:
   read-only equivalence probes (`docs/pilots/`).
 
 API snapshot baseline taken 2026-10-19 (12 headers).
+
+### Pilot-validated API changes
+
+- `Graphics/GpuMesh.hpp`: added `Borrow(const ModelMeshPart&, ...)`,
+  `BaseVertex()` and `StartIndex()`; borrowed meshes now draw from a vertex
+  offset and start index. Reason: Street's meshes share buffers through model
+  parts (MILESTONE-2 scene comparison). Additive; existing calls unchanged.

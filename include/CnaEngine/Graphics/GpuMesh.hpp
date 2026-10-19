@@ -11,6 +11,7 @@
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/IndexBuffer.hpp"
 #include "Microsoft/Xna/Framework/Graphics/IndexElementSize.hpp"
+#include "Microsoft/Xna/Framework/Graphics/ModelMeshPart.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexBuffer.hpp"
 
 #include <memory>
@@ -69,6 +70,13 @@ namespace CnaEngine::Graphics
                                             const Microsoft::Xna::Framework::BoundingBox& bounds,
                                             AttributeMask attributes = {VertexAttribute::Position});
 
+        /// Wraps a model mesh part (shared buffers with a vertex offset and a
+        /// start index, as content-pipeline and glTF models use). The part
+        /// and its buffers must outlive the GpuMesh.
+        [[nodiscard]] static GpuMesh Borrow(const Microsoft::Xna::Framework::Graphics::ModelMeshPart& part,
+                                            const Microsoft::Xna::Framework::BoundingBox& bounds,
+                                            AttributeMask attributes = {VertexAttribute::Position});
+
         /// Releases owned buffers (no-op for borrowed ones) and empties the mesh.
         void Reset() noexcept;
 
@@ -84,6 +92,10 @@ namespace CnaEngine::Graphics
         /// Attributes present in the vertex buffer (the layout's elements).
         [[nodiscard]] AttributeMask Attributes() const noexcept { return attributes_; }
         [[nodiscard]] int VertexCount() const noexcept { return vertexCount_; }
+        /// Added to every index (DrawIndexedPrimitives' baseVertex).
+        [[nodiscard]] int BaseVertex() const noexcept { return baseVertex_; }
+        /// First index read from the index buffer.
+        [[nodiscard]] int StartIndex() const noexcept { return startIndex_; }
         [[nodiscard]] int PrimitiveCount() const noexcept { return primitiveCount_; }
         [[nodiscard]] Microsoft::Xna::Framework::Graphics::IndexElementSize IndexSize() const noexcept
         {
@@ -110,6 +122,8 @@ namespace CnaEngine::Graphics
         AttributeMask attributes_;
         int vertexCount_ = 0;
         int primitiveCount_ = 0;
+        int baseVertex_ = 0;
+        int startIndex_ = 0;
         Microsoft::Xna::Framework::Graphics::IndexElementSize indexSize_ =
             Microsoft::Xna::Framework::Graphics::IndexElementSize::SixteenBits;
         std::int64_t vertexBytes_ = 0;

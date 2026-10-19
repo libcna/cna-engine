@@ -45,6 +45,8 @@ namespace CnaEngine::Graphics
         attributes_ = std::exchange(other.attributes_, AttributeMask{});
         vertexCount_ = std::exchange(other.vertexCount_, 0);
         primitiveCount_ = std::exchange(other.primitiveCount_, 0);
+        baseVertex_ = std::exchange(other.baseVertex_, 0);
+        startIndex_ = std::exchange(other.startIndex_, 0);
         indexSize_ = other.indexSize_;
         vertexBytes_ = std::exchange(other.vertexBytes_, 0);
         indexBytes_ = std::exchange(other.indexBytes_, 0);
@@ -66,6 +68,8 @@ namespace CnaEngine::Graphics
         attributes_ = AttributeMask{};
         vertexCount_ = 0;
         primitiveCount_ = 0;
+        baseVertex_ = 0;
+        startIndex_ = 0;
         vertexBytes_ = 0;
         indexBytes_ = 0;
         report_ = InterleavedVertices{};
@@ -152,6 +156,19 @@ namespace CnaEngine::Graphics
         return gpu;
     }
 
+    GpuMesh GpuMesh::Borrow(const Microsoft::Xna::Framework::Graphics::ModelMeshPart& part, const BoundingBox& bounds,
+                            const AttributeMask attributes)
+    {
+        if (part.getVertexBufferProperty() == nullptr || part.getIndexBufferProperty() == nullptr) {
+            throw std::invalid_argument("GpuMesh::Borrow: the mesh part needs a vertex and an index buffer");
+        }
+        GpuMesh gpu = Borrow(*part.getVertexBufferProperty(), *part.getIndexBufferProperty(),
+                             part.getNumVerticesProperty(), part.getPrimitiveCountProperty(), bounds, attributes);
+        gpu.baseVertex_ = part.getVertexOffsetProperty();
+        gpu.startIndex_ = part.getStartIndexProperty();
+        return gpu;
+    }
+
     bool GpuMesh::IsDrawable() const noexcept
     {
         return vertices_ != nullptr && indices_ != nullptr && primitiveCount_ > 0
@@ -165,7 +182,8 @@ namespace CnaEngine::Graphics
         }
         device.SetVertexBuffer(vertices_);
         device.setIndicesProperty(indices_);
-        device.DrawIndexedPrimitives(PrimitiveType::TriangleList, 0, 0, vertexCount_, 0, primitiveCount_);
+        device.DrawIndexedPrimitives(PrimitiveType::TriangleList, baseVertex_, 0, vertexCount_, startIndex_,
+                                     primitiveCount_);
         if (statistics != nullptr) {
             statistics->Record(static_cast<std::uint64_t>(primitiveCount_), static_cast<std::uint64_t>(vertexCount_));
         }

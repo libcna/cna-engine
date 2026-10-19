@@ -9,7 +9,7 @@ CnaEngine/Graphics/Camera.hpp a317ca879841682b
 CnaEngine/Graphics/CameraControllers.hpp 9a1d429ceb782516
 CnaEngine/Graphics/MeshData.hpp 43c2bdc9b87c8379
 CnaEngine/Graphics/VertexLayouts.hpp c4a7321cfda77d5e
-CnaEngine/Graphics/GpuMesh.hpp 34ee68124b97390b
+CnaEngine/Graphics/GpuMesh.hpp 7c8a8987fb3d1770
 CnaEngine/Graphics/ScreenCapture.hpp d88bfcc0ed6e2cac
 CnaEngine/Graphics/QualitySchema.hpp ed31d38bf307e865
 CnaEngine/Assets/AssetRegistry.hpp bb84cc840d5c174d

@@ -154,8 +154,8 @@ namespace CnaEngine::Graphics
         device.SetVertexBuffers({VertexBufferBinding(mesh_->Vertices(), 0, 0),
                                  VertexBufferBinding(instances_.get(), 0, 1)});
         device.setIndicesProperty(mesh_->Indices());
-        device.DrawInstancedPrimitives(PrimitiveType::TriangleList, 0, 0, mesh_->VertexCount(), 0,
-                                       mesh_->PrimitiveCount(), static_cast<int>(count));
+        device.DrawInstancedPrimitives(PrimitiveType::TriangleList, mesh_->BaseVertex(), 0, mesh_->VertexCount(),
+                                       mesh_->StartIndex(), mesh_->PrimitiveCount(), static_cast<int>(count));
         if (statistics != nullptr) {
             statistics->Record(static_cast<std::uint64_t>(mesh_->PrimitiveCount()) * count,
                                static_cast<std::uint64_t>(mesh_->VertexCount()) * count);
