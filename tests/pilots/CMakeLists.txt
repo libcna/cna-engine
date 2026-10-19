@@ -54,6 +54,29 @@ else()
     message(STATUS "cna-engine: car-simulator not found; pilot probes skipped")
 endif()
 
+# --- Strict-profile scene comparison: all of car-simulator's libraries. --------
+option(CNA_ENGINE_CARSIM_SCENE_COMPARISON
+    "Build the car-simulator scene comparison tool (compiles car-simulator's libraries read-only)" ON)
+if(CNA_ENGINE_CARSIM_SCENE_COMPARISON AND EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/WorldRenderer.cpp")
+    file(GLOB_RECURSE _carsim_sources CONFIGURE_DEPENDS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/*.cpp")
+    list(FILTER _carsim_sources EXCLUDE REGEX "/src/App/")
+    add_library(cna_engine_pilot_carsim_full STATIC ${_carsim_sources})
+    target_include_directories(cna_engine_pilot_carsim_full PUBLIC "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/include")
+    # CNA's static modules, never the `CNA` umbrella next to them (UP-006).
+    target_link_libraries(cna_engine_pilot_carsim_full PUBLIC
+        CNA::Runtime CNA::GraphicsCore CNA::Content CNA::Media CNA::Audio CNA::Input CNA::Storage CNA::Diagnostics
+        CNA::Core CNA::Math CNA::Platform SharpRuntime::Text.Json)
+
+    add_executable(cna_engine_carsim_scene_comparison CarSimulatorSceneComparison.cpp)
+    target_compile_definitions(cna_engine_carsim_scene_comparison PRIVATE
+        CNA_ENGINE_CARSIM_CONTENT_DIR="${CNA_ENGINE_CAR_SIMULATOR_DIR}/content")
+    target_link_libraries(cna_engine_carsim_scene_comparison PRIVATE
+        cna_engine_core cna_engine_graphics cna_engine_pilot_carsim_full)
+    add_test(NAME cna_engine.pilot.carsim_scene_comparison
+        COMMAND cna_engine_carsim_scene_comparison "${CMAKE_CURRENT_BINARY_DIR}/carsim_scene_comparison")
+    set_tests_properties(cna_engine.pilot.carsim_scene_comparison PROPERTIES LABELS pilot TIMEOUT 3600)
+endif()
+
 set(CNA_ENGINE_STREET_SIMULATOR_DIR "${PROJECT_SOURCE_DIR}/../../libcnalab/street-simulator"
     CACHE PATH "street-simulator checkout used by the pilot probes (read-only)")
 

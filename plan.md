@@ -611,8 +611,11 @@ Acceptance:
 
 Blocked by: MILESTONE-1 and ADR-001.
 
-Progress: equivalence probes against car-simulator's own code (controls,
-chase camera, meshes and upload, screenshots, plate cache, quality tiers) and
+Progress: car-simulator's real map drawn through the engine's strict
+`ForwardRenderer` matches its own `WorldRenderer` in every visibility count
+and to 0.1/255 in the image; equivalence probes against car-simulator's own
+code (controls, chase camera, meshes and upload, screenshots, plate cache,
+quality tiers) and
 its unmodified strict checker accepting the engine's strict surface with the
 ADR-001 allowance — `docs/pilots/car-simulator.md`. Open: an integration
 branch of car-simulator (owner's permission needed); its display smoke tests

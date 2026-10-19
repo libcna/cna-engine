@@ -21,7 +21,10 @@ whole core, which needs CNA's CNAEXT shader packages, compiles read-only.
   engine's static CNA modules duplicated CNA's statics and crashed at exit;
   the probe links Street against the static modules.
 
-Day-to-day `build/` (shared CNA worktree, CNAEXT off): 157/157.
+Day-to-day `build/` (shared CNA worktree, CNAEXT off): 157/157 at that
+point; later the same night the car-simulator scene comparison was added
+there (strict, no CNAEXT needed): terrain 207/207, roads 77/77, objects
+503/503, trees 33/33, mean image difference 0.1/255; suite 164/164.
 
 ## 2026-10-19 (baseline) — clean pinned dependencies, enforced
 

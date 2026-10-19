@@ -113,6 +113,36 @@ engine `QualitySchema` and defines the presets from the pilot's own
 and HiDef, with no decisions, and the preset names parse with the pilot's
 `QualityFromName()`.
 
+## Its real map through the engine (strict ForwardRenderer)
+
+`cna_engine.pilot.carsim_scene_comparison` compiles car-simulator's libraries
+read-only, loads its real map (`content/maps/lipova`) and draws the driver's
+view from the player spawn twice into the same 480×270 target: with
+car-simulator's own `WorldRenderer`, and with the engine — terrain chunks,
+roads and markings, static objects and trees as render items over the same
+buffers and textures, engine culling with car-simulator's rules, the strict
+`ForwardRenderer` with the stock binder and car-simulator's lighting rig.
+
+| Measure | car-simulator | Engine |
+| --- | --- | --- |
+| Terrain chunks drawn | 207 | **207** |
+| Road and marking batches | 77 | **77** |
+| Object batches | 503 | **503** |
+| Tree batches | 33 | **33** |
+| Mean image difference | — | **0.1 / 255** per channel |
+| CPU frame time | 6.6 s | 6.6 s |
+
+The engine's image is practically identical to car-simulator's
+(`docs/pilots/images/carsim-scene-*.png`). The 46 extra car-simulator draw
+calls are its special passes (terrain skirt sharing, signs, lamp glows) that
+the comparison does not take over. The program fails if any visibility count
+differs.
+
+Generalizations made because of this comparison: fill lights and per-pixel
+lighting in `ForwardLighting` (car-simulator's sun / sky fill / ground bounce
+rig), `Material::secondaryTexture` (`DualTextureEffect` terrain), and
+`Material::depthBias` for road markings.
+
 ## Still open for this pilot
 - The strict checker allowance (ADR-001) applied in an integration branch of
   the pilot — requires the owner's permission to touch car-simulator.
