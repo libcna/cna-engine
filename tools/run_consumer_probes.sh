@@ -18,8 +18,12 @@ consumer_build="$(cd "${2:-$root/build-consumer}" && pwd)"
 prefix="$consumer_build/install"
 jobs="${CNA_ENGINE_JOBS:-3}"
 
-export CCACHE_DIR="${CCACHE_DIR:-/rv/cnaccache}"
-export CCACHE_BASEDIR="${CCACHE_BASEDIR:-/rv}"
+# The development machine's one shared cache (CLAUDE.md Rule 1); elsewhere
+# (CI) ccache's own defaults apply.
+if [ -d /rv/cnaccache ]; then
+    export CCACHE_DIR="${CCACHE_DIR:-/rv/cnaccache}"
+    export CCACHE_BASEDIR="${CCACHE_BASEDIR:-/rv}"
+fi
 # Debug builds hash the working directory unless told otherwise, so without
 # this no object compiled in build/ could be reused here (upstream-issues.md UP-003).
 export CCACHE_NOHASHDIR="${CCACHE_NOHASHDIR:-1}"
