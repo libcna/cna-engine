@@ -12,6 +12,9 @@
 //    (lit, textured with its own sampler, emissive, blended);
 //  - rendering: render items culled with CullInto, the pickups as one
 //    instanced item, a RenderQueue and the ForwardRenderer with a lighting rig;
+//  - a rear-view mirror: the engine renders a mirrored camera into a render
+//    target, and XNA's SpriteBatch puts it on screen after the engine's frame
+//    (the renderer leaves the device states as it found them);
 //  - diagnostics and a screenshot through the ScreenshotQueue.
 //
 // It runs headless and deterministic: input comes from a script, and the
@@ -36,12 +39,17 @@
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
+#include "Microsoft/Xna/Framework/Graphics/DepthFormat.hpp"
+#include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SamplerState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
+#include "Microsoft/Xna/Framework/Rectangle.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 
 #include <algorithm>
@@ -68,6 +76,10 @@ namespace
 
     constexpr int Width = 320;
     constexpr int Height = 180;
+    // The rear-view mirror inset, centred at the top of the screen.
+    constexpr int MirrorWidth = 96;
+    constexpr int MirrorHeight = 54;
+    const Color Sky(135, 175, 215, 255);
     constexpr float ArenaHalf = 9.0f;
     constexpr float Speed = 6.0f; // m/s at full stick
     constexpr float PickupRadius = 0.9f;
@@ -177,6 +189,14 @@ namespace
 
             camera_.SetPerspective(Microsoft::Xna::Framework::MathHelper::ToRadians(60.0f),
                                    static_cast<float>(Width) / Height, 0.1f, 100.0f);
+
+            mirrorTarget_ = std::make_unique<Microsoft::Xna::Framework::Graphics::RenderTarget2D>(
+                device, MirrorWidth, MirrorHeight, false, Microsoft::Xna::Framework::Graphics::SurfaceFormat::Color,
+                Microsoft::Xna::Framework::Graphics::DepthFormat::Depth24);
+            mirrorCamera_.SetPerspective(Microsoft::Xna::Framework::MathHelper::ToRadians(50.0f),
+                                         static_cast<float>(MirrorWidth) / MirrorHeight, 0.1f, 60.0f);
+            mirrorCamera_.SetMirrored(true); // a mirror shows the world flipped
+            sprites_ = std::make_unique<Microsoft::Xna::Framework::Graphics::SpriteBatch>(device);
         }
 
         void Update(GameTime& gameTime) override
@@ -201,6 +221,9 @@ namespace
             const Vector3 offset(0.0f, 7.0f, 9.0f);
             camera_.SetPosition(position_ + offset);
             camera_.SetYawPitchRoll(0.0f, -std::atan2(offset.Y - 0.5f, offset.Z));
+            // The mirror looks back over the player's shoulder.
+            mirrorCamera_.SetPosition(position_ + Vector3(0.0f, 1.6f, 0.0f));
+            mirrorCamera_.SetYawPitchRoll(Microsoft::Xna::Framework::MathHelper::Pi, -0.25f);
 
             if (actions_.Pressed(screenshotAction_) || (scripted_ && updates_ == ScriptedUpdates)) {
                 screenshots_.RequestNext(true);
@@ -211,7 +234,6 @@ namespace
         void Draw(const GameTime& gameTime) override
         {
             GraphicsDevice& device = getGraphicsDeviceProperty();
-            device.Clear(Color(135, 175, 215, 255));
 
             // Rigid items go through the culling policy; the pickups cull
             // themselves per instance and form one instanced item.
@@ -230,22 +252,42 @@ namespace
 
             Graphics::VisibilitySettings visibility;
             visibility.maxDistance = 60.0f;
-            Graphics::RenderQueue queue;
-            culling_ = {};
-            Graphics::CullInto(items, camera_, visibility, queue, culling_);
-            pickups_.Cull(camera_, visibility, culling_);
-            if (pickups_.VisibleCount() > 0) {
-                Graphics::RenderItem item;
-                item.mesh = &pickup_;
-                item.material = &pickupMaterial_;
-                item.bounds = Microsoft::Xna::Framework::BoundingSphere(Vector3::Zero, 2.0f * ArenaHalf);
-                item.instances = &pickups_;
-                queue.Submit(item);
-            }
-            queue.Sort(camera_.Position());
+            // One view: cull for its camera, queue, render.
+            auto view = [&](const Graphics::Camera& camera, Graphics::CullStatistics& culling,
+                            Graphics::RenderStatistics* statistics) {
+                Graphics::RenderQueue queue;
+                Graphics::CullInto(items, camera, visibility, queue, culling);
+                pickups_.Cull(camera, visibility, culling);
+                if (pickups_.VisibleCount() > 0) {
+                    Graphics::RenderItem item;
+                    item.mesh = &pickup_;
+                    item.material = &pickupMaterial_;
+                    item.bounds = Microsoft::Xna::Framework::BoundingSphere(Vector3::Zero, 2.0f * ArenaHalf);
+                    item.instances = &pickups_;
+                    queue.Submit(item);
+                }
+                queue.Sort(camera.Position());
+                renderer_->Render(queue, camera, statistics);
+            };
 
+            // The mirror first, into its own target.
+            device.SetRenderTarget(mirrorTarget_.get());
+            device.Clear(Sky);
+            Graphics::CullStatistics mirrorCulling;
+            view(mirrorCamera_, mirrorCulling, nullptr);
+            device.SetRenderTarget(nullptr);
+
+            device.Clear(Sky);
+            culling_ = {};
             render_ = {};
-            renderer_->Render(queue, camera_, &render_);
+            view(camera_, culling_, &render_);
+
+            // Plain XNA drawing after the engine's frame: the mirror inset.
+            sprites_->Begin();
+            sprites_->Draw(*mirrorTarget_,
+                           Microsoft::Xna::Framework::Rectangle((Width - MirrorWidth) / 2, 4, MirrorWidth, MirrorHeight),
+                           Color(255, 255, 255, 255));
+            sprites_->End();
             frames_.AddFrame(gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
 
             for (auto& result : screenshots_.Process(device)) {
@@ -315,6 +357,9 @@ namespace
         Vector3 position_ = Vector3::Zero;
         int collected_ = 0;
         Graphics::Camera camera_;
+        Graphics::Camera mirrorCamera_;
+        std::unique_ptr<Microsoft::Xna::Framework::Graphics::RenderTarget2D> mirrorTarget_;
+        std::unique_ptr<Microsoft::Xna::Framework::Graphics::SpriteBatch> sprites_;
         std::unique_ptr<Graphics::ForwardRenderer> renderer_;
 
         Diagnostics::FrameStatistics frames_{120};
@@ -362,11 +407,14 @@ int main(int argc, char** argv)
         std::printf("  screenshot %s (%dx%d)\n", shot.path.c_str(), shot.width, shot.height);
         // The scripted route runs along the trail (four pickups); the
         // screenshot must show the field, not the clear color.
-        const Color centre = shot.pixels[static_cast<std::size_t>((shot.height / 2) * shot.width + shot.width / 2)];
-        const bool drawn = centre != Color(135, 175, 215, 255);
-        if (game.Collected() < 4 || !drawn) {
-            std::fprintf(stderr, "quick_start: unexpected result (gathered %d, drawn %d)\n", game.Collected(),
-                         drawn ? 1 : 0);
+        auto pixel = [&](const int x, const int y) { return shot.pixels[static_cast<std::size_t>(y * shot.width + x)]; };
+        const bool drawn = pixel(shot.width / 2, shot.height / 2) != Sky;
+        // The bottom of the mirror inset shows the field behind the player.
+        const Color mirror = pixel(shot.width / 2, 4 + MirrorHeight - 6);
+        const bool mirrored = mirror.getGProperty() > mirror.getRProperty() && mirror.getGProperty() > mirror.getBProperty();
+        if (game.Collected() < 4 || !drawn || !mirrored) {
+            std::fprintf(stderr, "quick_start: unexpected result (gathered %d, drawn %d, mirror %d)\n",
+                         game.Collected(), drawn ? 1 : 0, mirrored ? 1 : 0);
             return 1;
         }
         return 0;
