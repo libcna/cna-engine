@@ -4,7 +4,7 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
-## 2026-10-20, 09:50 — street-simulator adopts the engine (branch `engine-adoption`)
+## 2026-10-20, 09:10 — street-simulator adopts the engine (branch `engine-adoption`)
 
 Engine `build/` with `QualitySchema::PresetValues` (`7947b6e`): **198 of 198
 tests passed**.

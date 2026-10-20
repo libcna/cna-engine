@@ -112,7 +112,7 @@ slightly higher because Street's own transparent pass never counted blended
 instance groups (UP-012).
 
 Known differences, beyond the comparison's: Street's apply-versus-draw
-timing split (`--profile`-style `opaqueApplyMs`/`opaqueDrawMs`) is not
+timing split (`opaqueApplyMs`, `opaqueDrawMs`, `skinnedMs`) is not
 measured by the engine and reads -1; Street's figures were drawn with
 counter-clockwise culling regardless of `doubleSided`, the engine honours
 it. The probe bake still draws through Street's own effect code (it stays
