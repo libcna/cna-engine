@@ -53,6 +53,8 @@ jobs:
           repository: libcna/sharp-runtime
           ref: ${{ env.SHARP_RUNTIME_REF }}
           path: sharp-runtime
+          # The engine's tests build the GoogleTest Sharp Runtime vendors as a submodule.
+          submodules: true
 
       - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y ninja-build ccache
@@ -211,6 +213,7 @@ jobs:
           repository: libcna/sharp-runtime
           ref: next
           path: sharp-runtime
+          submodules: true
 
       - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y ninja-build ccache
