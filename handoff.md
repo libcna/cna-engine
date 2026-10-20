@@ -42,7 +42,7 @@ when the pin changes (ADR-002 "Local reproduction").
 ## State
 
 All work is committed on `develop`. Latest evidence (`docs/verification.md`):
-180 tests pass in `build/`, 181 in the baseline build (`build-probe/`, which
+182 tests pass in `build/`, 183 in the baseline build (`build-probe/`, which
 also runs the Street scene comparison), 2 consumer probes pass.
 
 Both pilots' real scenes render through the engine's `ForwardRenderer`

@@ -4,6 +4,12 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20 (late night) — display names, final counts of the day
+
+`build/` (shared CNA worktree): **182 of 182**. Baseline `build-probe/`
+(pinned, enforced, CNAEXT on): **183 of 183**, both scene comparisons
+included.
+
 ## 2026-10-20 (night) — sanitizers
 
 `build-asan/` configured with `-DCNA_ENGINE_SANITIZE=address,undefined
