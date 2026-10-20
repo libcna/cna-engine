@@ -4,6 +4,19 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 — tolerances enforced, clean Sharp Runtime clone
+
+The shared Sharp Runtime worktree gained uncommitted edits (another agent),
+which the enforced baseline check rejected; `build-probe/` now uses a clean
+clone at the pin, `~/deps/sharp-runtime-baseline` (rebuild 13 min with 3
+jobs). Results:
+
+- `build-probe/`: **204 of 204** (`-E carsim_suite`; the car-simulator suite
+  ran on its own earlier the same day: 320/321, UP-009).
+- `build/`: **190 of 190**.
+- Both scene comparisons now enforce the proposed screenshot tolerance
+  (`docs/pilots/screenshot-tolerances.md`); every view is within it.
+
 ## 2026-10-21 — static analysis
 
 `clang-tidy` 19 over the engine's 30 source files (and their headers) with

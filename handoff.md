@@ -44,8 +44,10 @@ shared worktree is still clean at its pin); move them with
 ## State
 
 All work is committed on `develop`. Latest evidence (`docs/verification.md`):
-188 tests pass in `build/`, 189 in the baseline build (`build-probe/`, which
-also runs the Street scene comparison), 2 consumer probes pass.
+190 tests pass in `build/`; the baseline build (`build-probe/`, which also
+runs the Street scene comparison and both pilots' own suites) passes 204 of
+204 without the 18-minute car-simulator suite, which passes on its own (UP-009
+excluded); 2 consumer probes pass.
 
 Both pilots' real scenes render through the engine's `ForwardRenderer`
 practically identically to the pilots' own renderers: Street's procedural
