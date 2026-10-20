@@ -70,6 +70,12 @@ became pilot-validated (their changes of that day are listed below);
   AlphaTestEffect; PBR binder: Mask mode). Reason: car-simulator relights its
   tree and sign cards additively under the headlights.
 
+- Reflective materials, additive: `Material::environmentMap`,
+  `environmentMapAmount`, `environmentMapSpecular`, `fresnelFactor`; the stock
+  binder draws them with XNA's `EnvironmentMapEffect` (pixel-identical to the
+  effect configured by hand), the PBR binder reports them as ignored. Reason:
+  car-simulator paints its cars with `EnvironmentMapEffect`.
+
 ### Other API additions (experimental headers)
 
 - `Graphics/GpuMemory.hpp`: `GpuMemoryEstimate` (meshes, textures, materials,

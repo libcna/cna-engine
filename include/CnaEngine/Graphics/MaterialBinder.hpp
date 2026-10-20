@@ -9,6 +9,7 @@
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DualTextureEffect.hpp"
+#include "Microsoft/Xna/Framework/Graphics/EnvironmentMapEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SkinnedEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
@@ -93,7 +94,7 @@ namespace CnaEngine::Graphics
     };
 
     /// Binder over XNA's stock effects (BasicEffect, AlphaTestEffect,
-    /// DualTextureEffect, SkinnedEffect); the
+    /// DualTextureEffect, EnvironmentMapEffect, SkinnedEffect); the
     /// strict default.
     ///
     /// Materials with a `secondaryTexture` (on meshes with TexCoord0 and
@@ -109,6 +110,11 @@ namespace CnaEngine::Graphics
     ///  - AlphaTest draws through AlphaTestEffect, which is unlit in XNA;
     ///  - PremultipliedAlpha with alpha < 1 draws as AlphaBlend (stock
     ///    effects scale their color by the alpha).
+    ///
+    /// Lit materials with an `environmentMap` draw through XNA's
+    /// EnvironmentMapEffect; vertex colors are ignored there (reported), and
+    /// an environment map on an unlit or two-texture material is ignored
+    /// (reported).
     ///
     /// Skinned items (RenderItem::bones) draw through XNA's SkinnedEffect,
     /// which is always lit and textured and has no vertex colors, second
@@ -139,6 +145,7 @@ namespace CnaEngine::Graphics
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::AlphaTestEffect> alphaTest_;
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::DualTextureEffect> dual_;
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::SkinnedEffect> skinned_;
+        std::unique_ptr<Microsoft::Xna::Framework::Graphics::EnvironmentMapEffect> environment_;
         /// 1x1 white texture for untextured alpha-tested materials.
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::Texture2D> white_;
         bool defaultLighting_ = true;

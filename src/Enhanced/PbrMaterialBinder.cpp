@@ -104,6 +104,9 @@ namespace CnaEngine::Enhanced
                 normalMap = nullptr;
             }
             Texture2D* orm = usable(material.occlusionRoughnessMetallicTexture, "occlusion-roughness-metallic map");
+            if (material.environmentMap != nullptr) {
+                fallback(material, "environment map ignored: PBR surfaces reflect PbrSettings::environment");
+            }
 
             const Vector3 key = material.keyLight ? keyColor : Vector3::Zero;
             effect.getDirectionalLight0Property().setDiffuseColorProperty(key);

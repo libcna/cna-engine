@@ -5,6 +5,11 @@
 #include "CnaEngine/Graphics/MeshBuilder.hpp"
 
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/CubeMapFace.hpp"
+#include "Microsoft/Xna/Framework/Graphics/TextureCube.hpp"
+#include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
+#include "Microsoft/Xna/Framework/Graphics/EffectPass.hpp"
+#include "Microsoft/Xna/Framework/Graphics/EnvironmentMapEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/CullMode.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthFormat.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
@@ -587,5 +592,85 @@ namespace CnaEngine::Graphics
         EXPECT_EQ(camera.Frustum().Contains(Vector3(0.9f, 0.0f, 0.0f)),
                   Microsoft::Xna::Framework::ContainmentType::Contains)
             << "the volume is unchanged";
+    }
+
+    TEST_F(Fixture, EnvironmentMappedMaterialsMatchXnasEnvironmentMapEffect)
+    {
+        using Microsoft::Xna::Framework::Graphics::CubeMapFace;
+        using Microsoft::Xna::Framework::Graphics::EnvironmentMapEffect;
+        using Microsoft::Xna::Framework::Graphics::SamplerState;
+        using Microsoft::Xna::Framework::Graphics::TextureCube;
+        MeshBuilder builder;
+        builder.AddSphere(Vector3::Zero, 0.8f, 24, 16);
+        const GpuMesh sphere = GpuMesh::Upload(device, builder.Take(), VertexLayout::PositionNormalTexture());
+
+        // Six differently colored faces; alpha is the glint mask.
+        TextureCube sky(device, 4, false, Microsoft::Xna::Framework::Graphics::SurfaceFormat::Color);
+        const Color faces[6] = {Color(200, 60, 60, 255), Color(60, 200, 60, 0),   Color(60, 60, 200, 255),
+                                Color(200, 200, 60, 0),  Color(60, 200, 200, 255), Color(200, 60, 200, 0)};
+        for (int face = 0; face < 6; ++face) {
+            const std::vector<Color> texels(16, faces[face]);
+            sky.SetData(static_cast<CubeMapFace>(face), texels.data(), 16);
+        }
+        // car-simulator's paint (VehicleRenderer): a little reflection, a sun glint, Fresnel 2.2.
+        Material paint;
+        paint.name = "paint";
+        paint.diffuseColor = Vector3(0.55f, 0.08f, 0.06f);
+        paint.environmentMap = &sky;
+        paint.environmentMapAmount = 0.22f;
+        paint.environmentMapSpecular = Vector3(0.9f, 0.86f, 0.78f);
+        paint.fresnelFactor = 2.2f;
+
+        RenderQueue queue;
+        RenderItem item;
+        item.mesh = &sphere;
+        item.material = &paint;
+        item.bounds = WorldBounds(sphere, item.world);
+        queue.Submit(item);
+        const auto engine = Draw(queue);
+        EXPECT_TRUE(renderer.LastFallbacks().empty());
+
+        // The same draw with XNA's effect set up by hand.
+        Texture2D white(device, 1, 1);
+        const Color one(255, 255, 255, 255);
+        white.SetData(&one, 1);
+        EnvironmentMapEffect effect(device);
+        effect.EnableDefaultLighting();
+        effect.setAmbientLightColorProperty(renderer.Lighting().ambientColor);
+        effect.setWorldProperty(Matrix::getIdentityProperty());
+        effect.setViewProperty(camera.View());
+        effect.setProjectionProperty(camera.Projection());
+        effect.setDiffuseColorProperty(paint.diffuseColor);
+        effect.setTextureProperty(&white);
+        effect.setEnvironmentMapProperty(&sky);
+        effect.setEnvironmentMapAmountProperty(0.22f);
+        effect.setEnvironmentMapSpecularProperty(paint.environmentMapSpecular);
+        effect.setFresnelFactorProperty(2.2f);
+        effect.setFogEnabledProperty(false);
+        device.SetRenderTarget(&target);
+        device.Clear(Color(0, 0, 0, 255));
+        device.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
+        device.getSamplerStatesProperty()[0] = SamplerState::LinearWrap;
+        device.getSamplerStatesProperty()[1] = SamplerState::LinearWrap;
+        effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
+        sphere.Draw(device);
+        device.SetRenderTarget(nullptr);
+        std::vector<Color> direct(static_cast<std::size_t>(Size * Size));
+        target.GetData(direct.data(), static_cast<int>(direct.size()));
+
+        int differing = 0;
+        for (std::size_t i = 0; i < direct.size(); ++i) {
+            differing += direct[i] != engine[i] ? 1 : 0;
+        }
+        EXPECT_EQ(differing, 0) << "pixel-identical to the hand-configured effect";
+        EXPECT_NE(At(engine, Size / 2, Size / 2), Color(0, 0, 0, 255));
+
+        // On a mesh without normals the surface is unlit and the map is reported.
+        const Material& reflective = paint;
+        RenderQueue unlitQueue;
+        unlitQueue.Submit(Item(reflective, 0.0f));
+        (void)Draw(unlitQueue);
+        ASSERT_EQ(renderer.LastFallbacks().size(), 2u);
+        EXPECT_EQ(renderer.LastFallbacks()[1], "material 'paint': environment map ignored: the surface is drawn unlit");
     }
 }

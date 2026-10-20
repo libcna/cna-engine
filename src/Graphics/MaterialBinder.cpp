@@ -35,6 +35,7 @@ namespace CnaEngine::Graphics
           alphaTest_(std::make_unique<AlphaTestEffect>(device)),
           dual_(std::make_unique<Microsoft::Xna::Framework::Graphics::DualTextureEffect>(device)),
           skinned_(std::make_unique<SkinnedEffect>(device)),
+          environment_(std::make_unique<Microsoft::Xna::Framework::Graphics::EnvironmentMapEffect>(device)),
           white_(std::make_unique<Texture2D>(device, 1, 1))
     {
         const Color white(255, 255, 255, 255);
@@ -68,13 +69,17 @@ namespace CnaEngine::Graphics
                     }
                 }
             }
-            effect.setPreferPerPixelLightingProperty(lighting.perPixelLighting);
+            if constexpr (requires { effect.setPreferPerPixelLightingProperty(true); }) {
+                effect.setPreferPerPixelLightingProperty(lighting.perPixelLighting);
+            }
             effect.setAmbientLightColorProperty(lighting.ambientColor);
         };
         light(*basic_);
         light(*skinned_);
+        light(*environment_);
         for (IEffectFog* fog : {static_cast<IEffectFog*>(basic_.get()), static_cast<IEffectFog*>(alphaTest_.get()),
-                                static_cast<IEffectFog*>(dual_.get()), static_cast<IEffectFog*>(skinned_.get())}) {
+                                static_cast<IEffectFog*>(dual_.get()), static_cast<IEffectFog*>(skinned_.get()),
+                                static_cast<IEffectFog*>(environment_.get())}) {
             fog->setFogEnabledProperty(lighting.fogEnabled);
             fog->setFogColorProperty(lighting.fogColor);
             fog->setFogStartProperty(lighting.fogStart);
@@ -162,6 +167,9 @@ namespace CnaEngine::Graphics
             if (lit) {
                 fallback(material, "two-texture surfaces draw unlit (XNA DualTextureEffect)");
             }
+            if (material.environmentMap != nullptr) {
+                fallback(material, "environment map ignored: two-texture surfaces draw through DualTextureEffect");
+            }
             auto& effect = *dual_;
             effect.setWorldProperty(item.world);
             effect.setViewProperty(camera.View());
@@ -176,6 +184,39 @@ namespace CnaEngine::Graphics
             effect.setFogEnabledProperty(fogEnabled_ && material.fog);
             effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
             return true;
+        }
+
+        if (material.environmentMap != nullptr) {
+            if (!lit) {
+                fallback(material, "environment map ignored: the surface is drawn unlit");
+            } else if (material.environmentMap->getIsDisposedProperty()) {
+                fallback(material, "environment map ignored: it has been disposed");
+            } else {
+                if (vertexColors) {
+                    fallback(material, "vertex colors ignored: XNA EnvironmentMapEffect has none");
+                }
+                auto& effect = *environment_;
+                effect.getDirectionalLight0Property().setEnabledProperty(material.keyLight);
+                effect.getDirectionalLight1Property().setEnabledProperty(fillEnabled_[0]);
+                effect.getDirectionalLight2Property().setEnabledProperty(fillEnabled_[1]);
+                effect.setWorldProperty(item.world);
+                effect.setViewProperty(camera.View());
+                effect.setProjectionProperty(camera.Projection());
+                effect.setDiffuseColorProperty(material.diffuseColor);
+                effect.setAlphaProperty(material.alpha);
+                effect.setEmissiveColorProperty(material.emissiveColor);
+                // EnvironmentMapEffect always samples its texture: white stands for "none".
+                effect.setTextureProperty(texture != nullptr ? texture : white_.get());
+                effect.setEnvironmentMapProperty(material.environmentMap);
+                effect.setEnvironmentMapAmountProperty(material.environmentMapAmount);
+                effect.setEnvironmentMapSpecularProperty(material.environmentMapSpecular);
+                effect.setFresnelFactorProperty(material.fresnelFactor);
+                device.getSamplerStatesProperty()[0] = SamplerFor(material);
+                device.getSamplerStatesProperty()[1] = SecondarySamplerFor(material);
+                effect.setFogEnabledProperty(fogEnabled_ && material.fog);
+                effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
+                return true;
+            }
         }
 
         BasicEffect& effect = *basic_;

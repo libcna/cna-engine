@@ -40,6 +40,7 @@ the surface.
 | Blend *intent* (`BlendMode`: opaque, alpha-tested, alpha-blended, additive, premultiplied) | material | describes the surface: Street's glass adds its reflection at full strength (`PremultipliedAlpha`), its shop signs filter (`AlphaBlend`) |
 | Blend *state* (`IMaterialBinder::BlendStateFor`) | binder | XNA's stock effects multiply their color by alpha, CNA's `PbrEffect` does not; the same intent needs `AlphaBlend` from one and `NonPremultiplied` from the other — the PBR transparent surfaces were too bright until the binder chose |
 | Texture sampling (`Material::sampler`, `secondarySampler`) | material, applied by the binder | car-simulator samples terrain anisotropically, its trees with clamp; a renderer default inherited whatever the previous drawer left (SpriteBatch leaves LinearClamp) |
+| Reflection of the surroundings (`Material::environmentMap`, amount, glint, Fresnel) | material, drawn by the stock binder with XNA's `EnvironmentMapEffect` | car-simulator's car paint; the cube map describes what the surface reflects, the PBR binder reflects its own environment instead (reported) |
 | Fog opt-out (`Material::fog`) | material | car-simulator's street-lamp light is unfogged while everything else is fogged |
 | Key-light opt-out (`Material::keyLight`) | material | Street's interiors behind shop windows are not sunlit |
 | Discard below cutoff for blended materials (`Material::discardBelowCutoff`) | material | car-simulator relights tree cards additively *and* alpha-tested under its headlights |

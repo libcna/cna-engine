@@ -91,7 +91,8 @@ object is a plain member you create, update and draw.
    `MissingAttributePolicy::UseDefaults`, and `ConversionReport()` lists what
    was filled, dropped or narrowed. On a Reach device a mesh needing 32-bit
    indices is rejected up front.
-3. Describe surfaces with `Material` (unlit/lit, blend mode, textures you own
+3. Describe surfaces with `Material` (unlit/lit, blend mode, reflections
+   through an `environmentMap` cube, textures you own
    and the sampler state to read them with — LinearWrap unless you set
    `sampler`, never whatever the device had).
 4. Per frame: `RenderItem`s → `CullInto` (layer/distance/frustum) →

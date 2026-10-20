@@ -3,6 +3,7 @@
 
 #include "Microsoft/Xna/Framework/Graphics/SamplerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/Graphics/TextureCube.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 
@@ -96,8 +97,21 @@ namespace CnaEngine::Graphics
         /// samples, so a draw never inherits the sampler whoever drew before
         /// left behind (SpriteBatch leaves LinearClamp).
         const Microsoft::Xna::Framework::Graphics::SamplerState* sampler = nullptr;
-        /// For `secondaryTexture`; nullptr means the same as `sampler`.
+        /// For `secondaryTexture` or `environmentMap`; nullptr means the same
+        /// as `sampler`.
         const Microsoft::Xna::Framework::Graphics::SamplerState* secondarySampler = nullptr;
+
+        /// Reflection of the surroundings for lit materials (car paint,
+        /// glazing): a borrowed cube map, how much of it shows, the color its
+        /// alpha channel adds as a glint, and the Fresnel exponent (0: the
+        /// reflection shows everywhere; larger: only towards grazing angles).
+        /// The stock binder draws these materials with XNA's
+        /// EnvironmentMapEffect, which has no specular color or power of its
+        /// own (the glint stands in) and no vertex colors.
+        Microsoft::Xna::Framework::Graphics::TextureCube* environmentMap = nullptr;
+        float environmentMapAmount = 1.0f;
+        Microsoft::Xna::Framework::Vector3 environmentMapSpecular = Microsoft::Xna::Framework::Vector3::Zero;
+        float fresnelFactor = 1.0f;
 
         /// Base-color and emissive textures hold sRGB-encoded color (normal and
         /// occlusion-roughness-metallic maps are always linear).
