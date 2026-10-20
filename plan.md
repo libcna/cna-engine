@@ -604,13 +604,13 @@ block through engine camera/input, generic meshes, PBR materials
 hysteresis and instanced lamps, with diagnostics and a PNG capture; it runs as
 a CTest example. Street's own camera, controls and tangent-frame meshes are
 validated by equivalence probes. A real Street scene (Street's own `CityScene`) is drawn by Street's
-`SceneRenderer` and by the engine over the same buffers: identical visibility
-(652 items, 192 instances), identical draw calls (703, instanced groups as
-instanced render items), CPU frame time equal within noise. With Street's
-lighting carried by the engine binder and Street's sky drawn as a custom pass
-(the direct-CNA escape hatch), the images are practically identical: mean
-difference 0.01/255, 53 of 129,600 pixels differ
-(`docs/pilots/street-simulator.md`). Open: agreed screenshot tolerances with
+`SceneRenderer` and by the engine over the same buffers, with traffic and
+pedestrians: identical visibility (1,110 items, 192 instances, 123 skinned
+figures), identical draw calls (1,284, instanced groups as instanced render
+items), CPU frame time equal within noise. With Street's lighting carried by
+the engine binder and Street's sky drawn as a custom pass (the direct-CNA
+escape hatch), the images are practically identical: mean difference
+0.01/255, 68 of 129,600 pixels differ (`docs/pilots/street-simulator.md`). Open: agreed screenshot tolerances with
 the owner; adoption inside street-simulator (needs permission). Engine input
 drives the slice's camera since 2026-10-20 (a third view reached by an
 `ActionMap` and a `FlyCameraController`: visibility and draw calls identical,
