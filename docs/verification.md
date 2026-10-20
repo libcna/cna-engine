@@ -4,6 +4,18 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 (evening) — full baseline run
+
+`build-probe/` (clean pinned CNA and Sharp Runtime clones, baseline enforced
+and matching, CNAEXT on, pilot suites on), everything:
+
+    ctest --test-dir build-probe --parallel 3
+
+Result: **207 of 207 passed** in 770 s — engine unit, boundary and
+performance tests, examples, every pilot probe, both scene comparisons (Street
+three views; car-simulator day, night, headlights and mirror, all within the
+proposed screenshot tolerance) and both pilots' own suites.
+
 ## 2026-10-21 — mirrored cameras
 
 car-simulator comparison: rear-view mirror (mirrored, 320 m cap) 145/145 draw
