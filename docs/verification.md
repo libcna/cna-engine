@@ -4,7 +4,7 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
-## 2026-10-20, 10:45 — sanitizers and full baseline after the adoption APIs
+## 2026-10-20, 10:22 — sanitizers and full baseline after the adoption APIs
 
 With `Camera::SetMatrices` and `QualitySchema::PresetValues`:
 `build-asan/` (`CNA_ENGINE_SANITIZE=address,undefined`) **175 of 175 tests
