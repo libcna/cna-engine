@@ -113,7 +113,8 @@ Done (see `plan.md` for per-task results):
    `libcnalab/street-simulator-engine` (five commits: build, mesh views,
    `SceneRenderer` through the engine, presets as a `QualitySchema`,
    derived materials in an `AssetRegistry`). What
-   is left for both: GPU-renderer captures and the owner's merge decision.
+   is left for both: captures on a hardware GPU (Street's are checked on
+   OpenGL via Mesa llvmpipe too) and the owner's merge decision.
 2. MILESTONE-2 remainder: the screenshot tolerances are agreed (2026-10-20);
    the performance budget's reference is this machine in a Release build,
    to be measured when it is idle (`docs/pilots/performance-budgets.md`).

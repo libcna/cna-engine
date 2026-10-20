@@ -25,6 +25,14 @@ and after four preset/flag combinations byte-identical to the previous
 commit. Asset step (`513dd93`): capture pixel-identical, start-up log
 identical.
 
+OpenGL 3.3 build of the same worktree (`build-probe/`, Release, SDL3 platform
+under `xvfb-run`, Mesa 25.0.7 llvmpipe, OpenGL 4.5 core; 5 min 7 s with 3
+jobs): the 18 viewpoints and the night view, renderer files of `64d1c07`
+against `b137025`, all 19 inside the tolerance — mean 0.000–0.138/255,
+visibly different pixels 0–1,091 of 230,400. The atmospheric sky (custom
+effects, absent on the software renderer) draws through the engine's
+`BeforeOpaque` pass.
+
 ## 2026-10-20, 08:20 — cna-extended suite against CNA `688f3f23` (ADR-002)
 
 cna-extended `0061e3e1` (clean) configured as CI's lane does (Debug, tests and

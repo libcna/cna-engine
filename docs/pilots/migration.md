@@ -105,6 +105,12 @@ capture, before and after). Each commit was checked with Street's own suite
 | `fe36c1d` | 4: the presets as a `QualitySchema`, applied as overlays through `QualitySchema::PresetValues` | settings dumped after every preset and after preset/flag combinations byte-identical |
 | `513dd93` | 5: `MaterialLibrary`'s derived and added materials cached in an `AssetRegistry` (`GetOrCreate`, first definition wins; a material whose content texture is missing still is not cached) | capture pixel-identical, start-up log identical |
 
+The same comparison on OpenGL 3.3 (Street's default renderer; Mesa
+llvmpipe under Xvfb, build `build-probe/` in the worktree), where the
+atmospheric sky draws through the engine's custom pass: all 19 images inside
+the tolerance as well (mean ≤ 0.138/255, at most 0.47 % of pixels visibly
+different).
+
 Benchmarks (Street's `--benchmark`, 320 × 180, no probes, Release, best of
 two alternating runs at load average ~22): draw calls identical (baseline
 1,571, crowd 1,294); best CPU frame 2,068 → 1,924 ms (baseline) and 1,547 →
