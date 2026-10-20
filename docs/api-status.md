@@ -23,7 +23,7 @@ the API; "Consumers" lists code that uses the engine facility today.
 | Vertex layouts and interleaving | `Graphics/VertexLayouts.hpp` | Graphics | pilot-validated (both) | car-simulator `VertexLayout`, Street tangent vertices | tests |
 | GPU mesh | `Graphics/GpuMesh.hpp` | Graphics | pilot-validated (both) | Street `Render/GpuMesh`, car-simulator `Render/GpuMesh` | tests, example |
 | GPU memory estimate (meshes, textures, materials, queues) | `Graphics/GpuMemory.hpp` | Graphics | experimental | Street `GpuMesh::gpuBytes`, `MaterialLibrary::textureBytes` | tests, Street scene comparison |
-| Render and GPU memory statistics | `Graphics/RenderStatistics.hpp` | Graphics | experimental | car-simulator `GpuMesh::Submissions` | tests, example |
+| Render and GPU memory statistics | `Graphics/RenderStatistics.hpp` | Graphics | pilot-validated (both) | car-simulator `GpuMesh::Submissions` | tests, example, both scene comparisons (draw calls equal the pilots' own counters) |
 | Screen capture and screenshot queue | `Graphics/ScreenCapture.hpp` | Graphics | pilot-validated (car-simulator) | car-simulator `Render/Screenshot` | tests, example |
 | Materials | `Graphics/Material.hpp` | Graphics | pilot-validated (both) | Street material descriptions, car-simulator effect setup | tests, both scene comparisons |
 | Render items and queue (buckets, deterministic sorting) | `Graphics/RenderQueue.hpp` | Graphics | pilot-validated (both) | Street render submission model | tests, both scene comparisons |

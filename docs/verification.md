@@ -6,6 +6,10 @@ listed, never folded into a pass.
 
 ## 2026-10-21 — car-simulator at night, material fog
 
+Sanitizer tree `build-asan/` rebuilt with every change of 2026-10-20/21:
+**165 of 165** non-pilot tests pass with ASan, UBSan (fatal) and LSan.
+`build/` 188/188, baseline `build-probe/` 189/189.
+
 car-simulator comparison (`build-probe/`, pinned): day 867/867 draw calls
 (0.05/255), night at 22:00 674/674 draw calls including 15 additive lamp
 lights (800 pixels differ, at most 20/255).

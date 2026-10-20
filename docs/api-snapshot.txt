@@ -21,3 +21,4 @@ CnaEngine/Graphics/Visibility.hpp aab30c7a3179c144
 CnaEngine/Graphics/ForwardRenderer.hpp ff1471567c01ef4a
 CnaEngine/Graphics/Instancing.hpp 50caf56545e60a04
 CnaEngine/Enhanced/PbrMaterialBinder.hpp 629d2f81a3648489
+CnaEngine/Graphics/RenderStatistics.hpp 89b259ce46724a4e

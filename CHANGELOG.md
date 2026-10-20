@@ -23,7 +23,8 @@ First development line. Highlights:
 
 API snapshot baseline taken 2026-10-19 (12 headers); extended 2026-10-20 to 20
 headers as the render facilities, the fixed-step clock and the PBR binder
-became pilot-validated (their changes of that day are listed below).
+became pilot-validated (their changes of that day are listed below);
+`Graphics/RenderStatistics.hpp` joined on 2026-10-21 (21 headers).
 
 ### Pilot-validated API changes
 
