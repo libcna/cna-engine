@@ -33,6 +33,15 @@ tracked-file state with the pin:
 Untracked files are ignored (they are not part of any build glob the engine
 enables).
 
+The warning also places a differing checkout relative to the pin, which makes
+the supported range — the pin and its descendants on the same line —
+machine-checked (added 2026-10-21): "N commits after the baseline" or "does
+not contain the baseline (older or diverged)".
+`-DCNA_ENGINE_REQUIRE_BASELINE_DESCENDANT=ON` turns the second case into an
+error, for consumers that want to build only against revisions at least as new
+as the verified one. Tests `cna_engine.baseline_range_*` check both reports on
+throwaway repositories.
+
 ### Pinned revisions
 
 | Dependency | Branch | Commit | Committed |

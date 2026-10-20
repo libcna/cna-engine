@@ -700,8 +700,11 @@ Acceptance:
 Progress: installed CMake package with `SameMinorVersion`, MIT `LICENSE`,
 `NOTICE.md` license/provenance inventory (installed with the package),
 `CHANGELOG.md`, API snapshot of pilot-validated headers, and baseline revisions
-machine-checked at configure time. Open: CNA/cna-extended packages (UP-001)
-and version ranges once dependencies have releases.
+machine-checked at configure time, including where a differing checkout
+stands relative to the pin (descendant by N commits, or older/diverged;
+`CNA_ENGINE_REQUIRE_BASELINE_DESCENDANT` enforces the range). Open:
+CNA/cna-extended packages (UP-001) and version ranges once dependencies have
+releases.
 
 ### REL-002 — Complete documentation and examples `[~]`
 

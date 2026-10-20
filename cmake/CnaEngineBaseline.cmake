@@ -4,7 +4,10 @@
 #
 # The engine is verified against exactly these revisions. Configuration
 # compares them with the checked-out dependency trees; a mismatch is a warning
-# by default and an error with -DCNA_ENGINE_ENFORCE_BASELINE=ON (CI).
+# by default and an error with -DCNA_ENGINE_ENFORCE_BASELINE=ON (CI). The
+# warning says whether a checkout is a descendant of the pin (the supported
+# range: newer revisions of the same line) or older/diverged;
+# -DCNA_ENGINE_REQUIRE_BASELINE_DESCENDANT=ON makes the latter an error.
 
 set(CNA_ENGINE_BASELINE_CNA "5a44d2c507cd5e49eab9ab35570a8a98c4b7a0f3")
 set(CNA_ENGINE_BASELINE_CNA_BRANCH "next")
@@ -34,7 +37,25 @@ function(_cna_engine_check_one name dir expected)
     endif()
     set(problem "")
     if(NOT head STREQUAL expected)
-        set(problem "${name} is at ${head}, baseline is ${expected}")
+        # Where the checkout stands relative to the pin: the supported range
+        # is the pin and its descendants (newer revisions of the same line).
+        execute_process(COMMAND "${GIT_EXECUTABLE}" -C "${dir}" merge-base --is-ancestor "${expected}" HEAD
+            RESULT_VARIABLE ancestor ERROR_QUIET)
+        if(ancestor EQUAL 0)
+            execute_process(COMMAND "${GIT_EXECUTABLE}" -C "${dir}" rev-list --count "${expected}..HEAD"
+                OUTPUT_VARIABLE ahead OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+            set(problem "${name} is at ${head}, ${ahead} commits after the baseline ${expected}")
+        elseif(ancestor EQUAL 1)
+            set(problem "${name} is at ${head}, which does not contain the baseline ${expected} (older or diverged)")
+            if(CNA_ENGINE_REQUIRE_BASELINE_DESCENDANT)
+                message(FATAL_ERROR "cna-engine baseline: ${problem}")
+            endif()
+        else()
+            set(problem "${name} is at ${head}; the baseline ${expected} is not in this checkout")
+            if(CNA_ENGINE_REQUIRE_BASELINE_DESCENDANT)
+                message(FATAL_ERROR "cna-engine baseline: ${problem}")
+            endif()
+        endif()
     elseif(NOT dirty STREQUAL "")
         set(problem "${name} has modified tracked files at the baseline revision")
     endif()

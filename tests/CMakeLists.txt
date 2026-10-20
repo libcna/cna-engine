@@ -94,6 +94,19 @@ if(CNA_ENGINE_PILOT_PROBES)
     add_subdirectory(pilots)
 endif()
 
+# --- Baseline range report (ADR-002, REL-001). ---------------------------------
+foreach(_mode descendant diverged)
+    add_test(NAME cna_engine.baseline_range_${_mode}
+        COMMAND "${CMAKE_COMMAND}" -DENGINE_ROOT=${PROJECT_SOURCE_DIR}
+                -DWORK=${CMAKE_CURRENT_BINARY_DIR}/baseline_range_${_mode} -DMODE=${_mode}
+                -P "${CMAKE_CURRENT_SOURCE_DIR}/baseline/BaselineCheckTest.cmake")
+endforeach()
+set_tests_properties(cna_engine.baseline_range_descendant PROPERTIES LABELS boundary
+    PASS_REGULAR_EXPRESSION "1 commits after the[ \r\n]+baseline")
+# A CMake error from the check, whatever the exit code (messages wrap).
+set_tests_properties(cna_engine.baseline_range_diverged PROPERTIES LABELS boundary
+    PASS_REGULAR_EXPRESSION "CMake Error at[^\n]*\n[^(]*does not contain the[^(]*\\(older or diverged\\)")
+
 # --- Public dependency-boundary checks (ENG-011). ------------------------------
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)

@@ -33,6 +33,8 @@ set(CNA_ENGINE_SANITIZE "" CACHE STRING
     "Sanitizers for cna-engine's own targets (GCC/Clang -fsanitize= list, e.g. address,undefined); dependencies stay uninstrumented")
 option(CNA_ENGINE_ENFORCE_BASELINE
     "Fail configuration when CNA/cna-extended/Sharp Runtime differ from the pinned baseline (ADR-002)" OFF)
+option(CNA_ENGINE_REQUIRE_BASELINE_DESCENDANT
+    "Fail configuration when a dependency checkout does not contain its pinned baseline revision" OFF)
 
 # ---------------------------------------------------------------------------
 # Dependencies (ADR-001: source-tree consumption, see cmake/CnaEngineDependencies.cmake)
