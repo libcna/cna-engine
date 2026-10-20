@@ -4,6 +4,14 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20 (late night) — GPU memory estimate, walk view
+
+`build/` **184 of 184**. Street comparison (`build-probe/`, pinned): three
+views now — first viewpoint (0.01/255), a walk driven by engine input
+(621/157/72 visible, 748 draws, 0.20/255), pedestrian close-up (0.39/255) —
+plus GPU resource estimates (Street's mesh accounting is 8 bytes per vertex
+high, UP-008).
+
 ## 2026-10-20 (late night) — display names, final counts of the day
 
 `build/` (shared CNA worktree): **182 of 182**. Baseline `build-probe/`

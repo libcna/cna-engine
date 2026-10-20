@@ -611,9 +611,11 @@ lighting carried by the engine binder and Street's sky drawn as a custom pass
 (the direct-CNA escape hatch), the images are practically identical: mean
 difference 0.01/255, 53 of 129,600 pixels differ
 (`docs/pilots/street-simulator.md`). Open: agreed screenshot tolerances with
-the owner; engine input and assets in the slice (the comparison uses fixed
-viewpoints and Street's asset libraries); adoption inside street-simulator
-(needs permission). GPU resource estimates are compared since 2026-10-20
+the owner; adoption inside street-simulator (needs permission). Engine input
+drives the slice's camera since 2026-10-20 (a third view reached by an
+`ActionMap` and a `FlyCameraController`: visibility and draw calls identical,
+0.20/255); Street's own asset libraries stay (the engine's `AssetRegistry` is
+validated on Street's derived-material cache separately). GPU resource estimates are compared since 2026-10-20
 (`GpuMemoryEstimate`; Street's own figure overstates meshes by 8 bytes per
 vertex, UP-008).
 

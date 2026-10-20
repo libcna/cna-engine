@@ -168,6 +168,24 @@ blend-index and blend-weight streams, skinned layouts, `SkinnedPbrEffect` in
 the PBR binder) and `GpuMesh::Borrow` with offsets for Street's imported
 skinned meshes.
 
+### Engine input drives the camera
+
+A third view is reached by the engine itself: from Street's viewpoint an
+`ActionMap` (keys bound to move and look axes) and a `FlyCameraController`
+walk the camera for 120 updates of scripted input — forward, then forward
+while turning left — ending 5.95 m further and turned 0.40 rad. Street and the
+engine then both render that pose:
+
+| Measure | Street | Engine |
+| --- | --- | --- |
+| Visible items / instances / figures | 621 / 157 / 72 | **621 / 157 / 72** |
+| Draw calls | 748 (55 instanced) | **748** |
+| Image difference | — | mean 0.20 / 255; 821 of 129,600 pixels (9 of the 335 figure pixels) |
+
+As in the close-up, the camera's orientation passes through both
+implementations' yaw handling and the remaining pixels sit on coplanar
+ground meshes (`docs/pilots/images/street-walk-*.png`).
+
 ### GPU resources
 
 After the two views the program estimates the GPU memory of everything the

@@ -23,6 +23,7 @@
 // Street's Medium preset does; it is slow, so the test runs without).
 #include "CnaEngine/Enhanced/PbrMaterialBinder.hpp"
 #include "CnaEngine/Graphics/Camera.hpp"
+#include "CnaEngine/Graphics/CameraControllers.hpp"
 #include "CnaEngine/Graphics/DiagnosticsReport.hpp"
 #include "CnaEngine/Graphics/ForwardRenderer.hpp"
 #include "CnaEngine/Graphics/GpuMemory.hpp"
@@ -31,6 +32,8 @@
 #include "CnaEngine/Graphics/RenderQueue.hpp"
 #include "CnaEngine/Graphics/ScreenCapture.hpp"
 #include "CnaEngine/Graphics/Visibility.hpp"
+#include "CnaEngine/Input/ActionMap.hpp"
+#include "CnaEngine/Input/InputSnapshot.hpp"
 
 #include "CnaStreet/Assets/ModelLibrary.hpp"
 #include "CnaStreet/Render/Camera.hpp"
@@ -586,6 +589,48 @@ int main(int argc, char** argv)
         streetCamera.setPosition(viewpoint.position);
         streetCamera.setOrientation(viewpoint.yaw, viewpoint.pitch);
         bool ok = compare(streetCamera, "");
+
+        // Engine input drives the camera (MILESTONE-2): from Street's
+        // viewpoint an ActionMap and a FlyCameraController walk the camera
+        // under scripted keys -- forward, then forward while turning left --
+        // and Street and the engine both render the pose the engine reached.
+        {
+            using Microsoft::Xna::Framework::Input::KeyboardState;
+            using Microsoft::Xna::Framework::Input::Keys;
+            constexpr float Step = 1.0f / 60.0f;
+            Input::ActionMap actions;
+            Graphics::CameraInputAxes axes;
+            axes.moveRight = actions.AddAxis("MoveRight");
+            axes.moveForward = actions.AddAxis("MoveForward");
+            axes.lookYaw = actions.AddAxis("LookYaw");
+            axes.lookPitch = actions.AddAxis("LookPitch");
+            axes.lookScale = 0.4f * Step; // 0.4 rad per second of turning
+            actions.BindAxis(axes.moveRight, Input::AxisBinding::ForKeys(Keys::A, Keys::D));
+            actions.BindAxis(axes.moveForward, Input::AxisBinding::ForKeys(Keys::S, Keys::W));
+            actions.BindAxis(axes.lookYaw, Input::AxisBinding::ForKeys(Keys::Right, Keys::Left));
+            actions.BindAxis(axes.lookPitch, Input::AxisBinding::ForKeys(Keys::Down, Keys::Up));
+
+            Graphics::Camera walker;
+            walker.SetPosition(viewpoint.position);
+            walker.SetYawPitchRoll(-viewpoint.yaw, viewpoint.pitch);
+            Graphics::FlyCameraController controller(Graphics::FirstPersonSettings{3.0f, 2.0f, 1.4f});
+            controller.SyncFrom(walker);
+            for (int update = 0; update < 120; ++update) {
+                Input::InputSnapshot snapshot;
+                snapshot.keyboard = update < 60 ? KeyboardState({Keys::W}) : KeyboardState({Keys::W, Keys::Left});
+                actions.Update(snapshot);
+                controller.Update(walker, Graphics::ReadCameraInput(actions, axes), Step);
+            }
+            CnaStreet::Camera walkCamera;
+            walkCamera.setPerspective(viewpoint.fov, static_cast<float>(Width) / Height, settings.nearPlane,
+                                      settings.farPlane);
+            walkCamera.setPosition(walker.Position());
+            walkCamera.setOrientation(-controller.Yaw(), controller.Pitch());
+            std::printf("walk: %.2f m from the viewpoint, turned %.2f rad\n",
+                        Vector3::Distance(viewpoint.position, walker.Position()),
+                        controller.Yaw() + viewpoint.yaw);
+            ok = compare(walkCamera, "walk") && ok;
+        }
 
         // A close-up of a pedestrian: 3.5 m in front of the first figure
         // whose eye point is in the open, looking at it.

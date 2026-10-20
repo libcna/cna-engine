@@ -42,7 +42,7 @@ when the pin changes (ADR-002 "Local reproduction").
 ## State
 
 All work is committed on `develop`. Latest evidence (`docs/verification.md`):
-182 tests pass in `build/`, 183 in the baseline build (`build-probe/`, which
+184 tests pass in `build/`, 183 in the baseline build (`build-probe/`, which
 also runs the Street scene comparison), 2 consumer probes pass.
 
 Both pilots' real scenes render through the engine's `ForwardRenderer`
@@ -92,7 +92,7 @@ Done (see `plan.md` for per-task results):
 4. Upstream: UP-001 (no CNA package), UP-004 (BoundingFrustum point
    containment), UP-005 (cna-extended skinned test), UP-006 (CNA umbrella vs
    module targets), UP-007 (the pinned CNA revision is not pushed, so CI
-   cannot run) — for their owners.
+   cannot run), UP-008 (Street's mesh-memory accounting) — for their owners.
 
 ## Pointers
 
