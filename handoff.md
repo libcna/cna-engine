@@ -21,7 +21,7 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
   on 2026-10-20: car-simulator and street-simulator may be changed **on new
   branches** to adopt the engine (one revertible commit per step of
   `docs/pilots/migration.md`, nothing pushed). Defects found elsewhere are
-  written to `upstream-issues.md` (UP-001 … UP-011 so far). Pilot code may be
+  written to `upstream-issues.md` (UP-001 … UP-012 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
 - Commit regularly on branch `develop`; do not push unless asked.
 - At most 3 parallel compile/test jobs. Shared ccache only:
@@ -69,7 +69,11 @@ car-simulator itself now runs on the engine on its branch `engine-adoption`
 (worktree `libcnalab/car-simulator-engine`, build `build/software` there):
 its world renderer draws through `ForwardRenderer` with car-simulator's own
 matrices (`Camera::SetMatrices`), its suite and checker are green and its
-captures stay inside the tolerance.
+captures stay inside the tolerance. street-simulator does the same on its
+branch `engine-adoption` (worktree `libcnalab/street-simulator-engine`,
+build `build/` there): `SceneRenderer` draws through `ForwardRenderer` and
+the `PbrMaterialBinder`, its suite is green and all its named viewpoints
+stay inside the tolerance.
 
 The shared `../cna` worktree is changed by other agents all the time (on
 2026-10-20 e.g. XNA-exact `BoundingFrustum` containment and GJK
@@ -104,9 +108,11 @@ Done (see `plan.md` for per-task results):
 1. Pilot adoption (PILOT-001/002), allowed on new branches. car-simulator:
    done on branch `engine-adoption` in the worktree
    `libcnalab/car-simulator-engine` (eight commits; the camera stays the
-   game's, see `docs/pilots/migration.md`). street-simulator: not started —
-   a new worktree and branch, CNA's static modules first (UP-006), then the
-   steps of `docs/pilots/migration.md` with `SceneRenderer` last.
+   game's, see `docs/pilots/migration.md`). street-simulator: done on
+   branch `engine-adoption` in the worktree
+   `libcnalab/street-simulator-engine` (four commits: build, mesh views,
+   `SceneRenderer` through the engine, presets as a `QualitySchema`). What
+   is left for both: GPU-renderer captures and the owner's merge decision.
 2. MILESTONE-2 remainder: the screenshot tolerances are agreed (2026-10-20);
    the performance budget's reference is this machine in a Release build,
    to be measured when it is idle (`docs/pilots/performance-budgets.md`).
@@ -125,7 +131,8 @@ Done (see `plan.md` for per-task results):
    pin), UP-008 (Street's mesh-memory accounting), UP-009 (car-simulator's
    load budget in Debug builds), UP-010 (Street test discards a nodiscard
    result), UP-011 (cna-extended fixture paths under ccache's base
-   directory); UP-004 is resolved upstream.
+   directory), UP-012 (Street's blended instance groups missing from its
+   draw statistics); UP-004 is resolved upstream.
 
 ## Pointers
 

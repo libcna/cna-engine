@@ -286,3 +286,24 @@ instead of deriving it from `__FILE__`, or give `gtest_discover_tests` a
 Engine handling: none needed; the local rerun records the four as passing
 when run from the build root (`docs/verification.md`).
 
+## UP-012 — street-simulator's statistics leave out blended instance groups
+
+- Repository: `libcnalab/street-simulator` (`develop`),
+  `street/src/Render/SceneRenderer.cpp`, `drawTransparent`
+- Status: open (statistics only; the frame is drawn correctly). On the
+  adoption branch the engine counts them, so the issue is gone there.
+- Found: 2026-10-20, comparing Street's benchmark output before and after
+  its renderer moved onto the engine
+
+`drawOpaque` adds an instance group's draws to `Stats::drawCalls` and
+`Stats::instancedDrawCalls` and its triangles to `Stats::triangles`;
+`drawTransparent` adds blended groups' draws to `drawCalls` only. Blended
+instance groups therefore never appear in `instancedDrawCalls` or
+`triangles`: in the `baseline` benchmark preset 8 instanced draws and 1,676
+triangles a frame go uncounted (`crowd`: 9 draws, 2,892 triangles), and the
+benchmark's instanced-draw figure undercounts.
+
+Suggestion: count them in `drawTransparent` as `drawOpaque` does.
+
+Engine handling: none needed.
+

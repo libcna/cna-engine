@@ -4,6 +4,26 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20, 09:50 — street-simulator adopts the engine (branch `engine-adoption`)
+
+Engine `build/` with `QualitySchema::PresetValues` (`7947b6e`): **198 of 198
+tests passed**.
+
+street-simulator worktree `libcnalab/street-simulator-engine`, branch
+`engine-adoption` from `86b4a2e`, build `build/` (Release, software renderer,
+headless, null audio, shared CNA and Sharp Runtime worktrees, cna-engine
+from this repository; first build 9 min 34 s with 3 jobs): after each of the
+four commits Street's own CTest suite passed (**15 of 15**). Captures
+(`--capture`, 640 × 360, all 18 named viewpoints, plus `--night`) of the
+renderer step (`b137025`) against the commit before it: all 19 inside the
+agreed tolerance — mean difference 0.000–0.066/255, visibly different pixels
+2–1,081 of 230,400 (at most 0.47 %), around glass. Benchmarks (320 × 180,
+no probes, best of two alternating runs, load ~22): identical draw calls
+(1,571 baseline, 1,294 crowd), best CPU frame 2,068 → 1,924 ms and 1,547 →
+1,486 ms. Quality-preset step (`fe36c1d`): settings dumps after every preset
+and after four preset/flag combinations byte-identical to the previous
+commit.
+
 ## 2026-10-20, 08:20 — cna-extended suite against CNA `688f3f23` (ADR-002)
 
 cna-extended `0061e3e1` (clean) configured as CI's lane does (Debug, tests and

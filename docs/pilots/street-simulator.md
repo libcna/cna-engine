@@ -254,9 +254,11 @@ and persistence.
 ## Still open for this pilot
 
 Materials, the render queue, culling and instancing with Street's `PbrEffect`
-are covered by the scene comparison above. What remains:
+are covered by the scene comparison above, and Street itself now draws
+through the engine on its branch `engine-adoption` (worktree
+`libcnalab/street-simulator-engine`; commits and evidence in
+`docs/pilots/migration.md`, "street-simulator adoption"). What remains:
 
-- Screenshot tolerances for MILESTONE-2, to be agreed with the owner (the
-  measured difference above is the starting point).
-- Adoption inside Street (PILOT-001) — requires the owner's permission to
-  modify the pilot.
+- Street's captures on a GPU renderer, where its atmospheric sky draws (the
+  software renderer runs no custom effects).
+- Merging the branch is the owner's decision.

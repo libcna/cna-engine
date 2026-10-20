@@ -248,8 +248,16 @@ Both are art-directed uses of XNA state rather than material descriptions; in
 the engine they are custom passes that draw with CNA directly (the escape
 hatch the Street sky already uses), not new material fields.
 
+## Adoption
+
+car-simulator runs on the engine on its branch `engine-adoption` (worktree
+`libcnalab/car-simulator-engine`): input actions, the physics clock,
+screenshots, the plate cache, quality tiers and the whole world renderer,
+with its strict checker green under the ADR-001 allowance. Commits and
+evidence: `docs/pilots/migration.md`, "car-simulator adoption".
+
 ## Still open for this pilot
 
-- The strict checker allowance (ADR-001) applied in an integration branch of
-  the pilot — requires the owner's permission to touch car-simulator
-  (`docs/pilots/migration.md`).
+- Its display smoke tests on a GPU renderer (all evidence so far is from
+  CNA's software renderer).
+- Merging the branch is the owner's decision.

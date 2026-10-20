@@ -1,10 +1,10 @@
 # Migrating the pilots to cna-engine
 
-Status: **car-simulator adopted on a branch; street-simulator not started.**
-The owner allowed adoption on 2026-10-20 on new branches of both pilots (one
-revertible commit per step, nothing pushed). car-simulator's branch
-`engine-adoption` carries every step below except the camera (see
-"car-simulator adoption"). This document is the migration plan the read-only
+Status: **both pilots adopted on branches.** The owner allowed adoption on
+2026-10-20 on new branches of both pilots (one revertible commit per step,
+nothing pushed). Each pilot's branch `engine-adoption` carries its steps
+below except the camera, which both keep (see "car-simulator adoption" and
+"street-simulator adoption"). This document is the migration plan the read-only
 probes support; it covers PILOT-003's requirement that migration notes state
 reversibility and known differences.
 
@@ -81,12 +81,44 @@ before the next one, as before.
 
 | Step | Pilot code replaced | Engine facility | Evidence | Known differences |
 | --- | --- | --- | --- | --- |
-| 1 | `src/Render/Camera.cpp`, `CameraController.cpp` | `Graphics::Camera`, `FlyCameraController` | `StreetSimulatorTests`: fly trajectory within 1e-3 | none observed |
+| 1 | `src/Render/Camera.cpp`, `CameraController.cpp` | `Graphics::Camera`, `FlyCameraController` | `StreetSimulatorTests`: fly trajectory within 1e-3 | not taken in the adoption: Street's camera has its own yaw convention and the engine's would move every capture by rounding; Street hands its matrices to the engine (`Camera::SetMatrices`) |
 | 2 | `src/Geometry/MeshBuilder.cpp`, `src/Render/GpuMesh.cpp` (tangent frames) | `MeshBuilder`, `MeshData::ComputeTangents`, `GpuMesh` (`Borrow` for model parts) | pixel-identical uploads | none observed |
 | 3 | `src/Render/InstancedMesh.cpp` | `InstanceSet`, instanced `RenderItem` | pixel-identical hardware path | the per-instance fallback is used on Reach |
 | 4 | presets in `src/Render/RenderSettings.cpp` | `QualitySchema` (26 settings) | `StreetQualityTests` | Reach limits are reported as decisions |
 | 5 | caches in `MaterialLibrary` / `ModelLibrary` | `AssetRegistry` | `StreetAssetsTests` (derived-material cache) | none observed |
 | 6 | `SceneRenderer` culling, `drawOpaque`, `drawTransparent`, `drawSkinned`, `applyMaterial`, `applyLighting`, `applyEnvironment` | `Visibility`, `LodSelector`, `RenderQueue`, `ForwardRenderer`, `PbrMaterialBinder` (exposure, sky environment, `EnvironmentSelector` for probes), skinned render items; Street's sky as a `BeforeOpaque` pass; statistics through `FormatDiagnostics` | `street_scene_comparison`: visibility, figures and draw calls identical; image 0.01/255 (53 px); with probes 75 px; pedestrian close-up 2 of 10,412 figure pixels | the engine draws blended surfaces with depth reads only (Street writes depth: 49 of the 53 px); order of coplanar ground meshes can differ under tiny view-matrix differences; Street's per-family counters (vehicles, drivers, characters) become the game's own counts around the engine's |
+
+### street-simulator adoption (branch `engine-adoption`)
+
+Worktree `libcnalab/street-simulator-engine`, branched from Street's
+`develop` at `86b4a2e`; not pushed. Build `build/` there: Release, CNA's
+software renderer, headless platform, null audio (the software renderer
+runs no custom effects, so Street's atmospheric sky is black in every
+capture, before and after). Each commit was checked with Street's own suite
+(15/15 CTest programs).
+
+| Commit | Step | Result |
+| --- | --- | --- |
+| `75ee3bf` | build: `add_subdirectory` of cna-engine (strict and enhanced graphics, no cna-extended), CNA's static modules (UP-006) | suite green; captures deterministic run to run |
+| `64d1c07` | 2 (partial): `GpuMesh` and `SkinnedGpuMesh` expose their buffers as borrowed engine meshes | additive |
+| `b137025` | 6 (with 3): `SceneRenderer` culls with the engine's rules and draws the frame through `ForwardRenderer` and the `PbrMaterialBinder` — items, movers, instance groups as `InstanceSet`s, skinned figures, Street's lighting, exposure, sky environment and per-item probes, the sky as a `BeforeOpaque` pass | all 18 named viewpoints and a night view (640 × 360) inside the agreed tolerance: mean ≤ 0.066/255, at most 0.47 % of pixels visibly different, around glass |
+| `fe36c1d` | 4: the presets as a `QualitySchema`, applied as overlays through `QualitySchema::PresetValues` | settings dumped after every preset and after preset/flag combinations byte-identical |
+
+Benchmarks (Street's `--benchmark`, 320 × 180, no probes, Release, best of
+two alternating runs at load average ~22): draw calls identical (baseline
+1,571, crowd 1,294); best CPU frame 2,068 → 1,924 ms (baseline) and 1,547 →
+1,486 ms (crowd). The engine's instanced-draw and triangle counts are
+slightly higher because Street's own transparent pass never counted blended
+instance groups (UP-012).
+
+Known differences, beyond the comparison's: Street's apply-versus-draw
+timing split (`--profile`-style `opaqueApplyMs`/`opaqueDrawMs`) is not
+measured by the engine and reads -1; Street's figures were drawn with
+counter-clockwise culling regardless of `doubleSided`, the engine honours
+it. The probe bake still draws through Street's own effect code (it stays
+in Street, as below). Step 5 (asset caches) is not taken: Street's
+`MaterialLibrary` keeps its derived-material map, which the engine's
+`AssetRegistry` matched in the probe but which no longer needs changing.
 
 Stays in street-simulator: `SkySystem`, `AtmosphereModel`,
 `EnvironmentBaker` (the probe bake itself), `CityScene` and its content,
