@@ -70,7 +70,8 @@ move with it, `build-probe/` (pinned) is the evidence.
 Done (see `plan.md` for per-task results):
 
 - ADR-001 (+ addendum for `EnhancedGraphics`), ADR-002 with a clean,
-  enforced baseline run.
+  enforced baseline run, ADR-003 (what a material describes and what a binder
+  decides — read it before adding material fields).
 - MILESTONE-1 (strict foundation): ENG-020 … ENG-025 complete, validated
   against both pilots by read-only equivalence probes (`docs/pilots/`); the
   pilot's own strict checker accepts the strict surface with the ADR-001

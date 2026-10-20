@@ -112,7 +112,7 @@ then calls `find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics)`.
 ## Documents
 
 - `plan.md` — task plan and status; `handoff.md` — context for the next agent
-- `docs/adr/` — architecture decisions (boundary, baseline)
+- `docs/adr/` — architecture decisions (boundary, baseline, material/binder contract)
 - `docs/guide-strict.md`, `docs/guide-enhanced.md` — how to use each profile
 - `docs/conventions.md` — API, error, ownership and stability rules
 - `docs/verification-matrix.md` — what is checked where
