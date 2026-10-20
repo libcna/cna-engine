@@ -13,7 +13,7 @@ street-simulator worktree `libcnalab/street-simulator-engine`, branch
 `engine-adoption` from `86b4a2e`, build `build/` (Release, software renderer,
 headless, null audio, shared CNA and Sharp Runtime worktrees, cna-engine
 from this repository; first build 9 min 34 s with 3 jobs): after each of the
-four commits Street's own CTest suite passed (**15 of 15**). Captures
+five commits Street's own CTest suite passed (**15 of 15**). Captures
 (`--capture`, 640 × 360, all 18 named viewpoints, plus `--night`) of the
 renderer step (`b137025`) against the commit before it: all 19 inside the
 agreed tolerance — mean difference 0.000–0.066/255, visibly different pixels
@@ -22,7 +22,8 @@ no probes, best of two alternating runs, load ~22): identical draw calls
 (1,571 baseline, 1,294 crowd), best CPU frame 2,068 → 1,924 ms and 1,547 →
 1,486 ms. Quality-preset step (`fe36c1d`): settings dumps after every preset
 and after four preset/flag combinations byte-identical to the previous
-commit.
+commit. Asset step (`513dd93`): capture pixel-identical, start-up log
+identical.
 
 ## 2026-10-20, 08:20 — cna-extended suite against CNA `688f3f23` (ADR-002)
 

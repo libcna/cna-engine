@@ -95,7 +95,7 @@ Worktree `libcnalab/street-simulator-engine`, branched from Street's
 software renderer, headless platform, null audio (the software renderer
 runs no custom effects, so Street's atmospheric sky is black in every
 capture, before and after). Each commit was checked with Street's own suite
-(15/15 CTest programs).
+(15/15 CTest programs). Step 1 (camera) is not taken, as above.
 
 | Commit | Step | Result |
 | --- | --- | --- |
@@ -103,6 +103,7 @@ capture, before and after). Each commit was checked with Street's own suite
 | `64d1c07` | 2 (partial): `GpuMesh` and `SkinnedGpuMesh` expose their buffers as borrowed engine meshes | additive |
 | `b137025` | 6 (with 3): `SceneRenderer` culls with the engine's rules and draws the frame through `ForwardRenderer` and the `PbrMaterialBinder` — items, movers, instance groups as `InstanceSet`s, skinned figures, Street's lighting, exposure, sky environment and per-item probes, the sky as a `BeforeOpaque` pass | all 18 named viewpoints and a night view (640 × 360) inside the agreed tolerance: mean ≤ 0.066/255, at most 0.47 % of pixels visibly different, around glass |
 | `fe36c1d` | 4: the presets as a `QualitySchema`, applied as overlays through `QualitySchema::PresetValues` | settings dumped after every preset and after preset/flag combinations byte-identical |
+| `513dd93` | 5: `MaterialLibrary`'s derived and added materials cached in an `AssetRegistry` (`GetOrCreate`, first definition wins; a material whose content texture is missing still is not cached) | capture pixel-identical, start-up log identical |
 
 Benchmarks (Street's `--benchmark`, 320 × 180, no probes, Release, best of
 two alternating runs at load average ~22): draw calls identical (baseline
@@ -116,9 +117,7 @@ timing split (`opaqueApplyMs`, `opaqueDrawMs`, `skinnedMs`) is not
 measured by the engine and reads -1; Street's figures were drawn with
 counter-clockwise culling regardless of `doubleSided`, the engine honours
 it. The probe bake still draws through Street's own effect code (it stays
-in Street, as below). Step 5 (asset caches) is not taken: Street's
-`MaterialLibrary` keeps its derived-material map, which the engine's
-`AssetRegistry` matched in the probe but which no longer needs changing.
+in Street, as below).
 
 Stays in street-simulator: `SkySystem`, `AtmosphereModel`,
 `EnvironmentBaker` (the probe bake itself), `CityScene` and its content,

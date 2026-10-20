@@ -110,8 +110,9 @@ Done (see `plan.md` for per-task results):
    `libcnalab/car-simulator-engine` (eight commits; the camera stays the
    game's, see `docs/pilots/migration.md`). street-simulator: done on
    branch `engine-adoption` in the worktree
-   `libcnalab/street-simulator-engine` (four commits: build, mesh views,
-   `SceneRenderer` through the engine, presets as a `QualitySchema`). What
+   `libcnalab/street-simulator-engine` (five commits: build, mesh views,
+   `SceneRenderer` through the engine, presets as a `QualitySchema`,
+   derived materials in an `AssetRegistry`). What
    is left for both: GPU-renderer captures and the owner's merge decision.
 2. MILESTONE-2 remainder: the screenshot tolerances are agreed (2026-10-20);
    the performance budget's reference is this machine in a Release build,

@@ -646,7 +646,8 @@ by the owner on 2026-10-20): Street's branch `engine-adoption` draws the whole
 city through the engine — `SceneRenderer`'s culling and frame through
 `ForwardRenderer` with the `PbrMaterialBinder`, instance groups as
 `InstanceSet`s, skinned figures, probes through the environment selector —
-and its quality presets are a `QualitySchema`; its suite (15/15) stays green,
+its quality presets are a `QualitySchema` and its derived materials live in
+an `AssetRegistry`; its suite (15/15) stays green,
 all 18 named viewpoints and a night view stay inside the agreed tolerance,
 draw calls are identical and the frame is no slower
 (`docs/pilots/migration.md`, "street-simulator adoption"). Open: captures on
