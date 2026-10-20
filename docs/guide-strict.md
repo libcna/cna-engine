@@ -25,6 +25,8 @@ form.
 
 ## 2. Where the engine fits in the XNA game loop
 
+`examples/quick_start/main.cpp` is this section as a complete, running game.
+
 ```cpp
 class MyGame : public Microsoft::Xna::Framework::Game
 {
@@ -93,7 +95,11 @@ object is a plain member you create, update and draw.
    and the sampler state to read them with — LinearWrap unless you set
    `sampler`, never whatever the device had).
 4. Per frame: `RenderItem`s → `CullInto` (layer/distance/frustum) →
-   `RenderQueue::Sort` → `ForwardRenderer::Render`.
+   `RenderQueue::Sort` → `ForwardRenderer::Render`. Instanced groups set
+   `RenderItem::instances` (an `InstanceSet`), skinned meshes
+   `RenderItem::bones` (a borrowed palette of at most 72 matrices, drawn with
+   XNA's `SkinnedEffect`; the mesh needs `BlendIndices` and `BlendWeights`,
+   e.g. `VertexLayout::PositionNormalTextureSkinned()`).
 
 Ownership: `GpuMesh` owns its buffers (move-only; `Borrow` wraps buffers owned
 elsewhere, such as a `ModelMeshPart`). Materials and textures are borrowed by

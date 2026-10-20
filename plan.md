@@ -541,8 +541,11 @@ Result: substeps 1–2 (opaque, alpha-tested, transparent) plus overlay and
 custom passes at four points in `ForwardRenderer`; material binders make the
 effect side replaceable. Shadows/cascades are deferred: Street currently draws
 no shadows (CNA's cascaded shadow map was removed upstream; see
-`docs/pilots/street-simulator.md`). Post-processing hooks and reflection
-probes likewise wait for a pilot that needs them.
+`docs/pilots/street-simulator.md`). Post-processing hooks likewise wait for
+a pilot that needs them (Street's renderer has no post pass at present).
+Step 5 (reflection probes): `PbrMaterialBinder::EnvironmentSelector` with
+`RenderItem::userData`; Street's probe-lit frame is reproduced to 75 differing
+pixels of 129,600 (probes change 82 % of Street's own frame).
 
 ### ENG-036 — Add quality profiles and capability resolution `[x]`
 
@@ -699,9 +702,12 @@ Acceptance:
 - examples run under the supported headless/software audit profile.
 
 Progress: `README.md` quick look, `docs/guide-strict.md`,
-`docs/guide-enhanced.md`, `docs/conventions.md`, and two headless examples
-that run as tests. Open: a quick-start game template once a pilot has adopted
-the engine.
+`docs/guide-enhanced.md`, `docs/conventions.md`, and three headless examples
+that run as tests, among them `examples/quick_start` — a small complete game
+as an XNA `Game` (input actions, fixed-step simulation, materials and
+samplers, culling, instancing, the forward renderer, diagnostics,
+screenshot), scripted so the test is deterministic. Open: revisit the
+template once a pilot has adopted the engine.
 
 ### REL-003 — Establish the verification matrix `[~]`
 

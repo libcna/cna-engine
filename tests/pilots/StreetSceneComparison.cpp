@@ -18,7 +18,9 @@
 // and must give the same sets. The image difference is reported, not
 // asserted (screenshot tolerances are for the owner to agree).
 //
-// Usage: cna_engine_street_scene_comparison <output-directory> [seed]
+// Usage: cna_engine_street_scene_comparison <output-directory> [seed] [probes]
+// ("probes" bakes Street's reflection probes and lights items from them, as
+// Street's Medium preset does; it is slow, so the test runs without).
 #include "CnaEngine/Enhanced/PbrMaterialBinder.hpp"
 #include "CnaEngine/Graphics/Camera.hpp"
 #include "CnaEngine/Graphics/DiagnosticsReport.hpp"
@@ -194,6 +196,7 @@ int main(int argc, char** argv)
         const std::filesystem::path output = argc > 1 ? argv[1] : std::filesystem::current_path();
         std::filesystem::create_directories(output);
         const auto seed = argc > 2 ? static_cast<std::uint32_t>(std::strtoul(argv[2], nullptr, 10)) : 0u;
+        const bool probes = argc > 3 && std::string(argv[3]) == "probes";
 
         GraphicsDevice device;
         device.SetGraphicsProfileEXT(GraphicsProfile::HiDef);
@@ -203,7 +206,13 @@ int main(int argc, char** argv)
         // --- Street's scene, built by Street. ------------------------------
         CnaStreet::RenderSettings settings;
         settings.applyPreset(CnaStreet::QualityPreset::Low);
-        settings.reflectionProbes = false; // a probe bake would dominate the run time
+        // A probe bake would dominate the run time, so reflection probes are
+        // opt-in (third argument "probes": Medium's 32-pixel probes every 32 m).
+        settings.reflectionProbes = probes;
+        if (probes) {
+            settings.probeFaceSize = 32;
+            settings.probeSpacing = 32.0f;
+        }
         settings.traffic = false;          // parked city: moving traffic is submitted per frame
         settings.pedestrians = true;       // skinned figures (ENG-032)
         if (seed != 0) {
@@ -285,6 +294,30 @@ int main(int argc, char** argv)
             environment.BrdfLut = sky.brdfLut();
             environment.Intensity = sky.environmentScale() * settings.iblIntensity;
         }
+        // Street's applyEnvironment: an item's own probe (prefiltered
+        // specular, and its irradiance when probeIrradiance is set) with the
+        // sky's BRDF table and scale; otherwise the sky's environment.
+        std::map<const CnaStreet::ReflectionProbe*, Microsoft::Xna::Framework::Graphics::ImageBasedLightEXT> probeLights;
+        pbr->SetEnvironmentSelector(
+            [&](const Graphics::RenderItem& item) -> const Microsoft::Xna::Framework::Graphics::ImageBasedLightEXT* {
+                const auto* probe = static_cast<const CnaStreet::ReflectionProbe*>(item.userData);
+                if (probe == nullptr || probe->prefiltered == nullptr || !sky.hasImageBasedLighting()
+                    || !settings.imageBasedLighting) {
+                    return nullptr;
+                }
+                auto it = probeLights.find(probe);
+                if (it == probeLights.end()) {
+                    Microsoft::Xna::Framework::Graphics::ImageBasedLightEXT light;
+                    light.PrefilteredSpecular = probe->prefiltered.get();
+                    light.PrefilteredMipCount = probe->prefilteredMips;
+                    light.Irradiance = settings.probeIrradiance && probe->irradiance != nullptr ? probe->irradiance.get()
+                                                                                                : sky.irradiance();
+                    light.BrdfLut = sky.brdfLut();
+                    light.Intensity = sky.environmentScale() * settings.iblIntensity;
+                    it = probeLights.emplace(probe, light).first;
+                }
+                return &it->second;
+            });
         renderer.SetMaterialBinder(pbr);
         auto& lighting = renderer.Lighting();
         lighting.defaultLighting = false;
@@ -343,6 +376,7 @@ int main(int argc, char** argv)
                 e.bounds = item.worldSphere;
                 e.box = item.worldBounds;
                 e.cullDistance = cullDistance;
+                e.userData = item.probe; // Street's nearest reflection probe, if any
                 return e;
             };
             for (const auto& item : items) {

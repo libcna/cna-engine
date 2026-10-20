@@ -330,4 +330,67 @@ namespace CnaEngine::Enhanced
         }();
         EXPECT_LE(Distance(top, rigidTop), 6);
     }
+
+    TEST_F(PbrFixture, EnvironmentSelectorLightsItemsFromTheirProbes)
+    {
+        using Microsoft::Xna::Framework::Graphics::CubeMapFace;
+        using Microsoft::Xna::Framework::Graphics::ImageBasedLightEXT;
+        using Microsoft::Xna::Framework::Graphics::TextureCube;
+        renderer.Lighting().ambientColor = Vector3::Zero;
+        // Uniform cubes and a zero BRDF table: only each environment's diffuse part lights.
+        auto uniform = [&](TextureCube& cube, const Color& color) {
+            for (int face = 0; face < 6; ++face) {
+                cube.SetData(static_cast<CubeMapFace>(face), &color, 1);
+            }
+        };
+        TextureCube green(device, 1, false, SurfaceFormat::Color);
+        TextureCube red(device, 1, false, SurfaceFormat::Color);
+        uniform(green, Color(0, 160, 0, 255));
+        uniform(red, Color(160, 0, 0, 255));
+        Texture2D lut(device, 1, 1);
+        const Color zero(0, 0, 0, 255);
+        lut.SetData(&zero, 1);
+        binder->Settings().environment = ImageBasedLightEXT{&green, &green, &lut, 1, 1.0f};
+        const ImageBasedLightEXT probe{&red, &red, &lut, 1, 1.0f};
+        const int inProbe = 1;
+        int asked = 0;
+        binder->SetEnvironmentSelector([&](const RenderItem& item) -> const ImageBasedLightEXT* {
+            ++asked;
+            return item.userData == &inProbe ? &probe : nullptr;
+        });
+
+        Material matte = Pbr("matte", Vector3(1.0f, 1.0f, 1.0f), 0.0f, 1.0f);
+        matte.keyLight = false;
+        RenderQueue queue;
+        for (const float x : {-1.2f, 1.2f, 3.0f}) {
+            RenderItem item;
+            item.mesh = &sphere;
+            item.material = &matte;
+            item.world = Matrix::CreateScale(0.5f) * Matrix::CreateTranslation(x, 0.0f, 0.0f);
+            item.bounds = Graphics::WorldBounds(sphere, item.world);
+            item.userData = x > 0.0f && x < 2.0f ? &inProbe : nullptr;
+            queue.Submit(item);
+        }
+        queue.Sort(camera.Position());
+        device.SetRenderTarget(&target);
+        device.Clear(Background);
+        renderer.Render(queue, camera);
+        device.SetRenderTarget(nullptr);
+        std::vector<Color> pixels(static_cast<std::size_t>(Size * Size));
+        target.GetData(pixels.data(), static_cast<int>(pixels.size()));
+        EXPECT_EQ(asked, 3);
+
+        const Color left = At(pixels, Size / 2 - 11, Size / 2);
+        const Color right = At(pixels, Size / 2 + 11, Size / 2);
+        EXPECT_GT(left.getGProperty(), 40) << "the frame's green environment";
+        EXPECT_LT(left.getRProperty(), 5);
+        EXPECT_GT(right.getRProperty(), 40) << "the probe's red environment";
+        EXPECT_LT(right.getGProperty(), 5);
+
+        binder->SetEnvironmentSelector({});
+        binder->Settings().environment = {};
+        device.SetRenderTarget(&target);
+        renderer.Render(queue, camera); // leaves no texture of this test bound
+        device.SetRenderTarget(nullptr);
+    }
 }

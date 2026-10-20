@@ -8,7 +8,7 @@ Plan item: `REL-003`. What is checked, where, and how a failure shows.
 | --- | --- | --- | --- |
 | Unit | `unit` (gtest executables `cna_engine_tests`, `cna_engine_enhanced_tests`, `cna_engine_extended_tests`) | behaviour of every facility, including software-renderer pixel checks | local, CI |
 | Boundary | `boundary`: `strict_boundary`, `strict_boundary_detects_leaks` (must fail), `api_snapshot`; build target `cna_engine_strict_header_check` | strict headers use only XNA/Sharp Runtime/std; every strict header compiles alone; pilot-validated API changes are deliberate | local, CI |
-| Examples | `example`: `orbit_scene` (strict), `street_slice` (enhanced) | complete programs render, write a PNG and assert their own invariants | local, CI |
+| Examples | `example`: `quick_start` and `orbit_scene` (strict), `street_slice` (enhanced) | complete programs render, write a PNG and assert their own invariants | local, CI |
 | Installed consumers | `tools/run_consumer_probes.sh` (`build-consumer/`) | the installed package works for strict and enhanced consumers; the strict link closure has no cna-extended target | local, CI |
 | Pilot probes | `pilot` (needs the pilot checkouts) | engine facilities match car-simulator's and street-simulator's own code on identical inputs; car-simulator's checker accepts the strict surface | local only (pilots are separate repositories) |
 | Baseline | configure with `CNA_ENGINE_ENFORCE_BASELINE=ON` | dependencies are exactly the pinned revisions with clean tracked files | CI, local baseline runs |

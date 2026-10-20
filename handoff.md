@@ -41,15 +41,16 @@ when the pin changes (ADR-002 "Local reproduction").
 ## State
 
 All work is committed on `develop`. Latest evidence (`docs/verification.md`):
-178 tests pass in `build/`, 179 in the baseline build (`build-probe/`, which
+180 tests pass in `build/`, 181 in the baseline build (`build-probe/`, which
 also runs the Street scene comparison), 2 consumer probes pass.
 
 Both pilots' real scenes render through the engine's `ForwardRenderer`
 practically identically to the pilots' own renderers: Street's procedural
 city with the PBR binder carrying Street's lighting and its sky as a custom
 pass, pedestrians included as skinned render items (visible items,
-instances, figures and draw calls identical; mean image difference 0.01/255) and car-simulator's `lipova` map with the strict stock
-binder (every visibility count identical; 0.1/255). See `docs/pilots/`.
+instances, figures and draw calls identical; mean image difference
+0.01/255) and car-simulator's `lipova` map with the strict stock binder
+(every visibility count identical; 0.1/255). See `docs/pilots/`.
 
 The shared `../cna` worktree is being changed by another agent (math:
 XNA-exact `BoundingFrustum::Intersects` via GJK, uncommitted on 2026-10-20);
@@ -63,11 +64,19 @@ Done (see `plan.md` for per-task results):
   against both pilots by read-only equivalence probes (`docs/pilots/`); the
   pilot's own strict checker accepts the strict surface with the ADR-001
   allowance.
-- Enhanced work: material binders, PBR binder over `PbrEffect`,
-  `EngineWorldScreen`, debug overlay, render queue, culling/LOD, instancing,
-  quality schema (ENG-036 complete), `street_slice` example.
-- Release readiness: LICENSE, NOTICE, CHANGELOG, API snapshot test, profile
-  guides, verification matrix, CI workflow.
+- Rendering (ENG-031 … ENG-034 complete): materials with per-material
+  samplers and premultiplied/straight blending chosen by the binder, the
+  stock binder (BasicEffect, AlphaTestEffect, DualTextureEffect,
+  SkinnedEffect) and the PBR binder (PbrEffect, SkinnedPbrEffect, image-based
+  environment, exposure, per-item environment selector for reflection
+  probes), render queue and state contract, culling/LOD with diagnostics,
+  instancing, skinned render items.
+- Enhanced integration: `EngineWorldScreen`, debug overlay, quality schema
+  (ENG-036), `street_slice` example.
+- Release readiness: LICENSE, NOTICE, CHANGELOG, API snapshot of the 20
+  pilot-validated headers, profile guides, `quick_start` game example,
+  verification matrix, CI workflow with the EXT-003 upstream lane and canary
+  (blocked by UP-007 until the CNA pin is pushed).
 
 ## Open, in priority order
 
@@ -75,8 +84,9 @@ Done (see `plan.md` for per-task results):
    pilots; until then, probes are the evidence.
 2. MILESTONE-2 remainder: screenshot tolerances must be agreed with the owner
    (the scene comparisons give the measured differences to start from).
-3. ENG-035 later steps only when a pilot needs them (Street currently draws no
-   shadows; see `docs/pilots/street-simulator.md`).
+3. ENG-035: shadows and post-processing only when a pilot needs them (Street
+   currently draws neither; see `docs/pilots/street-simulator.md`).
+   Reflection probes are supported through the PBR binder's selector.
 4. Upstream: UP-001 (no CNA package), UP-004 (BoundingFrustum point
    containment), UP-005 (cna-extended skinned test), UP-006 (CNA umbrella vs
    module targets), UP-007 (the pinned CNA revision is not pushed, so CI

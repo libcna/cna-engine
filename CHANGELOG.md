@@ -45,6 +45,12 @@ became pilot-validated (their changes of that day are listed below).
   `baseVertex` and `startIndex` (trailing, defaulted: existing calls are
   unchanged). Reason: Street's imported skinned meshes share buffers.
 
+- Per-item environments (ENG-035 step 5), additive: `RenderItem::userData`
+  (the game's own data, never read by the engine) and
+  `PbrMaterialBinder::SetEnvironmentSelector` (an item's reflection probe
+  replaces `PbrSettings::environment`; rebinding only when it changes).
+  Reason: Street lights items from their nearest reflection probe.
+
 ### Other API additions (experimental headers)
 
 - `RenderItem::box`, `cullDistance`, `instances`; `VisibilitySettings::minDistance`;

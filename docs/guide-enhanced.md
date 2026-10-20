@@ -47,8 +47,19 @@ Blending: `PbrEffect` writes straight alpha, so `BlendMode::AlphaBlend` blends
 as `NonPremultiplied`; `BlendMode::PremultipliedAlpha` (glass, whose
 reflection stays at full strength) blends as XNA's `AlphaBlend`.
 
-Shadows and per-item reflection probes are not managed: implement your own
-binder (or use `PbrMaterialBinder::Effect()`) where your game needs them.
+Reflection probes: tag render items with `RenderItem::userData` (for example
+the probe nearest to the item) and give the binder an `EnvironmentSelector`
+that returns that probe's `ImageBasedLightEXT`; items without one use the
+frame's environment. The binder rebinds only when the environment changes
+between draws.
+
+Skinned meshes: set `RenderItem::bones` (at most 72 bone transforms) on a mesh
+with `BlendIndices`/`BlendWeights` (`VertexLayout::PositionNormalTangentTextureSkinned()`
+or a borrowed skinned buffer); the binder draws it with CNA's
+`SkinnedPbrEffect` and the same material parameters.
+
+Shadows are not managed: implement your own binder (or use
+`PbrMaterialBinder::Effect()`) where your game needs them.
 
 ## 2. cna-extended screens and World3D
 

@@ -66,6 +66,9 @@ namespace CnaEngine::Graphics
         /// with an identity `world`). Null for rigid meshes. Skinned items
         /// are not instanced.
         const std::vector<Microsoft::Xna::Framework::Matrix>* bones = nullptr;
+        /// The game's own data for this item (borrowed), for custom
+        /// binders, selectors and passes; the engine never reads it.
+        const void* userData = nullptr;
     };
 
     /// World-space bounds of `mesh` placed with `world` (conservative for

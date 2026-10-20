@@ -11,6 +11,7 @@
 #include "Microsoft/Xna/Framework/Graphics/PbrEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SkinnedPbrEffect.hpp"
 
+#include <functional>
 #include <memory>
 
 namespace CnaEngine::Enhanced
@@ -43,10 +44,10 @@ namespace CnaEngine::Enhanced
     /// with `keyLight == false`), fill lights and ambient color (the default
     /// three-light rig of the stock effects is approximated by its key
     /// light), all scaled by PbrSettings::exposure, and the optional
-    /// image-based environment of PbrSettings. Shadows and per-item
-    /// environment probes are not set; a game that needs them implements its
-    /// own IMaterialBinder (Effect() exposes the effect for setups the binder
-    /// leaves alone).
+    /// image-based environment of PbrSettings, or per item the one an
+    /// EnvironmentSelector picks (reflection probes). Shadows are not set; a
+    /// game that needs them implements its own IMaterialBinder (Effect()
+    /// exposes the effect for setups the binder leaves alone).
     ///
     /// Skinned items (RenderItem::bones) draw through CNA's SkinnedPbrEffect
     /// with the same parameters; a palette on a mesh without
@@ -70,6 +71,14 @@ namespace CnaEngine::Enhanced
     class PbrMaterialBinder final : public Graphics::IMaterialBinder
     {
     public:
+        /// Chooses an item's image-based environment (a reflection probe):
+        /// non-null replaces PbrSettings::environment for that item. The
+        /// bundle is borrowed and must stay valid during the frame; its
+        /// Intensity is scaled by the exposure like the frame's. Items are
+        /// usually recognised by RenderItem::userData.
+        using EnvironmentSelector =
+            std::function<const Microsoft::Xna::Framework::Graphics::ImageBasedLightEXT*(const Graphics::RenderItem&)>;
+
         PbrMaterialBinder(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
                           std::shared_ptr<Graphics::StockMaterialBinder> fallback, PbrSettings settings = {});
 
@@ -83,6 +92,8 @@ namespace CnaEngine::Enhanced
 
         /// Changes take effect at the next frame (BeginFrame).
         [[nodiscard]] PbrSettings& Settings() noexcept { return settings_; }
+        /// An empty selector (the default) lights every item with the frame's environment.
+        void SetEnvironmentSelector(EnvironmentSelector selector) { selector_ = std::move(selector); }
         /// The effect, for setups the binder does not manage (IBL, shadows).
         [[nodiscard]] Microsoft::Xna::Framework::Graphics::PbrEffect& Effect() noexcept { return *effect_; }
 
@@ -94,6 +105,10 @@ namespace CnaEngine::Enhanced
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::SkinnedPbrEffect> skinned_;
         std::shared_ptr<Graphics::StockMaterialBinder> fallback_;
         PbrSettings settings_;
+        EnvironmentSelector selector_;
+        /// The environment each effect holds now (null: the frame's).
+        const Microsoft::Xna::Framework::Graphics::ImageBasedLightEXT* boundEnvironment_ = nullptr;
+        const Microsoft::Xna::Framework::Graphics::ImageBasedLightEXT* boundSkinnedEnvironment_ = nullptr;
         Microsoft::Xna::Framework::Vector3 keyColor_ = Microsoft::Xna::Framework::Vector3::Zero;
     };
 }

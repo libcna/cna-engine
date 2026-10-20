@@ -4,6 +4,14 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20 (night) — reflection-probe selector, quick-start game
+
+`build/` **180 of 180**, baseline `build-probe/` **181 of 181** (new:
+`cna_engine.example.quick_start`, the selector test). Street comparison in
+probes mode, run once by hand (4 min 53 s, 2.7 GB peak): first view 75 of
+129,600 pixels differ, close-up 785 (2 on figures); visibility and draw
+calls identical (`docs/pilots/street-simulator.md`).
+
 ## 2026-10-20 (evening) — skinned render items
 
 Baseline `build-probe/` (clean pinned dependencies, baseline enforced and

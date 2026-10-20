@@ -168,6 +168,25 @@ blend-index and blend-weight streams, skinned layouts, `SkinnedPbrEffect` in
 the PBR binder) and `GpuMesh::Borrow` with offsets for Street's imported
 skinned meshes.
 
+### With reflection probes (ENG-035 step 5)
+
+Street's Medium and High presets light each item from its nearest reflection
+probe. `cna_engine_street_scene_comparison <dir> 0 probes` bakes Street's
+probes (32-pixel faces every 32 m, as Medium does; about 5 minutes in all, so
+the CTest run leaves it out) and gives the engine a
+`PbrMaterialBinder::EnvironmentSelector` that maps each item's
+`RenderItem::userData` (Street's `SceneItem::probe`) to that probe's
+environment, as Street's `applyEnvironment` does. Measured on 2026-10-20 at the
+CNA baseline:
+
+| View | Street with vs without probes | Engine vs Street, both with probes |
+| --- | --- | --- |
+| First viewpoint | 106,533 of 129,600 pixels change (mean 11.1/255) | 75 pixels differ (mean 0.01/255) |
+| Pedestrian close-up | — | 785 pixels differ (mean 0.36/255); 2 of 10,412 figure pixels |
+
+Visible items, instances, figures and draw calls are identical in both views.
+Images: `docs/pilots/images/street-probes-street.png`, `…-engine.png`.
+
 ## Shadows (ENG-035 step 3) — not required at present
 
 Street still carries shadow settings and statistics, but CNA's

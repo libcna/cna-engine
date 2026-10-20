@@ -57,9 +57,13 @@ pass->Apply();
 sphere.Draw(device, &frameStats);
 ```
 
-`examples/orbit_scene/main.cpp` (strict profile) and
-`examples/street_slice/main.cpp` (enhanced profile: PBR, culling, LOD,
-instancing, diagnostics) are complete, runnable headless programs.
+Start with `examples/quick_start/main.cpp`: a small complete game written
+as an ordinary XNA `Game` (actions and axes, a fixed-step simulation,
+materials, culling, an instanced item, the forward renderer, diagnostics and
+a screenshot) on the strict profile. `examples/orbit_scene/main.cpp` (strict,
+engine meshes with your own effect) and `examples/street_slice/main.cpp`
+(enhanced profile: PBR, culling, LOD, instancing, diagnostics) complete the
+set. All three are runnable headless programs and run as tests.
 
 ## Building
 

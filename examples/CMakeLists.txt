@@ -15,6 +15,21 @@ if(CNA_ENGINE_BUILD_TESTS)
     set_tests_properties(cna_engine.example.orbit_scene PROPERTIES LABELS "example")
 endif()
 
+# Quick start: a small strict-profile game as an ordinary XNA Game (needs
+# CNA's runtime module for Game and GraphicsDeviceManager).
+add_executable(cna_engine_quick_start quick_start/main.cpp)
+target_link_libraries(cna_engine_quick_start PRIVATE CnaEngine::Core CnaEngine::Graphics CNA::Runtime)
+if(MSVC)
+    target_compile_options(cna_engine_quick_start PRIVATE /W4 /WX)
+else()
+    target_compile_options(cna_engine_quick_start PRIVATE -Wall -Wextra -Werror)
+endif()
+if(CNA_ENGINE_BUILD_TESTS)
+    add_test(NAME cna_engine.example.quick_start
+        COMMAND cna_engine_quick_start "${CMAKE_CURRENT_BINARY_DIR}/quick_start_output")
+    set_tests_properties(cna_engine.example.quick_start PROPERTIES LABELS "example")
+endif()
+
 # Enhanced-profile vertical slice: PBR through CnaEngine::EnhancedGraphics.
 if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     add_executable(cna_engine_street_slice street_slice/main.cpp)

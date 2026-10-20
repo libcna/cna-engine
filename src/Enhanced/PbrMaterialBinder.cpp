@@ -18,6 +18,7 @@ namespace CnaEngine::Enhanced
     using Microsoft::Xna::Framework::Graphics::AlphaModeEXT;
     using Microsoft::Xna::Framework::Graphics::BlendState;
     using Microsoft::Xna::Framework::Graphics::GraphicsDevice;
+    using Microsoft::Xna::Framework::Graphics::ImageBasedLightEXT;
     using Microsoft::Xna::Framework::Graphics::PbrEffect;
     using Microsoft::Xna::Framework::Graphics::SkinnedPbrEffect;
     using Microsoft::Xna::Framework::Graphics::Texture2D;
@@ -57,6 +58,21 @@ namespace CnaEngine::Enhanced
             effect.setFogStartProperty(lighting.fogStart);
             effect.setFogEndProperty(lighting.fogEnd);
             effect.setEncodeOutputToSrgbEXTProperty(settings.encodeOutputToSrgb);
+        }
+
+        // Binds `wanted` (null: the frame's environment) unless the effect
+        // holds it already: a cube upload per draw would dominate the pass.
+        template <typename Effect>
+        void BindEnvironment(Effect& effect, const ImageBasedLightEXT* wanted, const ImageBasedLightEXT*& bound,
+                             const PbrSettings& settings)
+        {
+            if (wanted == bound) {
+                return;
+            }
+            auto environment = wanted != nullptr ? *wanted : settings.environment;
+            environment.Intensity *= settings.exposure;
+            effect.setImageBasedLightEXT(environment);
+            bound = wanted;
         }
 
         template <typename Effect>
@@ -154,6 +170,8 @@ namespace CnaEngine::Enhanced
         keyColor_ = lighting.lightColor * settings_.exposure;
         SetFrame(*effect_, lighting, settings_, keyColor_);
         SetFrame(*skinned_, lighting, settings_, keyColor_);
+        boundEnvironment_ = nullptr;
+        boundSkinnedEnvironment_ = nullptr;
     }
 
     bool PbrMaterialBinder::Apply(GraphicsDevice& device, const Graphics::RenderItem& item,
@@ -164,6 +182,7 @@ namespace CnaEngine::Enhanced
         if (Delegated(item)) {
             return fallback_->Apply(device, item, bucket, camera, fallback);
         }
+        const ImageBasedLightEXT* environment = selector_ ? selector_(item) : nullptr;
         if (item.bones != nullptr) {
             const Graphics::Material& material = *item.material;
             const Graphics::AttributeMask attributes = item.mesh->Attributes();
@@ -174,6 +193,7 @@ namespace CnaEngine::Enhanced
                 return false;
             } else {
                 SkinnedPbrEffect& effect = *skinned_;
+                BindEnvironment(effect, environment, boundSkinnedEnvironment_, settings_);
                 SetDraw(effect, device, item, bucket, camera, keyColor_, fallback);
                 effect.setWeightsPerVertexProperty(4);
                 effect.SetBoneTransforms(*item.bones);
@@ -182,6 +202,7 @@ namespace CnaEngine::Enhanced
             }
         }
         PbrEffect& effect = *effect_;
+        BindEnvironment(effect, environment, boundEnvironment_, settings_);
         SetDraw(effect, device, item, bucket, camera, keyColor_, fallback);
         effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         return true;
