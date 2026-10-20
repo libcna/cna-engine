@@ -187,8 +187,8 @@ Images: `docs/pilots/images/carsim-night-*.png`.
 
 Frustum test. car-simulator culls with `BoundingFrustum::Intersects(sphere)`,
 the engine with the plane test (`Contains(sphere) != Disjoint`). At the pinned
-CNA the two agree. CNA work in progress on 2026-10-20 (uncommitted in the
-shared worktree) implements `Intersects` with XNA's GJK query and its
+CNA the two agree. CNA `5ab1c7729` (2026-10-20, after the pin) implements
+`Intersects` with XNA's GJK query and its
 scale-relative tolerance, which also accepts some spheres just outside a
 plane: car-simulator then draws 506 object and 34 tree batches, the engine 503
 and 33, with the same image (0.1/255). The comparison therefore counts both:

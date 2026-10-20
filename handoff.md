@@ -55,9 +55,10 @@ draw calls identical; mean image difference 0.01/255) and car-simulator's `lipov
 additive lamp light included; 0.05/255 by day). See
 `docs/pilots/`.
 
-The shared `../cna` worktree is being changed by another agent (math:
-XNA-exact `BoundingFrustum::Intersects` via GJK, uncommitted on 2026-10-20);
-`build/` results move with it, `build-probe/` (pinned) is the evidence.
+The shared `../cna` worktree is changed by other agents all the time (on
+2026-10-20 e.g. XNA-exact `BoundingFrustum` containment and GJK
+`Intersects`, CNA `5ab1c7729`, which also resolves UP-004); `build/` results
+move with it, `build-probe/` (pinned) is the evidence.
 
 Done (see `plan.md` for per-task results):
 

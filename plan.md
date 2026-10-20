@@ -184,7 +184,9 @@ Disposition (2026-10-19, analysis only; cna-extended and CNA are not modified
 from this repository): both skipped cases are an implementation defect in CNA's
 `BoundingFrustum::Contains(Vector3)`, which deviates from the XNA 4.0 reference
 (no `1E-05f` tolerance, `Intersects` for on-plane points, early `break`). See
-`upstream-issues.md` UP-004. Remaining: CNA fix, then re-enable the tests.
+`upstream-issues.md` UP-004. CNA fixed it in `5ab1c7729` (2026-10-20, after
+the engine's pin). Remaining: move the pin past it (ADR-002) and the
+cna-extended owner re-enables the two tests.
 
 ### EXT-003 — Establish an upstream compatibility lane `[~]`
 
