@@ -63,6 +63,12 @@ deterministic headless capture against the commit before it (`--frames 3
 | `c9f9937` | 4 (partial): car-simulator's `GpuMesh` exposes its buffers as a borrowed engine `GpuMesh` | additive |
 | `dc83bb4` | 8: the world passes (terrain with LOD, roads and markings, objects, trees, signs, headlight fill, lamp light) as render items through `ForwardRenderer` and the stock binder; rain and snow stay game passes drawn between the engine's segments | captures by day, at night with headlights, in rain, snow and fog, from the cockpit with mirrors and at the low tier: largest difference 2/255, no pixel differs visibly (> 3/255) — inside the agreed tolerance |
 
+The same seven captures on OpenGL ES 3 (Mesa llvmpipe under Xvfb, build
+`build-probe/` in the worktree, through car-simulator's
+`scripts/run_headless.sh`), world-renderer files of `6a927fb` against
+`dc83bb4`: largest difference 16/255, at most one pixel per image differs
+by more than 3/255 — inside the tolerance.
+
 CPU time of the world pass (car-simulator's `--benchmark`, Release, software
 renderer, 320 × 180, day, best of three alternating runs at load average ~8):
 1,313 ms before `dc83bb4`, 1,358 ms after (+3.4 %, inside the proposed 1.15 ×

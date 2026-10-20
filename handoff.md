@@ -113,8 +113,8 @@ Done (see `plan.md` for per-task results):
    `libcnalab/street-simulator-engine` (five commits: build, mesh views,
    `SceneRenderer` through the engine, presets as a `QualitySchema`,
    derived materials in an `AssetRegistry`). What
-   is left for both: captures on a hardware GPU (Street's are checked on
-   OpenGL via Mesa llvmpipe too) and the owner's merge decision.
+   is left for both: captures on a hardware GPU (both are checked on OpenGL
+   via Mesa llvmpipe too) and the owner's merge decision.
 2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)
    is recorded but not enforced until it is measured on this machine in a
    Release build when the machine is idle (`docs/pilots/performance-budgets.md`).

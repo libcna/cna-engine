@@ -77,7 +77,11 @@ tolerance:
 | cockpit with mirrors | 0.039/255 | 2 | 0 |
 | low tier | 0.055/255 | 2 | 0 |
 
-The plate-cache and quality-tier steps were pixel-identical. World pass CPU
+The plate-cache and quality-tier steps were pixel-identical. On OpenGL ES 3
+(`build-probe/` in the worktree, Release, SDL3 under Xvfb, Mesa 25.0.7
+llvmpipe, OpenGL ES 3.2) the same seven captures, world-renderer files of
+`6a927fb` against `dc83bb4`: mean 0.002–0.064/255, largest 16/255, at most
+one pixel per image visibly different. World pass CPU
 time (best of three alternating Release runs, 320 × 180, load ~8): 1,313 ms
 before, 1,358 ms after (+3.4 %).
 
