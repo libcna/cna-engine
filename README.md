@@ -5,16 +5,19 @@ that makes ordinary game code shorter without hiding CNA. It reuses
 [cna-extended](../cna-extended) for screens, ECS, World3D, particles, fonts and
 tilemaps instead of duplicating them.
 
-Status: **0.1.0, experimental**. Every API may change until it has been
-validated by both pilot games (see `plan.md` and `docs/api-status.md`).
+Status: **0.1.0, experimental**. Every API may change until the pilot games
+have adopted it (see `plan.md` and `docs/api-status.md`); facilities already
+checked against both pilots' own code are marked `pilot-validated`, and both
+pilots' real scenes render through the engine practically identically
+(`docs/pilots/`).
 
 ## Modules
 
 | Target | Profile | What it offers |
 | --- | --- | --- |
-| `CnaEngine::Core` | strict | named input actions and axes, rebinding, binding capture, frame statistics, CPU profiler |
-| `CnaEngine::Graphics` | strict | camera state and fly/walk controllers, CPU mesh data and builders, vertex layouts, RAII GPU meshes, materials, render queues, culling and LOD, a forward renderer over XNA's stock effects, render statistics, screenshots, typed asset registry |
-| `CnaEngine::EnhancedGraphics` | enhanced | PBR material binder over CNA's `PbrEffect` (no cna-extended) |
+| `CnaEngine::Core` | strict | named input actions and axes, rebinding, binding capture and display names, fixed-step clock, frame statistics, CPU profiler |
+| `CnaEngine::Graphics` | strict | camera state and fly/walk controllers, CPU mesh data and builders, vertex layouts (skinned included), RAII GPU meshes, materials, render queues, culling and LOD, instancing, skinned items, a forward renderer over XNA's stock effects, render statistics and GPU memory estimates, screenshots, typed asset registry, quality schemas |
+| `CnaEngine::EnhancedGraphics` | enhanced | PBR material binder over CNA's `PbrEffect` and `SkinnedPbrEffect`: image-based lighting, exposure, per-item reflection probes (no cna-extended) |
 | `CnaEngine::ExtendedIntegration` | enhanced | adapters to cna-extended (`EngineWorldScreen`, World3D camera sync) |
 | `CnaEngine::Engine` | enhanced | everything above |
 
