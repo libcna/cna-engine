@@ -33,7 +33,7 @@ namespace CnaEngine::Graphics
                 case VertexElementFormat::Vector2: return 8;
                 case VertexElementFormat::Vector3: return 12;
                 case VertexElementFormat::Vector4: return 16;
-                case VertexElementFormat::Color: return 4;
+                case VertexElementFormat::Color:
                 case VertexElementFormat::Byte4: return 4;
                 default: return 0;
             }

@@ -4,6 +4,17 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 — static analysis
+
+`clang-tidy` 19 over the engine's 30 source files (and their headers) with
+`bugprone-*`, `performance-*` and `clang-analyzer-*` (minus swappable
+parameters, narrowing, enum size and implicit widening): 10 findings, none a
+defect — an intentional empty catch in a destructor (now marked), optional
+values assigned through a dereference after validation (now assigned
+directly), identical switch branches (merged), and three string
+concatenations in error messages (left). Non-pilot tests 167/167 after the
+cleanup.
+
 ## 2026-10-21 — the pilots' own suites against the pinned CNA (ADR-002)
 
 `build-probe/` (pinned, baseline enforced and matching) reconfigured with

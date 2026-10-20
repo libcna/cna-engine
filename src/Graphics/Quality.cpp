@@ -233,30 +233,30 @@ namespace CnaEngine::Graphics
                 if (!number || *number <= 0.0f) {
                     invalid();
                 } else if (key == "drawDistance") {
-                    result.intent.drawDistance = *number;
+                    result.intent.drawDistance = number;
                 } else {
-                    result.intent.lodBias = *number;
+                    result.intent.lodBias = number;
                 }
             } else if (key == "shadowMapSize") {
                 const auto number = Parse<int>(value);
                 if (!number || (*number != 0 && !IsPowerOfTwo(*number))) {
                     invalid();
                 } else {
-                    result.intent.shadowMapSize = *number;
+                    result.intent.shadowMapSize = number;
                 }
             } else if (key == "multiSampleCount") {
                 const auto number = Parse<int>(value);
                 if (!number || (*number > 1 && *number != 2 && *number != 4 && *number != 8) || *number < 0) {
                     invalid();
                 } else {
-                    result.intent.multiSampleCount = *number;
+                    result.intent.multiSampleCount = number;
                 }
             } else if (key == "maxTextureSize") {
                 const auto number = Parse<int>(value);
                 if (!number || !IsPowerOfTwo(*number)) {
                     invalid();
                 } else {
-                    result.intent.maxTextureSize = *number;
+                    result.intent.maxTextureSize = number;
                 }
             } else {
                 result.warnings.push_back(where + "unknown setting '" + std::string(key) + "'");

@@ -158,7 +158,7 @@ namespace CnaEngine::Graphics
                 try {
                     device.SetVertexBuffers(vertices);
                     device.setIndicesProperty(const_cast<IndexBuffer*>(indices));
-                } catch (...) {
+                } catch (...) { // NOLINT(bugprone-empty-catch)
                     // Restoring must not throw out of a destructor.
                 }
             }
