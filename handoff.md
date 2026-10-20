@@ -101,13 +101,13 @@ Done (see `plan.md` for per-task results):
 2. MILESTONE-2 remainder: the screenshot tolerances are agreed (2026-10-21);
    the performance budget's reference is this machine in a Release build,
    to be measured when it is idle (`docs/pilots/performance-budgets.md`).
-3. CI: the pinned CNA revision must be pushed (UP-007) before the CI jobs,
-   the upstream lane and the canary can run; ADR-002's consumer checks are
-   otherwise complete.
+3. CI: all three pins are published heads since the move to CNA `688f3f23`
+   (2026-10-21); the CI jobs have yet to run on GitHub. The cna-extended
+   suite still has to be rerun locally against the new pin.
 4. ENG-035: shadows and post-processing only when a pilot needs them (Street
    currently draws neither; see `docs/pilots/street-simulator.md`).
    Reflection probes are supported through the PBR binder's selector.
-5. Pin move (ADR-002 procedure) once a published CNA revision contains
+5. Next pin move (ADR-002 procedure) once a published CNA revision contains
    `5ab1c7729` (UP-004's fix); then cna-extended's owner can lift its two
    skipped tests (EXT-002).
 6. Upstream, for their owners: UP-001 (no CNA package), UP-005 (cna-extended

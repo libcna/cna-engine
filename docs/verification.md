@@ -4,6 +4,17 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 (night) — pin moved to the published CNA `688f3f23`
+
+`~/deps/cna-baseline` checked out at `688f3f23` (clean; `origin/next` on
+GitHub), `cmake/CnaEngineBaseline.cmake` and CI updated. `build-probe/`
+(baseline enforced and matching all three pins) rebuilt in 3 min 49 s, then
+everything:
+
+Result: **208 of 208 passed** in 799 s — engine tests, examples, pilot
+probes, both scene comparisons within the agreed screenshot tolerance, both
+pilots' own suites.
+
 ## 2026-10-21 (night) — full baseline run after reflective materials
 
 `build-probe/`, everything: **208 of 208 passed** in 1,249 s (the machine

@@ -179,7 +179,8 @@ must do the same (or configure `CNA_SHARED_LIBRARY=OFF`); this is recorded in
 ## UP-007 — The pinned CNA revision is not published
 
 - Repository: `libcna/cna` (remote `github.com/libcna/cna`)
-- Status: open (blocks the engine's CI, not local work)
+- Status: worked around — on 2026-10-21 the owner chose to move the engine's
+  pin to the published `688f3f23`; CI can fetch every pin now
 - Found: 2026-10-20, while adding the EXT-003 upstream lane
 
 The engine's baseline CNA revision (`5a44d2c5`, ADR-002) is on the local

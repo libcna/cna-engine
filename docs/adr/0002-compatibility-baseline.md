@@ -46,7 +46,7 @@ throwaway repositories.
 
 | Dependency | Branch | Commit | Committed |
 | --- | --- | --- | --- |
-| CNA | `next` | `5a44d2c507cd5e49eab9ab35570a8a98c4b7a0f3` | 2026-10-19 |
+| CNA | `next` | `688f3f23e79f1f8294f38985b1beda5ecc13862b` | 2026-10-17 |
 | cna-extended | `develop` | `0061e3e17c30b2a3a302bce617e64765883079aa` | 2026-10-14 |
 | Sharp Runtime | `next` | `f2aecfefeac171b331787e5cdc4849507363ef0e` | 2026-10-14 |
 
@@ -56,7 +56,10 @@ cna-extended's pin is the read-only loader fix (EXT-001) and matches
 History: the first pin (`705ea232`, 2026-10-19) was replaced the same day by
 `5a44d2c5` after CNA `next` advanced by five math-conformance commits; the
 engine suite and the cna-extended suite were rerun against the new revision
-(`docs/verification.md`).
+(`docs/verification.md`). On 2026-10-21 the owner chose to move the pin back
+to `688f3f23`, the newest revision published on GitHub (`origin/next`), 22
+commits before `5a44d2c5` on the same line: `5a44d2c5` existed only locally,
+so CI could not fetch it (UP-007). All three pins are now published heads.
 
 ### Updating the pin
 
