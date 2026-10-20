@@ -91,6 +91,7 @@ Options:
 | `CNA_ENGINE_WITH_EXTENDED` | `ON` | build the cna-extended integration |
 | `CNA_ENGINE_WITH_ENHANCED_GRAPHICS` | `ON` | build the CNA-extension (PBR) graphics target |
 | `CNA_ENGINE_PILOT_PROBES` | `ON` | build probes comparing engine code with the pilots (read-only) |
+| `CNA_ENGINE_PILOT_SUITES` | `OFF` | also build and run car-simulator's and street-simulator's own test suites (read-only) against this build's dependencies — ADR-002's consumer checks; slow |
 | `CNA_ENGINE_SANITIZE` | empty | `-fsanitize=` list (e.g. `address,undefined`) for the engine's own targets only; dependencies stay uninstrumented, so a sanitizer tree reuses their objects from ccache |
 | `CNA_ENGINE_BUILD_TESTS` / `_EXAMPLES` | top level | tests and examples |
 | `CNA_ENGINE_ENFORCE_BASELINE` | `OFF` | fail configuration off the pinned revisions |

@@ -220,3 +220,25 @@ pattern).
 
 Engine handling: none needed; the engine estimates from the declared stride.
 
+## UP-009 — car-simulator's map-load budget fails in unoptimized GCC/Clang builds
+
+- Repository: `libcnalab/car-simulator`, `tests/Map/SampleMapTests.cpp`
+  (`SampleMap.LipovaLoadsAndIsFullyConnected`, around line 73)
+- Status: open (test design; the engine excludes it by name in Debug probes)
+- Found: 2026-10-21, running car-simulator's suite against the pinned CNA
+  (ADR-002 consumer check)
+
+The test asserts `loadSeconds < 6.0`, the production loading budget. It
+relaxes the bound for sanitizer builds (30 s) and for MSVC Debug (60 s), but
+not for unoptimized GCC/Clang builds: in the engine's Debug `build-probe/` on a
+loaded machine (load average ~20) the map took 16.0 s, so the test fails
+although every other assertion of it holds and the remaining 320 tests pass.
+The same fixture loads in about 15.6 s in each of the following tests.
+
+Suggestion: relax the bound for any build without `NDEBUG` (or move the budget
+into a Release-only benchmark), so the suite's result does not depend on the
+build type and the machine's load.
+
+Engine handling: `cna_engine.pilot.carsim_suite` excludes exactly this test
+in non-Release configurations (`tests/pilots/CMakeLists.txt`).
+

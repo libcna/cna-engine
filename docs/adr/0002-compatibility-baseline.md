@@ -2,7 +2,8 @@
 
 Date: 2026-10-19
 
-Status: accepted (policy and pin); consumer reruns partially complete — see
+Status: accepted (policy and pin); all consumer reruns done (2026-10-21); CI
+reproduction blocked until the pinned CNA revision is pushed (UP-007) — see
 "Verification status"
 
 Plan item: `ADR-002` in `plan.md`
@@ -77,8 +78,8 @@ build uses at most three parallel jobs in the constrained environment.
 | --- | --- |
 | Engine build + tests at the pin | done from a clean pinned checkout with the baseline enforced: 150/150 (`docs/verification.md`, baseline entry) |
 | cna-extended suite against the pinned CNA | done: 2,368 passed, 2 known skips (UP-004), 1 test defect (UP-005) |
-| street-simulator against the pinned CNA | pending |
-| car-simulator against the pinned CNA | pending |
+| street-simulator against the pinned CNA | done 2026-10-21: its 13 test programs compiled read-only in `build-probe/` (`CNA_ENGINE_PILOT_SUITES=ON`) all pass |
+| car-simulator against the pinned CNA | done 2026-10-21: its suite compiled read-only in `build-probe/`; 320 of 321 tests pass, the remaining one is its production load-time budget, which a Debug build misses (UP-009) |
 
 The two simulators moved from `libcna/cna-street` and
 `libcna/cna-car-simulator` to `libcnalab/street-simulator` and

@@ -144,7 +144,11 @@ Result: policy and pin accepted in `docs/adr/0002-compatibility-baseline.md`;
 `cmake/CnaEngineBaseline.cmake` checks the revisions at configure time
 (`CNA_ENGINE_ENFORCE_BASELINE=ON` for CI; `.github/workflows/ci.yml`). The
 cna-extended suite was rerun against the pin (one new test-defect failure,
-UP-005). Open: full street-simulator and car-simulator suites against the pin.
+UP-005). street-simulator's and car-simulator's own suites were run against the
+pin on 2026-10-21 (`CNA_ENGINE_PILOT_SUITES`): 13/13 and 320/321, the one
+failure a Release-only load budget (UP-009). Open: CI cannot fetch the pinned
+CNA revision until it is pushed (UP-007), so the last acceptance point waits
+for the owner.
 
 ### EXT-001 — Correct read-only asset loading in `cna-extended` `[x]`
 

@@ -4,6 +4,12 @@
 # sources are compiled read-only next to engine code, and tests compare the
 # engine facility with the pilot's own implementation on identical inputs.
 
+# The pilots' own test suites, compiled read-only against this build's CNA:
+# ADR-002's consumer checks for a pinned baseline. Slow (car-simulator's suite
+# alone runs minutes in Debug), so off by default; build-probe/ turns it on.
+option(CNA_ENGINE_PILOT_SUITES
+    "Build and run car-simulator's and street-simulator's own test suites against this build's dependencies" OFF)
+
 set(CNA_ENGINE_CAR_SIMULATOR_DIR "${PROJECT_SOURCE_DIR}/../../libcnalab/car-simulator"
     CACHE PATH "car-simulator checkout used by the pilot probes (read-only)")
 
@@ -76,6 +82,23 @@ if(CNA_ENGINE_CARSIM_SCENE_COMPARISON AND EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR
         COMMAND cna_engine_carsim_scene_comparison "${CMAKE_CURRENT_BINARY_DIR}/carsim_scene_comparison")
     set_tests_properties(cna_engine.pilot.carsim_scene_comparison PROPERTIES LABELS pilot TIMEOUT 3600)
 
+    if(CNA_ENGINE_PILOT_SUITES)
+        file(GLOB_RECURSE _carsim_test_sources CONFIGURE_DEPENDS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/tests/*.cpp")
+        add_executable(cna_engine_pilot_carsim_suite ${_carsim_test_sources})
+        target_link_libraries(cna_engine_pilot_carsim_suite PRIVATE cna_engine_pilot_carsim_full GTest::gtest_main)
+        target_compile_definitions(cna_engine_pilot_carsim_suite PRIVATE
+            CARSIM_TEST_CONTENT_DIR="${CNA_ENGINE_CAR_SIMULATOR_DIR}/content")
+        # SampleMap.LipovaLoadsAndIsFullyConnected asserts car-simulator's
+        # production loading budget (6 s), which an unoptimized GCC/Clang build
+        # cannot meet (upstream-issues.md UP-009); excluded by name there.
+        set(_carsim_filter "")
+        if(NOT CMAKE_BUILD_TYPE MATCHES "Rel")
+            set(_carsim_filter "--gtest_filter=-SampleMap.LipovaLoadsAndIsFullyConnected")
+        endif()
+        add_test(NAME cna_engine.pilot.carsim_suite COMMAND cna_engine_pilot_carsim_suite ${_carsim_filter})
+        set_tests_properties(cna_engine.pilot.carsim_suite PROPERTIES LABELS pilot TIMEOUT 3600)
+    endif()
+
     # car-simulator's vehicle step loop against FixedStepClock.
     add_executable(cna_engine_pilot_carsim_sim_tests CarSimulatorClockTests.cpp)
     target_link_libraries(cna_engine_pilot_carsim_sim_tests PRIVATE
@@ -141,6 +164,18 @@ if(CNA_ENGINE_STREET_SCENE_COMPARISON AND CNA_CNAEXT
     target_link_libraries(cna_engine_pilot_street_core PUBLIC
         CNA::Runtime CNA::GraphicsExt CNA::DevicesExt CNA::Storage CNA::Content CNA::Media CNA::Audio CNA::Input
         CNA::GraphicsCore CNA::Diagnostics CNA::Core CNA::Math CNA::Platform SharpRuntime::Text.Json)
+
+    if(CNA_ENGINE_PILOT_SUITES)
+        # Street's tests are plain executables, one per file.
+        file(GLOB _street_test_sources CONFIGURE_DEPENDS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/tests/*Tests.cpp")
+        foreach(_source IN LISTS _street_test_sources)
+            get_filename_component(_name "${_source}" NAME_WE)
+            add_executable(cna_engine_pilot_street_${_name} "${_source}")
+            target_link_libraries(cna_engine_pilot_street_${_name} PRIVATE cna_engine_pilot_street_core)
+            add_test(NAME cna_engine.pilot.street_suite.${_name} COMMAND cna_engine_pilot_street_${_name})
+            set_tests_properties(cna_engine.pilot.street_suite.${_name} PROPERTIES LABELS pilot TIMEOUT 1800)
+        endforeach()
+    endif()
 
     add_executable(cna_engine_street_scene_comparison StreetSceneComparison.cpp)
     target_link_libraries(cna_engine_street_scene_comparison PRIVATE

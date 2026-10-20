@@ -4,6 +4,20 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 — the pilots' own suites against the pinned CNA (ADR-002)
+
+`build-probe/` (pinned, baseline enforced and matching) reconfigured with
+`-DCNA_ENGINE_PILOT_SUITES=ON`; both pilots' test sources compiled read-only
+(1 min 16 s with 3 jobs).
+
+    ctest --test-dir build-probe --parallel 3 -R "carsim_suite|street_suite"
+
+- street-simulator: **13 of 13** test programs pass.
+- car-simulator: **320 of 321** tests pass in 18 min; the failure is
+  `SampleMap.LipovaLoadsAndIsFullyConnected`'s 6 s production load budget
+  (16.0 s in this Debug build on a loaded machine), excluded by name since
+  (UP-009).
+
 ## 2026-10-21 — Street with traffic
 
 Street comparison with traffic and pedestrians (`build-probe/`, pinned):
