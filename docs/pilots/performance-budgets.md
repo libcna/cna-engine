@@ -1,6 +1,7 @@
 # Performance budgets (proposal for MILESTONE-2 and REL-003)
 
-Status: **proposed, partly enforced, awaiting the owner's agreement.**
+Status: **reference chosen by the owner (2026-10-20); the scaling checks are
+enforced, the frame-time budget waits for its idle-machine measurement.**
 MILESTONE-2 compares CPU time with the original implementations and REL-003
 wants performance checks with budgets. What the engine can enforce on any
 machine is enforced already; the rest needs a reference machine the owner
@@ -38,6 +39,22 @@ but not enforced yet:
 - **Rationale:** the engine and the pilots issue the same draws (identical
   draw-call counts), so the difference is the engine's own CPU work — queue,
   culling, binder — which should stay a small fraction of a frame.
+
+## Release measurements from the pilots' adoption (2026-10-20)
+
+Not the budget measurement (the machine was busy), but the first Release
+numbers with the pilots' own renderers on the engine, each before and after
+the renderer step, alternating runs on the same machine
+(`docs/pilots/migration.md`):
+
+| Pilot | Measure | Before | After | After / before |
+| --- | --- | --- | --- | --- |
+| car-simulator | world pass, best of 3, 320 × 180, load ~8 | 1,313 ms | 1,358 ms | 1.034 |
+| street-simulator | CPU frame, `baseline`, best of 2, load ~22 | 2,068 ms | 1,924 ms | 0.93 |
+| street-simulator | CPU frame, `crowd`, best of 2, load ~22 | 1,547 ms | 1,486 ms | 0.96 |
+
+All are inside the 1.15 × budget; the software renderer's rasterizer
+dominates these frames, so they bound the engine's overhead only loosely.
 
 ## Decision (2026-10-20)
 
