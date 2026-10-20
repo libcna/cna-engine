@@ -1,10 +1,12 @@
 # Migrating the pilots to cna-engine
 
-Status: **not started.** Adoption (PILOT-001, PILOT-002) changes the pilots,
-which needs the owner's permission. This document is the migration plan the
-read-only probes support, so the work can start as soon as it is allowed. It
-covers PILOT-003's requirement that migration notes state reversibility and
-known differences.
+Status: **car-simulator adopted on a branch; street-simulator not started.**
+The owner allowed adoption on 2026-10-20 on new branches of both pilots (one
+revertible commit per step, nothing pushed). car-simulator's branch
+`engine-adoption` carries every step below except the camera (see
+"car-simulator adoption"). This document is the migration plan the read-only
+probes support; it covers PILOT-003's requirement that migration notes state
+reversibility and known differences.
 
 ## Principles
 
@@ -30,7 +32,7 @@ known differences.
 | --- | --- | --- | --- | --- |
 | 1 | `src/Input/InputMapper.cpp` (tables, overrides, pad snapshot) | `Input::ActionMap`, `InputNames`, `BindingCapture` | `CarSimulatorControlsTests`: `Held` and `DriverControls` identical over 6,000 random frames | `Pressed` is action-level (a second key does not re-press a held action); analog-derived holds report presses; display names stay in the game; binding files use the engine's text format (keep the pilot's reader for one release to migrate saved overrides) |
 | 2 | step loop in `Sim/Vehicle::Update` | `FixedStepClock` | `CarSimulatorClockProbe` | double instead of float accumulation: with jittery frame times 12 of 36,000 frames take a step one frame earlier or later; fixed rates and `--lockstep` captures identical |
-| 3 | `src/Render/Camera.cpp` (camera state; chase/cockpit policy stays) | `Graphics::Camera` | `CarSimulatorRenderTests` (projection < 1e-6, view to float precision) | none observed |
+| 3 | `src/Render/Camera.cpp` (camera state; chase/cockpit policy stays) | `Graphics::Camera` | `CarSimulatorRenderTests` (projection < 1e-6, view to float precision) | not taken in the adoption: the engine camera's view differs by float rounding, which would move every capture; car-simulator keeps `CameraPose` and hands its matrices to the engine (`Camera::SetMatrices`) |
 | 4 | `src/Render/MeshData.cpp`, `GpuMesh.cpp` | `MeshData`, `MeshBuilder`, `VertexLayout`, `GpuMesh` | pixel-identical uploads | signed-volume sign convention; the conversion report names dropped attributes |
 | 5 | `src/Render/Screenshot.cpp` | `ScreenCapture`, `ScreenshotQueue` | identical PNG pixels | failures are values, not stderr |
 | 6 | texture caches (e.g. `TrafficRenderer::PlateTexture`) | `AssetRegistry` (`SetNormalizeKeys(false)`) | `CarSimulatorAssetsTests` | none observed |
@@ -39,6 +41,41 @@ known differences.
 
 Stays in car-simulator: vehicle physics, traffic, map loading, procedural
 content generators, the lighting rig's values, HUD and instrument cluster.
+
+### car-simulator adoption (branch `engine-adoption`)
+
+Worktree `libcnalab/car-simulator-engine`, branched from car-simulator's
+`main` at `cd6d948`; not pushed. Each commit was checked with car-simulator's
+own suite (7/7 CTest programs, Release, software renderer), its unmodified
+XNA-only checker (with the ADR-001 allowance added in the first commit) and a
+deterministic headless capture against the commit before it (`--frames 3
+--lockstep --time 10:30 --time-scale 0 --weather clear --no-save
+--no-audio`).
+
+| Commit | Step | Result |
+| --- | --- | --- |
+| `f816606` | build: `add_subdirectory` of cna-engine (strict options), CNA's static modules (UP-006), checker allowance | suite and checker green |
+| `06444c5` | 1: `InputMapper` on `ActionMap` (held and pressed actions, pad snapshot) | suite green |
+| `6ee2d10` | 2: `Vehicle` physics steps from `FixedStepClock` | suite green; `--lockstep` captures identical |
+| `a90c3c6` | 5: screenshots through `CaptureBackBuffer` | identical PNG pixels |
+| `8a9818c` | 6: plate textures in an `AssetRegistry` | capture pixel-identical |
+| `6a927fb` | 7: quality tiers as a `QualitySchema` | capture pixel-identical |
+| `c9f9937` | 4 (partial): car-simulator's `GpuMesh` exposes its buffers as a borrowed engine `GpuMesh` | additive |
+| `dc83bb4` | 8: the world passes (terrain with LOD, roads and markings, objects, trees, signs, headlight fill, lamp light) as render items through `ForwardRenderer` and the stock binder; rain and snow stay game passes drawn between the engine's segments | captures by day, at night with headlights, in rain, snow and fog, from the cockpit with mirrors and at the low tier: largest difference 2/255, no pixel differs visibly (> 3/255) — inside the agreed tolerance |
+
+CPU time of the world pass (car-simulator's `--benchmark`, Release, software
+renderer, 320 × 180, day, best of three alternating runs at load average ~8):
+1,313 ms before `dc83bb4`, 1,358 ms after (+3.4 %, inside the proposed 1.15 ×
+budget of `performance-budgets.md`; the software rasterizer dominates). Draw
+calls 1,285 / 1,286 and visible terrain chunks 203 / 204: the engine's plane
+test keeps one chunk at a frustum corner that XNA's GJK `Intersects` drops.
+
+Step 4 is partial on purpose: car-simulator's mesh data and upload code stay
+(its vertex layouts and shared index buffers are the game's), and the engine
+draws from the same buffers. The world renderer's frame is several engine
+segments rather than one: the weather layers lie on the terrain, the roads
+and the roofs with a depth bias, so each must be drawn after its surface and
+before the next one, as before.
 
 ## street-simulator (enhanced)
 

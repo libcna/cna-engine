@@ -666,9 +666,15 @@ and to 0.1/255 in the image; equivalence probes against car-simulator's own
 code (controls, chase camera, meshes and upload, screenshots, plate cache,
 quality tiers) and
 its unmodified strict checker accepting the engine's strict surface with the
-ADR-001 allowance — `docs/pilots/car-simulator.md`. Open: an integration
-branch of car-simulator (owner's permission needed); its display smoke tests
-and full suite in an environment with a suitable renderer budget.
+ADR-001 allowance — `docs/pilots/car-simulator.md`. Adoption (allowed by
+the owner on 2026-10-20): car-simulator's branch `engine-adoption` runs on
+the engine — input actions, fixed-step physics, screenshots, the plate
+cache, quality tiers and its whole world renderer (terrain, roads, objects,
+trees, signs, headlight fill, lamp light through `ForwardRenderer`); its
+suite (7/7) and strict checker stay green and captures in seven scenarios
+stay inside the agreed tolerance (largest difference 2/255)
+(`docs/pilots/migration.md`, "car-simulator adoption"). Open: its display
+smoke tests on a GPU renderer.
 
 ### PILOT-003 — Stabilize only proven APIs `[~]`
 

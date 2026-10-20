@@ -65,6 +65,12 @@ rear-view mirror — additive lamp light, the headlight fill as nested
 renderers and the mirrored camera included; 0.05/255 by day). Both
 comparisons enforce the agreed screenshot tolerance. See `docs/pilots/`.
 
+car-simulator itself now runs on the engine on its branch `engine-adoption`
+(worktree `libcnalab/car-simulator-engine`, build `build/software` there):
+its world renderer draws through `ForwardRenderer` with car-simulator's own
+matrices (`Camera::SetMatrices`), its suite and checker are green and its
+captures stay inside the tolerance.
+
 The shared `../cna` worktree is changed by other agents all the time (on
 2026-10-20 e.g. XNA-exact `BoundingFrustum` containment and GJK
 `Intersects`, CNA `5ab1c7729`, which also resolves UP-004); `build/` results
@@ -95,9 +101,12 @@ Done (see `plan.md` for per-task results):
 
 ## Open, in priority order
 
-1. Pilot adoption (PILOT-001/002) — needs the owner's permission to modify the
-   pilots; until then, probes are the evidence. The plan, step by step with
-   known differences and reversal: `docs/pilots/migration.md`.
+1. Pilot adoption (PILOT-001/002), allowed on new branches. car-simulator:
+   done on branch `engine-adoption` in the worktree
+   `libcnalab/car-simulator-engine` (eight commits; the camera stays the
+   game's, see `docs/pilots/migration.md`). street-simulator: not started —
+   a new worktree and branch, CNA's static modules first (UP-006), then the
+   steps of `docs/pilots/migration.md` with `SceneRenderer` last.
 2. MILESTONE-2 remainder: the screenshot tolerances are agreed (2026-10-20);
    the performance budget's reference is this machine in a Release build,
    to be measured when it is idle (`docs/pilots/performance-budgets.md`).
