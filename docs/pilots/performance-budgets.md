@@ -39,12 +39,10 @@ but not enforced yet:
   draw-call counts), so the difference is the engine's own CPU work — queue,
   culling, binder — which should stay a small fraction of a frame.
 
-## Decision needed
+## Decision (2026-10-21)
 
-1. The reference machine and build (Release on which host, which renderer).
-2. Whether 1.15 × is the right budget, and whether absolute frame-time
-   budgets per view are wanted as well.
-
-Once decided, the comparisons can time best-of-five and fail on the budget
-the same way they now fail on the screenshot tolerance
-(`docs/pilots/screenshot-tolerances.md`).
+The owner chose **this development machine, a Release build, measured later
+when the machine is idle** as the reference. Until that measurement exists the
+budget (1.15 ×, best of five) is recorded but not enforced; when it is taken,
+the comparisons time best-of-five and fail on the budget the same way they
+fail on the screenshot tolerance (`docs/pilots/screenshot-tolerances.md`).

@@ -3,12 +3,10 @@
 // Image comparison for the pilot scene comparisons, and the screenshot
 // tolerance they enforce.
 //
-// The tolerance is a PROPOSAL for MILESTONE-2 ("screenshot comparisons have
-// agreed tolerances"), derived from the measured differences in
-// docs/pilots/screenshot-tolerances.md; it becomes the agreed tolerance when
-// the repository owner accepts it. Until then it guards against regressions:
-// a comparison whose image leaves the tolerance fails like one whose
-// visibility differs.
+// MILESTONE-2's agreed screenshot tolerance ("screenshot comparisons have
+// agreed tolerances"; accepted by the owner on 2026-10-21), derived from the
+// measured differences in docs/pilots/screenshot-tolerances.md. A comparison
+// whose image leaves it fails like one whose visibility differs.
 #pragma once
 
 #include "Microsoft/Xna/Framework/Color.hpp"
@@ -37,7 +35,7 @@ namespace CnaEngine::Pilot
     /// A channel difference above this many 1/255 steps counts as visible.
     inline constexpr int VisibleStep = 3;
 
-    /// Proposed screenshot tolerance (see the header comment).
+    /// The agreed screenshot tolerance (see the header comment).
     struct ImageTolerance
     {
         double maxMean = 0.5;

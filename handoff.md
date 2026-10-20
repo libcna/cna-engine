@@ -17,7 +17,10 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
 ## Owner constraints (binding)
 
 - **Modify only this repository.** Do not edit `cna`, `sharp-runtime`,
-  `cna-extended`, the simulators or any other app. Defects found elsewhere are
+  `cna-extended`, the simulators or any other app — with one exception granted
+  on 2026-10-21: car-simulator and street-simulator may be changed **on new
+  branches** to adopt the engine (one revertible commit per step of
+  `docs/pilots/migration.md`, nothing pushed). Defects found elsewhere are
   written to `upstream-issues.md` (UP-001 … UP-010 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
 - Commit regularly on branch `develop`; do not push unless asked.
@@ -95,11 +98,9 @@ Done (see `plan.md` for per-task results):
 1. Pilot adoption (PILOT-001/002) — needs the owner's permission to modify the
    pilots; until then, probes are the evidence. The plan, step by step with
    known differences and reversal: `docs/pilots/migration.md`.
-2. MILESTONE-2 remainder: the owner's agreement to the proposed screenshot
-   tolerances (`docs/pilots/screenshot-tolerances.md`, already enforced by the
-   scene comparisons) and to performance budgets
-   (`docs/pilots/performance-budgets.md`: needs a reference machine; the
-   scaling checks guard the algorithms meanwhile).
+2. MILESTONE-2 remainder: the screenshot tolerances are agreed (2026-10-21);
+   the performance budget's reference is this machine in a Release build,
+   to be measured when it is idle (`docs/pilots/performance-budgets.md`).
 3. CI: the pinned CNA revision must be pushed (UP-007) before the CI jobs,
    the upstream lane and the canary can run; ADR-002's consumer checks are
    otherwise complete.

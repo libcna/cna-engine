@@ -1,11 +1,10 @@
-# Screenshot tolerances (proposal for MILESTONE-2)
+# Screenshot tolerances (MILESTONE-2)
 
-Status: **proposed, enforced, awaiting the owner's agreement.** MILESTONE-2
-asks for "screenshot comparisons with agreed tolerances". The numbers below
-are the engine's proposal. The scene comparisons already enforce them, so that
-a rendering regression fails a test instead of only changing a printed number.
-If the owner prefers other limits, `tests/pilots/ImageTolerance.hpp` is the one
-place to change.
+Status: **agreed** (the owner accepted the proposal unchanged on 2026-10-21).
+MILESTONE-2 asks for "screenshot comparisons with agreed tolerances"; these
+are they. The scene comparisons enforce them, so a rendering regression fails
+a test instead of only changing a printed number.
+`tests/pilots/ImageTolerance.hpp` is the one place that defines them.
 
 ## The rule
 
@@ -53,6 +52,6 @@ far.
 - Performance: CPU frame times are reported next to the images but have no
   budget yet (see `docs/verification-matrix.md`, "Performance").
 
-## Decision needed
+## Decision
 
-Accept the two limits as MILESTONE-2's agreed tolerances, or name others.
+Accepted as proposed on 2026-10-21.
