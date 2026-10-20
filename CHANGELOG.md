@@ -51,6 +51,11 @@ became pilot-validated (their changes of that day are listed below).
   replaces `PbrSettings::environment`; rebinding only when it changes).
   Reason: Street lights items from their nearest reflection probe.
 
+- `Input/InputNames.hpp`, additive: `KeyDisplayName`, `ButtonDisplayName`
+  and `DisplayName(Binding / AxisBinding)` — English labels for settings
+  screens and prompts, identical to car-simulator's own labels where it has
+  them. Reason: rebinding screens need text for people, not identifiers.
+
 ### Other API additions (experimental headers)
 
 - `RenderItem::box`, `cullDistance`, `instances`; `VisibilitySettings::minDistance`;

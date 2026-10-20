@@ -40,4 +40,15 @@ namespace CnaEngine::Input
     /// "MouseAxis:DeltaX:0.01".
     [[nodiscard]] std::string FormatAxisBinding(const AxisBinding& binding);
     [[nodiscard]] std::optional<AxisBinding> ParseAxisBinding(std::string_view text);
+
+    /// English text for showing an input to the player (settings screens,
+    /// prompts): "Left Shift", "Page Up", ",", "F5", "Left mouse button",
+    /// "LB", "D-pad up", "Left stick right", "A / D". Not an identifier and
+    /// not stable across versions: binding files use FormatBinding(), and a
+    /// localized game substitutes its own table. Keys without a label of
+    /// their own show their KeyName ("CapsLock", "NumPad5").
+    [[nodiscard]] std::string KeyDisplayName(Microsoft::Xna::Framework::Input::Keys key);
+    [[nodiscard]] std::string ButtonDisplayName(Microsoft::Xna::Framework::Input::Buttons button);
+    [[nodiscard]] std::string DisplayName(const Binding& binding);
+    [[nodiscard]] std::string DisplayName(const AxisBinding& binding);
 }

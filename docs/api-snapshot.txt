@@ -3,7 +3,7 @@
 # change, and record the change in CHANGELOG.md.
 CnaEngine/Input/ActionMap.hpp 356c889b1a76770f
 CnaEngine/Input/Bindings.hpp d6970dc4cf617600
-CnaEngine/Input/InputNames.hpp a8d9cca4b0f12d84
+CnaEngine/Input/InputNames.hpp 96d0c4ca932daa3b
 CnaEngine/Input/InputSnapshot.hpp 016ec2faa05551dd
 CnaEngine/Graphics/Camera.hpp a317ca879841682b
 CnaEngine/Graphics/CameraControllers.hpp 9a1d429ceb782516

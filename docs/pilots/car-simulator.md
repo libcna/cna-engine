@@ -53,8 +53,11 @@ toggles from a second key while the first is held.
 - Steering-wheel profile (`wheel == true`: linear steering). A game expresses
   it by swapping the stick binding's exponent to 1 when it detects a wheel;
   device-type detection stays in the game.
-- Key and button display names (the pilot's are localized-style strings such
-  as "Left Shift"); the engine provides stable identifiers only.
+- Display names are covered since 2026-10-20: `KeyDisplayName` and
+  `ButtonDisplayName` return the pilot's labels for every key and button it
+  labels (probe `DisplayNamesMatchTheGamesLabels`); the pilot's text doubles
+  as its binding-file format, the engine keeps the two apart
+  (`FormatBinding` for files).
 
 ## Camera data (ENG-021) — validated
 

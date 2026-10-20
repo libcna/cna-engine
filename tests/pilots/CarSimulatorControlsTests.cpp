@@ -13,6 +13,7 @@
 //  - Analog steering/pedals map to engine axes with largest-magnitude
 //    combination and a 1.6 response exponent and match DriverControls exactly.
 #include "CnaEngine/Input/ActionMap.hpp"
+#include "CnaEngine/Input/InputNames.hpp"
 
 #include "CarSim/Input/InputMapper.hpp"
 
@@ -29,6 +30,7 @@
 #include <cmath>
 #include <cstdint>
 #include <random>
+#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -270,6 +272,31 @@ namespace CnaEngine::Pilot
             ASSERT_FLOAT_EQ(engine.map.Axis(engine.throttle), controls.throttle) << "frame " << frame;
             ASSERT_FLOAT_EQ(engine.map.Axis(engine.brake), controls.brake) << "frame " << frame;
             ASSERT_FLOAT_EQ(engine.map.Axis(engine.steering), controls.steering) << "frame " << frame;
+        }
+    }
+
+    TEST(CarSimulatorControlsTests, DisplayNamesMatchTheGamesLabels)
+    {
+        // Every key and button the pilot labels itself gets the same label
+        // from the engine (its fallback "key <code>" is not a label).
+        using Microsoft::Xna::Framework::Input::Buttons;
+        using Microsoft::Xna::Framework::Input::Keys;
+        int keys = 0;
+        for (int code = 1; code < 256; ++code) {
+            const auto key = static_cast<Keys>(code);
+            const std::string pilot = InputMapper::KeyName(key);
+            if (pilot.rfind("key ", 0) == 0) {
+                continue;
+            }
+            EXPECT_EQ(Input::KeyDisplayName(key), pilot) << "key code " << code;
+            ++keys;
+        }
+        EXPECT_GE(keys, 60) << "letters, digits, F-keys and the named keys";
+        for (const Buttons button : {Buttons::DPadUp, Buttons::DPadDown, Buttons::DPadLeft, Buttons::DPadRight,
+                                     Buttons::Start, Buttons::Back, Buttons::LeftStick, Buttons::RightStick,
+                                     Buttons::LeftShoulder, Buttons::RightShoulder, Buttons::A, Buttons::B,
+                                     Buttons::X, Buttons::Y}) {
+            EXPECT_EQ(Input::ButtonDisplayName(button), InputMapper::ButtonName(button));
         }
     }
 }

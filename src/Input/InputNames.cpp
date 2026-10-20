@@ -414,4 +414,143 @@ namespace CnaEngine::Input
         }
         return std::nullopt;
     }
+
+    std::string KeyDisplayName(const Keys key)
+    {
+        switch (key) {
+            case Keys::Space: return "Space";
+            case Keys::LeftShift: return "Left Shift";
+            case Keys::RightShift: return "Right Shift";
+            case Keys::LeftControl: return "Left Ctrl";
+            case Keys::RightControl: return "Right Ctrl";
+            case Keys::LeftAlt: return "Left Alt";
+            case Keys::RightAlt: return "Right Alt";
+            case Keys::OemComma: return ",";
+            case Keys::OemPeriod: return ".";
+            case Keys::OemMinus: return "-";
+            case Keys::OemPlus: return "=";
+            case Keys::OemSemicolon: return ";";
+            case Keys::OemQuotes: return "'";
+            case Keys::OemOpenBrackets: return "[";
+            case Keys::OemCloseBrackets: return "]";
+            case Keys::OemQuestion: return "/";
+            case Keys::OemPipe: return "\\";
+            case Keys::OemTilde: return "`";
+            case Keys::Escape: return "Esc";
+            case Keys::Back: return "Backspace";
+            case Keys::PageUp: return "Page Up";
+            case Keys::PageDown: return "Page Down";
+            case Keys::CapsLock: return "Caps Lock";
+            case Keys::PrintScreen: return "Print Screen";
+            default: break;
+        }
+        const int code = static_cast<int>(key);
+        if (code >= static_cast<int>(Keys::D0) && code <= static_cast<int>(Keys::D9)) {
+            return std::string(1, static_cast<char>('0' + (code - static_cast<int>(Keys::D0))));
+        }
+        if (code >= static_cast<int>(Keys::NumPad0) && code <= static_cast<int>(Keys::NumPad9)) {
+            return "Num " + std::to_string(code - static_cast<int>(Keys::NumPad0));
+        }
+        // Letters, F-keys, arrows and the rest read well as their names.
+        const std::string_view name = KeyName(key);
+        return name.empty() ? "Key " + std::to_string(code) : std::string(name);
+    }
+
+    std::string ButtonDisplayName(const Buttons button)
+    {
+        switch (button) {
+            case Buttons::DPadUp: return "D-pad up";
+            case Buttons::DPadDown: return "D-pad down";
+            case Buttons::DPadLeft: return "D-pad left";
+            case Buttons::DPadRight: return "D-pad right";
+            case Buttons::Start: return "Start";
+            case Buttons::Back: return "Back";
+            case Buttons::LeftStick: return "Left stick click";
+            case Buttons::RightStick: return "Right stick click";
+            case Buttons::LeftShoulder: return "LB";
+            case Buttons::RightShoulder: return "RB";
+            case Buttons::LeftTrigger: return "LT";
+            case Buttons::RightTrigger: return "RT";
+            case Buttons::BigButton: return "Guide";
+            case Buttons::A: return "A";
+            case Buttons::B: return "B";
+            case Buttons::X: return "X";
+            case Buttons::Y: return "Y";
+            case Buttons::LeftThumbstickUp: return "Left stick up";
+            case Buttons::LeftThumbstickDown: return "Left stick down";
+            case Buttons::LeftThumbstickLeft: return "Left stick left";
+            case Buttons::LeftThumbstickRight: return "Left stick right";
+            case Buttons::RightThumbstickUp: return "Right stick up";
+            case Buttons::RightThumbstickDown: return "Right stick down";
+            case Buttons::RightThumbstickLeft: return "Right stick left";
+            case Buttons::RightThumbstickRight: return "Right stick right";
+            default: break;
+        }
+        const std::string_view name = ButtonName(button);
+        return name.empty() ? "Button" : std::string(name);
+    }
+
+    namespace
+    {
+        std::string AxisDisplayName(const GamePadAxis axis)
+        {
+            switch (axis) {
+                case GamePadAxis::LeftStickX: return "Left stick X";
+                case GamePadAxis::LeftStickY: return "Left stick Y";
+                case GamePadAxis::RightStickX: return "Right stick X";
+                case GamePadAxis::RightStickY: return "Right stick Y";
+                case GamePadAxis::LeftTrigger: return "LT";
+                case GamePadAxis::RightTrigger: return "RT";
+            }
+            return "Axis";
+        }
+    }
+
+    std::string DisplayName(const Binding& binding)
+    {
+        switch (binding.kind) {
+            case Binding::Kind::Key: return KeyDisplayName(static_cast<Keys>(binding.code));
+            case Binding::Kind::GamePadButton: return ButtonDisplayName(static_cast<Buttons>(binding.code));
+            case Binding::Kind::MouseButton:
+                switch (static_cast<MouseButton>(binding.code)) {
+                    case MouseButton::Left: return "Left mouse button";
+                    case MouseButton::Right: return "Right mouse button";
+                    case MouseButton::Middle: return "Middle mouse button";
+                    case MouseButton::XButton1: return "Mouse button 4";
+                    case MouseButton::XButton2: return "Mouse button 5";
+                }
+                return "Mouse button";
+            case Binding::Kind::GamePadAxis: {
+                const auto axis = static_cast<GamePadAxis>(binding.code);
+                const bool positive = binding.direction >= 0;
+                switch (axis) {
+                    case GamePadAxis::LeftStickX: return positive ? "Left stick right" : "Left stick left";
+                    case GamePadAxis::LeftStickY: return positive ? "Left stick up" : "Left stick down";
+                    case GamePadAxis::RightStickX: return positive ? "Right stick right" : "Right stick left";
+                    case GamePadAxis::RightStickY: return positive ? "Right stick up" : "Right stick down";
+                    case GamePadAxis::LeftTrigger:
+                    case GamePadAxis::RightTrigger: return AxisDisplayName(axis);
+                }
+                return AxisDisplayName(axis);
+            }
+        }
+        return "?";
+    }
+
+    std::string DisplayName(const AxisBinding& binding)
+    {
+        switch (binding.kind) {
+            case AxisBinding::Kind::KeyPair:
+                return KeyDisplayName(binding.negative) + " / " + KeyDisplayName(binding.positive);
+            case AxisBinding::Kind::GamePad: return AxisDisplayName(binding.padAxis);
+            case AxisBinding::Kind::Mouse:
+                switch (binding.mouseAxis) {
+                    case MouseAxis::DeltaX: return "Mouse X";
+                    case MouseAxis::DeltaY: return "Mouse Y";
+                    case MouseAxis::Wheel: return "Mouse wheel";
+                }
+                return "Mouse";
+        }
+        return "?";
+    }
 }
