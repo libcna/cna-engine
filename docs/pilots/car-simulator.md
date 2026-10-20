@@ -237,6 +237,19 @@ rig), `Material::secondaryTexture` (`DualTextureEffect` terrain),
 `Material::discardBelowCutoff` for the headlit cards, and
 `Camera::SetMirrored` for the mirrors.
 
+## Weather passes stay in the game
+
+car-simulator's rain and snow passes are not taken over, deliberately. The wet
+sheen draws the road again with a black surface whose *fog colour* is the sky
+reflection, varied per surface type — fog used as a colour ramp, one fog
+colour per batch; the lying snow blends a premultiplying `BasicEffect` with
+`NonPremultiplied` (alpha counted twice, a softer overlay chosen by eye).
+Both are art-directed uses of XNA state rather than material descriptions; in
+the engine they are custom passes that draw with CNA directly (the escape
+hatch the Street sky already uses), not new material fields.
+
 ## Still open for this pilot
+
 - The strict checker allowance (ADR-001) applied in an integration branch of
-  the pilot — requires the owner's permission to touch car-simulator.
+  the pilot — requires the owner's permission to touch car-simulator
+  (`docs/pilots/migration.md`).
