@@ -35,9 +35,11 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
 | `build-consumer/` | installed-package consumer probes (`tools/run_consumer_probes.sh`) |
 | `build-asan/` | `CNA_ENGINE_SANITIZE=address,undefined`, pilot probes off, shared CNA worktree; engine targets instrumented only |
 
-`~/deps/cna-baseline` is a local clone of CNA at the pin; move it with
-`git -C ~/deps/cna-baseline fetch && git -C ~/deps/cna-baseline checkout <rev>`
-when the pin changes (ADR-002 "Local reproduction").
+`~/deps/cna-baseline` and `~/deps/sharp-runtime-baseline` are local clones of
+CNA and Sharp Runtime at the pins (`build-probe/` uses both; cna-extended's
+shared worktree is still clean at its pin); move them with
+`git -C <clone> fetch && git -C <clone> checkout <rev>` when a pin changes
+(ADR-002 "Local reproduction").
 
 ## State
 
@@ -87,9 +89,10 @@ Done (see `plan.md` for per-task results):
 1. Pilot adoption (PILOT-001/002) — needs the owner's permission to modify the
    pilots; until then, probes are the evidence. The plan, step by step with
    known differences and reversal: `docs/pilots/migration.md`.
-2. MILESTONE-2 remainder: screenshot tolerances and performance budgets must
-   be agreed with the owner (the scene comparisons give the measured
-   differences to start from; the scaling checks guard the algorithms).
+2. MILESTONE-2 remainder: the owner's agreement to the proposed screenshot
+   tolerances (`docs/pilots/screenshot-tolerances.md`, already enforced by the
+   scene comparisons) and to performance budgets (the scaling checks guard
+   the algorithms meanwhile).
 3. CI: the pinned CNA revision must be pushed (UP-007) before the CI jobs,
    the upstream lane and the canary can run; ADR-002's consumer checks are
    otherwise complete.

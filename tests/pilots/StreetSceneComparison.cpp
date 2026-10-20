@@ -10,13 +10,14 @@
 // explicit-instantiation access idiom, because Street offers no accessor and
 // may not be changed from this repository.
 //
-// Two views: Street's first viewpoint, and a close-up of a pedestrian (the
-// skinned path). For each, a report on stdout (visible items, instances and
-// figures, draw calls, CPU milliseconds, image difference, the engine's
-// diagnostics) and both images as PNG files. The program fails when the
-// engine's visibility decisions differ from Street's: the rules are the same
-// and must give the same sets. The image difference is reported, not
-// asserted (screenshot tolerances are for the owner to agree).
+// Three views: Street's first viewpoint, a walk driven by engine input, and a
+// close-up of a pedestrian (the skinned path). For each, a report on stdout
+// (visible items, instances and figures, draw calls, CPU milliseconds, image
+// difference, the engine's diagnostics) and both images as PNG files; then
+// GPU resource estimates. The program fails when the engine's visibility
+// decisions differ from Street's (the rules are the same and must give the
+// same sets) or when an image leaves the proposed screenshot tolerance
+// (ImageTolerance.hpp, docs/pilots/screenshot-tolerances.md).
 //
 // Usage: cna_engine_street_scene_comparison <output-directory> [seed] [probes]
 // ("probes" bakes Street's reflection probes and lights items from them, as
@@ -34,6 +35,8 @@
 #include "CnaEngine/Graphics/Visibility.hpp"
 #include "CnaEngine/Input/ActionMap.hpp"
 #include "CnaEngine/Input/InputSnapshot.hpp"
+
+#include "ImageTolerance.hpp"
 
 #include "CnaStreet/Assets/ModelLibrary.hpp"
 #include "CnaStreet/Render/Camera.hpp"
@@ -507,20 +510,12 @@ int main(int argc, char** argv)
             }
 
             // --- Images and report. ---------------------------------------
-            double difference = 0.0;
-            int largest = 0;
-            std::size_t differing = 0;
+            const Pilot::ImageDifference image = Pilot::Compare(streetPixels, enginePixels);
             std::size_t differingOnFigures = 0;
             for (std::size_t i = 0; i < streetPixels.size(); ++i) {
-                const int r = std::abs(streetPixels[i].getRProperty() - enginePixels[i].getRProperty());
-                const int g = std::abs(streetPixels[i].getGProperty() - enginePixels[i].getGProperty());
-                const int b = std::abs(streetPixels[i].getBProperty() - enginePixels[i].getBProperty());
-                difference += r + g + b;
-                largest = std::max({largest, r, g, b});
-                differing += r + g + b > 0 ? 1u : 0u;
-                differingOnFigures += r + g + b > 0 && figureMask[i] ? 1u : 0u;
+                differingOnFigures += figureMask[i] && streetPixels[i] != enginePixels[i] ? 1u : 0u;
             }
-            difference /= static_cast<double>(streetPixels.size() * 3);
+            const bool withinTolerance = Pilot::Within(image);
             const std::string prefix = name.empty() ? "" : name + "-";
             const auto streetPng =
                 Graphics::WritePng(device, streetPixels, Width, Height, (output / (prefix + "street.png")).string());
@@ -543,8 +538,10 @@ int main(int argc, char** argv)
                         streetStats.instancedDrawCalls, static_cast<unsigned long long>(engineStats.drawCalls));
             std::printf("cpu frame:         street %.1f ms, engine %.1f ms (software renderer, Debug)\n", streetMs,
                         engineMs);
-            std::printf("image difference:  %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ\n",
-                        difference, largest, differing, streetPixels.size());
+            std::printf("image difference:  %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ,"
+                        " %zu visibly (> %d / 255) — %s the proposed tolerance\n",
+                        image.mean, image.largest, image.differing, image.pixels, image.visible, Pilot::VisibleStep,
+                        withinTolerance ? "within" : "OUTSIDE");
             // Culling and LOD counts through the engine's diagnostics (ENG-033).
             Graphics::DiagnosticsSources itemSources;
             itemSources.render = &engineStats;
@@ -579,7 +576,10 @@ int main(int argc, char** argv)
             if (!sameVisibility) {
                 std::fprintf(stderr, "%s: visibility differs from Street's\n", name.c_str());
             }
-            return sameVisibility && streetPng.success && enginePng.success;
+            if (!withinTolerance) {
+                std::fprintf(stderr, "%s: image outside the proposed tolerance\n", name.c_str());
+            }
+            return sameVisibility && withinTolerance && streetPng.success && enginePng.success;
         };
 
         const auto& viewpoint = viewpoints.front();

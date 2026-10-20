@@ -616,8 +616,11 @@ figures), identical draw calls (1,284, instanced groups as instanced render
 items), CPU frame time equal within noise. With Street's lighting carried by
 the engine binder and Street's sky drawn as a custom pass (the direct-CNA
 escape hatch), the images are practically identical: mean difference
-0.01/255, 68 of 129,600 pixels differ (`docs/pilots/street-simulator.md`). Open: agreed screenshot tolerances with
-the owner; adoption inside street-simulator (needs permission). Engine input
+0.01/255, 68 of 129,600 pixels differ (`docs/pilots/street-simulator.md`).
+Proposed screenshot tolerances (mean ≤ 0.5/255, ≤ 1 % of pixels visibly
+different) are enforced by both scene comparisons since 2026-10-21
+(`docs/pilots/screenshot-tolerances.md`). Open: the owner's agreement to
+those tolerances; adoption inside street-simulator (needs permission). Engine input
 drives the slice's camera since 2026-10-20 (a third view reached by an
 `ActionMap` and a `FlyCameraController`: visibility and draw calls identical,
 0.20/255); Street's own asset libraries stay (the engine's `AssetRegistry` is

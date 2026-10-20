@@ -9,11 +9,13 @@
 // lists are read with the explicit-instantiation access idiom (the batch types
 // are private too, so the exposing templates take `auto` member pointers).
 //
-// Compared: terrain chunks, road and marking batches, static object batches
-// and tree batches — the world geometry. Not compared: sky, signs, lamp
-// glows, vehicles and pedestrians, which WorldRenderer draws with its own
-// special-purpose passes. The program fails when the engine's visibility
-// decisions differ from car-simulator's.
+// Compared, by day and at night: terrain chunks, road and marking batches,
+// static object batches, tree and sign batches, and the street lamps' light —
+// every pass WorldRenderer draws at these views. Not compared: vehicles,
+// pedestrians, rain, snow, mirrors and headlights, which are other renderers
+// or other conditions. The program fails when the engine's visibility
+// decisions differ from car-simulator's or an image leaves the proposed
+// screenshot tolerance (ImageTolerance.hpp).
 //
 // Usage: cna_engine_carsim_scene_comparison <output-directory>
 #include "CnaEngine/Graphics/Camera.hpp"
@@ -22,6 +24,8 @@
 #include "CnaEngine/Graphics/RenderQueue.hpp"
 #include "CnaEngine/Graphics/ScreenCapture.hpp"
 #include "CnaEngine/Graphics/Visibility.hpp"
+
+#include "ImageTolerance.hpp"
 
 #include "CarSim/Map/MapDocument.hpp"
 #include "CarSim/Map/MapWorld.hpp"
@@ -447,18 +451,8 @@ int main(int argc, char** argv)
         device.SetRenderTarget(nullptr);
         const auto enginePixels = Pixels(target);
 
-        double difference = 0.0;
-        int largest = 0;
-        std::size_t differing = 0;
-        for (std::size_t i = 0; i < carPixels.size(); ++i) {
-            const int r = std::abs(carPixels[i].getRProperty() - enginePixels[i].getRProperty());
-            const int g = std::abs(carPixels[i].getGProperty() - enginePixels[i].getGProperty());
-            const int b = std::abs(carPixels[i].getBProperty() - enginePixels[i].getBProperty());
-            difference += r + g + b;
-            largest = std::max({largest, r, g, b});
-            differing += r + g + b > 0 ? 1u : 0u;
-        }
-        difference /= static_cast<double>(carPixels.size() * 3);
+        const Pilot::ImageDifference image = Pilot::Compare(carPixels, enginePixels);
+        const bool withinTolerance = Pilot::Within(image);
         const std::string prefix = name.empty() ? "" : name + "-";
         const auto carPng =
             Graphics::WritePng(device, carPixels, Width, Height, (output / (prefix + "car-simulator.png")).string());
@@ -479,8 +473,10 @@ int main(int argc, char** argv)
         std::printf("draw calls: car-simulator %d (all world passes), engine %llu (compared geometry)\n",
                     carStats.drawCalls, static_cast<unsigned long long>(engineStats.drawCalls));
         std::printf("cpu frame: car-simulator %.1f ms, engine %.1f ms (software renderer, Debug)\n", carMs, engineMs);
-        std::printf("image difference: %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ\n",
-                    difference, largest, differing, carPixels.size());
+        std::printf("image difference: %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ,"
+                    " %zu visibly (> %d / 255) — %s the proposed tolerance\n",
+                    image.mean, image.largest, image.differing, image.pixels, image.visible, Pilot::VisibleStep,
+                    withinTolerance ? "within" : "OUTSIDE");
         for (const auto& fallback : engine.LastFallbacks()) {
             std::printf("fallback: %s\n", fallback.c_str());
         }
@@ -496,7 +492,10 @@ int main(int argc, char** argv)
             std::fprintf(stderr, "%s: visibility differs from car-simulator's\n", name.c_str());
             return false;
         }
-        return carPng.success && enginePng.success;
+        if (!withinTolerance) {
+            std::fprintf(stderr, "%s: image outside the proposed tolerance\n", name.c_str());
+        }
+        return withinTolerance && carPng.success && enginePng.success;
         };
 
         bool ok = compare("");

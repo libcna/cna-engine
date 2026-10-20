@@ -70,7 +70,11 @@ engine suite and the cna-extended suite were rerun against the new revision
 Concurrent agents edit the shared CNA worktree, so local baseline runs use a
 clean clone at the pinned revision (`~/deps/cna-baseline`, updated with
 `git -C ~/deps/cna-baseline fetch && git -C ~/deps/cna-baseline checkout <pin>`)
-selected with `-DCNA_ENGINE_CNA_DIR=$HOME/deps/cna-baseline`, plus
+selected with `-DCNA_ENGINE_CNA_DIR=$HOME/deps/cna-baseline`, and likewise a
+clean clone of Sharp Runtime (`~/deps/sharp-runtime-baseline`, selected with
+`-DCNA_ENGINE_SHARP_RUNTIME_DIR=$HOME/deps/sharp-runtime-baseline`; added
+2026-10-21 when the shared Sharp Runtime worktree gained uncommitted edits),
+plus
 `-DCNA_ENGINE_ENFORCE_BASELINE=ON -DCNA_ENABLE_SDL=OFF -DCNA_ENABLE_VIDEO=OFF`
 (the vendored SDL is not part of CNA's git tree).
 
