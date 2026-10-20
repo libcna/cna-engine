@@ -138,6 +138,13 @@ loads as `AssetRegistry::Failures()` (or a fallback asset you set).
   `DeviceCapabilities::FromDevice(device)`; `decisions` explains every change.
 - Assets: `AssetRegistry` with per-type loaders (`UseContentManager<T>()`),
   `GetOrCreate` for derived assets, `SetNormalizeKeys(false)` for text keys.
+- Simulation: `FixedStepClock` steps game logic at a fixed rate whatever the
+  frame rate (frame clamp, step cap, `Alpha()` for interpolation).
+- Rebinding screens: `DisplayName(binding)`, `KeyDisplayName`,
+  `ButtonDisplayName` give English labels ("Left Shift", "LB"); binding files
+  use `FormatBinding`/`ParseBinding`.
 - Diagnostics: `FrameStatistics`, `CpuProfiler` + `ScopedTimer` (free when
-  disabled), `RenderStatistics`, `FormatDiagnostics` for text output,
-  `ScreenshotQueue` for deterministic captures.
+  disabled), `RenderStatistics`, `CullStatistics` and `LodStatistics`,
+  `GpuMemoryEstimate` (what a scene or frame keeps resident, shared buffers
+  once), `FormatDiagnostics` for text output, `ScreenshotQueue` for
+  deterministic captures.
