@@ -11,7 +11,9 @@ namespace CnaEngine::Extended
         target.setAspectRatioProperty(camera.AspectRatio());
         target.setNearPlaneProperty(camera.NearPlane());
         target.setFarPlaneProperty(camera.FarPlane());
-        if (camera.Kind() != Graphics::ProjectionKind::Perspective) {
+        // A custom projection of CreatePerspectiveFieldOfView's shape carries
+        // its field of view; any other one cannot be represented.
+        if (camera.Kind() == Graphics::ProjectionKind::Orthographic || camera.FieldOfView() <= 0.0f) {
             return false;
         }
         target.setFieldOfViewProperty(camera.FieldOfView());

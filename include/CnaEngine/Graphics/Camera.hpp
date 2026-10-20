@@ -14,6 +14,8 @@ namespace CnaEngine::Graphics
     {
         Perspective,
         Orthographic,
+        /// A game's own projection matrix (Camera::SetMatrices).
+        Custom,
     };
 
     /// Camera state: a pose (position + orientation) and a projection.
@@ -77,6 +79,21 @@ namespace CnaEngine::Graphics
         [[nodiscard]] float NearPlane() const noexcept { return nearPlane_; }
         [[nodiscard]] float FarPlane() const noexcept { return farPlane_; }
 
+        /// Uses a game's own matrices verbatim, for games that keep their own
+        /// camera math (car-simulator's CameraPose) and render through the
+        /// engine: View() and Projection() return them bit for bit, Position()
+        /// and Orientation() are derived from `view`, Kind() becomes Custom.
+        /// For a matrix of CreatePerspectiveFieldOfView's shape FieldOfView(),
+        /// AspectRatio(), NearPlane() and FarPlane() are derived from it; for
+        /// any other projection they are 0. SetMirrored still applies on top.
+        /// A later pose setter (SetPosition, SetOrientation, SetYawPitchRoll,
+        /// LookAt) derives the view from the pose again; a later SetPerspective
+        /// or SetOrthographic replaces the projection; SetAspectRatio throws
+        /// while the projection is custom. Throws std::invalid_argument for a
+        /// non-finite or singular matrix.
+        void SetMatrices(const Microsoft::Xna::Framework::Matrix& view,
+                         const Microsoft::Xna::Framework::Matrix& projection);
+
         /// Mirrors the image horizontally (rear-view mirrors, reflections):
         /// Projection() and ViewProjection() flip clip-space X, which makes
         /// front faces counter-clockwise on screen, so renderers swap their
@@ -109,6 +126,10 @@ namespace CnaEngine::Graphics
         float nearPlane_ = 0.0f;
         float farPlane_ = 0.0f;
         bool mirrored_ = false;
+        /// Set by SetMatrices: the view is `customView_`, not derived from the pose.
+        bool hasCustomView_ = false;
+        Microsoft::Xna::Framework::Matrix customView_;
+        Microsoft::Xna::Framework::Matrix customProjection_;
         std::uint64_t revision_ = 0;
 
         mutable bool dirty_ = true;

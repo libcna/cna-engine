@@ -28,6 +28,15 @@ became pilot-validated (their changes of that day are listed below);
 
 ### Pilot-validated API changes
 
+- `Graphics/Camera.hpp`, additive: `SetMatrices(view, projection)` and
+  `ProjectionKind::Custom` — a game's own matrices used verbatim, the pose
+  (and, for perspective matrices, the projection parameters) derived from
+  them; pose setters return to a derived view, projection setters to a
+  derived projection. Reason: car-simulator keeps its own `CameraPose`
+  (changing it would move every matrix by a rounding step) and renders its
+  world through the engine with exactly its matrices (PILOT-002, migration
+  step 8).
+
 - `Graphics/Camera.hpp`, additive: `SetMirrored`/`Mirrored` — the projection
   flips clip-space X (the frustum does not), and `ForwardRenderer` culls
   clockwise for mirrored cameras. Reason: car-simulator's rear-view mirrors.

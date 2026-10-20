@@ -38,6 +38,22 @@ namespace CnaEngine::Extended
         EXPECT_FLOAT_EQ(world.getAspectRatioProperty(), 2.0f);
     }
 
+    TEST(WorldCameraSyncTests, CustomMatricesSyncWhenTheyArePerspective)
+    {
+        using Microsoft::Xna::Framework::Matrix;
+        const Matrix view = Matrix::CreateLookAt(Vector3(2.0f, 3.0f, 10.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3::Up);
+        Graphics::Camera camera;
+        camera.SetMatrices(view, Matrix::CreatePerspectiveFieldOfView(0.9f, 1.5f, 0.5f, 400.0f));
+        Camera3DEXT world;
+        EXPECT_TRUE(SyncToWorldCamera(camera, world));
+        EXPECT_NEAR(world.getFieldOfViewProperty(), 0.9f, 1e-5f);
+        EXPECT_NEAR(world.getAspectRatioProperty(), 1.5f, 1e-5f);
+        EXPECT_NEAR(world.GetViewMatrixEXT().M43, view.M43, 1e-4f);
+
+        camera.SetMatrices(view, Matrix::CreateOrthographic(10.0f, 5.0f, 0.0f, 50.0f));
+        EXPECT_FALSE(SyncToWorldCamera(camera, world));
+    }
+
     TEST(WorldCameraSyncTests, RoundTripFromWorldCamera)
     {
         Camera3DEXT world;

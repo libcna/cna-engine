@@ -32,6 +32,19 @@ namespace CnaEngine::Graphics
                 throw std::invalid_argument(message);
             }
         }
+
+        bool Invertible(const Matrix& m)
+        {
+            const float elements[] = {m.M11, m.M12, m.M13, m.M14, m.M21, m.M22, m.M23, m.M24,
+                                      m.M31, m.M32, m.M33, m.M34, m.M41, m.M42, m.M43, m.M44};
+            for (const float e : elements) {
+                if (!std::isfinite(e)) {
+                    return false;
+                }
+            }
+            const float determinant = m.Determinant();
+            return std::isfinite(determinant) && determinant != 0.0f;
+        }
     }
 
     Camera::Camera()
@@ -58,6 +71,7 @@ namespace CnaEngine::Graphics
             throw std::invalid_argument("Camera: position must be finite");
         }
         position_ = position;
+        hasCustomView_ = false;
         Invalidate();
     }
 
@@ -68,6 +82,7 @@ namespace CnaEngine::Graphics
             throw std::invalid_argument("Camera: orientation must be a finite non-zero quaternion");
         }
         orientation_ = Quaternion::Normalize(orientation);
+        hasCustomView_ = false;
         Invalidate();
     }
 
@@ -142,11 +157,54 @@ namespace CnaEngine::Graphics
 
     void Camera::SetAspectRatio(const float aspectRatio)
     {
+        if (kind_ == ProjectionKind::Custom) {
+            throw std::invalid_argument("Camera: a custom projection has no aspect ratio to change");
+        }
         ValidatePositive(aspectRatio, "Camera: aspect ratio must be positive");
         aspectRatio_ = aspectRatio;
         if (kind_ == ProjectionKind::Orthographic) {
             orthoWidth_ = orthoHeight_ * aspectRatio;
         }
+        Invalidate();
+    }
+
+    void Camera::SetMatrices(const Matrix& view, const Matrix& projection)
+    {
+        if (!Invertible(view) || !Invertible(projection)) {
+            throw std::invalid_argument("Camera: custom matrices must be finite and invertible");
+        }
+        // The pose the view stands for: the camera's world matrix is its inverse.
+        const Matrix world = Matrix::Invert(view);
+        const Vector3 right = Vector3::Normalize(Vector3(world.M11, world.M12, world.M13));
+        const Vector3 up = Vector3::Normalize(Vector3(world.M21, world.M22, world.M23));
+        const Vector3 backward = Vector3::Normalize(Vector3(world.M31, world.M32, world.M33));
+        Matrix rotation = Matrix::getIdentityProperty();
+        rotation.M11 = right.X;
+        rotation.M12 = right.Y;
+        rotation.M13 = right.Z;
+        rotation.M21 = up.X;
+        rotation.M22 = up.Y;
+        rotation.M23 = up.Z;
+        rotation.M31 = backward.X;
+        rotation.M32 = backward.Y;
+        rotation.M33 = backward.Z;
+        position_ = world.getTranslationProperty();
+        orientation_ = Quaternion::Normalize(Quaternion::CreateFromRotationMatrix(rotation));
+        customView_ = view;
+        customProjection_ = projection;
+        hasCustomView_ = true;
+        kind_ = ProjectionKind::Custom;
+        // CreatePerspectiveFieldOfView: M11 = M22 / aspect, M22 = 1 / tan(fov / 2),
+        // M33 = far / (near - far), M34 = -1, M43 = near * far / (near - far), the rest 0.
+        const bool perspective = projection.M34 == -1.0f && projection.M44 == 0.0f && projection.M12 == 0.0f
+                                 && projection.M21 == 0.0f && projection.M31 == 0.0f && projection.M32 == 0.0f
+                                 && projection.M11 > 0.0f && projection.M22 > 0.0f && projection.M33 < 0.0f;
+        fieldOfView_ = perspective ? 2.0f * std::atan(1.0f / projection.M22) : 0.0f;
+        aspectRatio_ = perspective ? projection.M22 / projection.M11 : 0.0f;
+        nearPlane_ = perspective ? projection.M43 / projection.M33 : 0.0f;
+        farPlane_ = perspective && projection.M33 != -1.0f ? projection.M43 / (projection.M33 + 1.0f) : 0.0f;
+        orthoWidth_ = 0.0f;
+        orthoHeight_ = 0.0f;
         Invalidate();
     }
 
@@ -161,10 +219,18 @@ namespace CnaEngine::Graphics
         if (!dirty_) {
             return;
         }
-        view_ = Matrix::CreateLookAt(position_, position_ + Forward(), Up());
-        projection_ = kind_ == ProjectionKind::Perspective
-                          ? Matrix::CreatePerspectiveFieldOfView(fieldOfView_, aspectRatio_, nearPlane_, farPlane_)
-                          : Matrix::CreateOrthographic(orthoWidth_, orthoHeight_, nearPlane_, farPlane_);
+        view_ = hasCustomView_ ? customView_ : Matrix::CreateLookAt(position_, position_ + Forward(), Up());
+        switch (kind_) {
+            case ProjectionKind::Perspective:
+                projection_ = Matrix::CreatePerspectiveFieldOfView(fieldOfView_, aspectRatio_, nearPlane_, farPlane_);
+                break;
+            case ProjectionKind::Orthographic:
+                projection_ = Matrix::CreateOrthographic(orthoWidth_, orthoHeight_, nearPlane_, farPlane_);
+                break;
+            case ProjectionKind::Custom:
+                projection_ = customProjection_;
+                break;
+        }
         // The volume is the unmirrored one; the mirror only flips the image.
         frustum_ = BoundingFrustum(view_ * projection_);
         if (mirrored_) {

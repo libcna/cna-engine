@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+#include <limits>
 #include <stdexcept>
 
 namespace CnaEngine::Graphics
@@ -139,5 +140,99 @@ namespace CnaEngine::Graphics
         EXPECT_EQ(camera.Frustum().Contains(BoundingSphere(Vector3(0.0f, 0.0f, -95.0f), 10.0f)),
                   ContainmentType::Intersects)
             << "straddling the far plane";
+    }
+
+    namespace
+    {
+        bool Identical(const Matrix& a, const Matrix& b)
+        {
+            return a.M11 == b.M11 && a.M12 == b.M12 && a.M13 == b.M13 && a.M14 == b.M14 && a.M21 == b.M21
+                   && a.M22 == b.M22 && a.M23 == b.M23 && a.M24 == b.M24 && a.M31 == b.M31 && a.M32 == b.M32
+                   && a.M33 == b.M33 && a.M34 == b.M34 && a.M41 == b.M41 && a.M42 == b.M42 && a.M43 == b.M43
+                   && a.M44 == b.M44;
+        }
+    }
+
+    // A game that keeps its own camera math (car-simulator's CameraPose)
+    // renders through the engine with exactly its matrices.
+    TEST(CameraTests, CustomMatricesAreUsedVerbatim)
+    {
+        const Vector3 eye(3.0f, 1.3f, -7.0f);
+        const Vector3 target(13.0f, 0.8f, -9.0f);
+        const Matrix view = Matrix::CreateLookAt(eye, target, Vector3::Up);
+        const Matrix projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(62.0f), 16.0f / 9.0f, 0.15f, 2600.0f);
+        Camera camera;
+        const auto revision = camera.Revision();
+        camera.SetMatrices(view, projection);
+        EXPECT_GT(camera.Revision(), revision);
+        EXPECT_EQ(camera.Kind(), ProjectionKind::Custom);
+        EXPECT_TRUE(Identical(camera.View(), view));
+        EXPECT_TRUE(Identical(camera.Projection(), projection));
+        EXPECT_TRUE(Identical(camera.ViewProjection(), view * projection));
+        ExpectNear(camera.Frustum().getMatrixProperty(), view * projection, 0.0f);
+        // The pose and the perspective parameters the matrices stand for.
+        ExpectNear(camera.Position(), eye, 1e-4f);
+        const Vector3 forward = Vector3::Normalize(target - eye);
+        const Vector3 right = Vector3::Normalize(Vector3::Cross(forward, Vector3::Up));
+        ExpectNear(camera.Forward(), forward, 1e-5f);
+        ExpectNear(camera.Right(), right, 1e-5f);
+        ExpectNear(camera.Up(), Vector3::Cross(right, forward), 1e-5f);
+        EXPECT_NEAR(camera.FieldOfView(), MathHelper::ToRadians(62.0f), 1e-5f);
+        EXPECT_NEAR(camera.AspectRatio(), 16.0f / 9.0f, 1e-5f);
+        EXPECT_NEAR(camera.NearPlane(), 0.15f, 1e-5f);
+        EXPECT_NEAR(camera.FarPlane(), 2600.0f, 0.5f);
+
+        // Mirroring flips the custom projection the way it flips a derived one.
+        camera.SetMirrored(true);
+        EXPECT_TRUE(Identical(camera.Projection(), projection * Matrix::CreateScale(-1.0f, 1.0f, 1.0f)));
+        ExpectNear(camera.Frustum().getMatrixProperty(), view * projection, 0.0f);
+
+        // An orthographic or otherwise shaped projection has no perspective parameters.
+        camera.SetMatrices(view, Matrix::CreateOrthographic(40.0f, 20.0f, 0.0f, 100.0f));
+        EXPECT_EQ(camera.Kind(), ProjectionKind::Custom);
+        EXPECT_EQ(camera.FieldOfView(), 0.0f);
+        EXPECT_EQ(camera.AspectRatio(), 0.0f);
+    }
+
+    TEST(CameraTests, LaterSettersReplaceOnlyTheirPartOfCustomMatrices)
+    {
+        const Matrix view = Matrix::CreateLookAt(Vector3(0.0f, 2.0f, 5.0f), Vector3(1.0f, 1.0f, -5.0f), Vector3::Up);
+        const Matrix projection = Matrix::CreatePerspectiveFieldOfView(1.0f, 1.5f, 0.5f, 300.0f);
+
+        // A pose setter derives the view from the pose again; the projection stays custom.
+        Camera camera;
+        camera.SetMatrices(view, projection);
+        camera.SetPosition(Vector3(0.0f, 2.0f, 6.0f));
+        Camera reference;
+        reference.SetPosition(Vector3(0.0f, 2.0f, 6.0f));
+        reference.SetOrientation(camera.Orientation());
+        EXPECT_TRUE(Identical(camera.View(), reference.View()));
+        EXPECT_EQ(camera.Kind(), ProjectionKind::Custom);
+        EXPECT_TRUE(Identical(camera.Projection(), projection));
+        EXPECT_THROW(camera.SetAspectRatio(2.0f), std::invalid_argument);
+
+        // A projection setter replaces the projection; the view stays custom.
+        camera.SetMatrices(view, projection);
+        camera.SetPerspective(0.8f, 2.0f, 0.1f, 50.0f);
+        EXPECT_EQ(camera.Kind(), ProjectionKind::Perspective);
+        EXPECT_TRUE(Identical(camera.View(), view));
+        EXPECT_TRUE(Identical(camera.Projection(), Matrix::CreatePerspectiveFieldOfView(0.8f, 2.0f, 0.1f, 50.0f)));
+    }
+
+    TEST(CameraTests, InvalidCustomMatricesLeaveCameraUnchanged)
+    {
+        Camera camera;
+        const auto revision = camera.Revision();
+        const Matrix projection = Matrix::CreatePerspectiveFieldOfView(1.0f, 1.0f, 0.1f, 10.0f);
+        Matrix singular = Matrix::getIdentityProperty();
+        singular.M33 = 0.0f;
+        Matrix notFinite = Matrix::getIdentityProperty();
+        notFinite.M41 = std::numeric_limits<float>::quiet_NaN();
+        EXPECT_THROW(camera.SetMatrices(singular, projection), std::invalid_argument);
+        EXPECT_THROW(camera.SetMatrices(notFinite, projection), std::invalid_argument);
+        EXPECT_THROW(camera.SetMatrices(Matrix::getIdentityProperty(), singular), std::invalid_argument);
+        EXPECT_EQ(camera.Revision(), revision);
+        EXPECT_EQ(camera.Kind(), ProjectionKind::Perspective);
+        ExpectNear(camera.View(), Matrix::getIdentityProperty());
     }
 }
