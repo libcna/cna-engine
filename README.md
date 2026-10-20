@@ -96,7 +96,6 @@ Options:
 | `CNA_ENGINE_PILOT_SUITES` | `OFF` | also build and run car-simulator's and street-simulator's own test suites (read-only) against this build's dependencies — ADR-002's consumer checks; slow |
 | `CNA_ENGINE_SANITIZE` | empty | `-fsanitize=` list (e.g. `address,undefined`) for the engine's own targets only; dependencies stay uninstrumented, so a sanitizer tree reuses their objects from ccache |
 | `CNA_ENGINE_BUILD_TESTS` / `_EXAMPLES` | top level | tests and examples |
-| `CNA_ENGINE_ENFORCE_BASELINE` | `OFF` | fail configuration off the pinned revisions |
 | `CNA_ENGINE_CNA_RENDERER` / `_PLATFORM` / `_AUDIO_PLATFORM` | `SOFTWARE` / `HEADLESS` / `NULL` | CNA axes for a standalone build |
 
 The default configuration needs no window, GPU or audio device; rendering
