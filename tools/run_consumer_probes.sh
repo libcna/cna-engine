@@ -10,8 +10,11 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-engine_build="${1:-$root/build}"
-consumer_build="${2:-$root/build-consumer}"
+# Absolute paths: CMAKE_PREFIX_PATH and the install prefix must not depend on
+# the directory CMake resolves them from.
+engine_build="$(cd "${1:-$root/build}" && pwd)"
+mkdir -p "${2:-$root/build-consumer}"
+consumer_build="$(cd "${2:-$root/build-consumer}" && pwd)"
 prefix="$consumer_build/install"
 jobs="${CNA_ENGINE_JOBS:-3}"
 
