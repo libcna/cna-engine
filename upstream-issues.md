@@ -77,9 +77,11 @@ its own builds.
 - Status: resolved upstream in CNA `5ab1c7729` (2026-10-20, "Match XNA
   convex containment and squared-distance boundaries"): `Contains(Vector3)`
   now tests all six planes against XNA's `1e-5` tolerance and reports
-  `Contains` for on-plane points. The engine's pin (`5a44d2c5`) predates it;
-  cna-extended's two skipped tests can be re-enabled by its owner once the
-  pin moves past it (the CI lane reports when the skips disappear). The same
+  `Contains` for on-plane points. Published with a regression test for the
+  orthographic case in `900d0db3b` (2026-10-20), the engine's pin since then;
+  cna-extended's two tests are still skipped unconditionally in its sources
+  and can be re-enabled by its owner (the CI lane reports when the skips
+  disappear). The same
   commit implements `Intersects(BoundingSphere)` with XNA's GJK query, see
   `docs/pilots/car-simulator.md`.
 - Found: 2026-10-19, while dispositioning plan item EXT-002

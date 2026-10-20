@@ -188,9 +188,11 @@ Disposition (2026-10-19, analysis only; cna-extended and CNA are not modified
 from this repository): both skipped cases are an implementation defect in CNA's
 `BoundingFrustum::Contains(Vector3)`, which deviates from the XNA 4.0 reference
 (no `1E-05f` tolerance, `Intersects` for on-plane points, early `break`). See
-`upstream-issues.md` UP-004. CNA fixed it in `5ab1c7729` (2026-10-20, after
-the engine's pin). Remaining: move the pin past it (ADR-002) and the
-cna-extended owner re-enables the two tests.
+`upstream-issues.md` UP-004. CNA fixed it in `5ab1c7729` (2026-10-20) and
+published it with a regression test in `900d0db3b`; the engine's pin moved
+there the same day (ADR-002). Remaining, for cna-extended's owner: remove the
+two unconditional `GTEST_SKIP()`s in `tests/CNA/Extended/OrthographicCameraTests.cpp`;
+the CI lane reports when the skips are gone.
 
 ### EXT-003 — Establish an upstream compatibility lane `[x]`
 

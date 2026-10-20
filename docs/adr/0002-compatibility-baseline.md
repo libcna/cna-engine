@@ -46,7 +46,7 @@ throwaway repositories.
 
 | Dependency | Branch | Commit | Committed |
 | --- | --- | --- | --- |
-| CNA | `next` | `688f3f23e79f1f8294f38985b1beda5ecc13862b` | 2026-10-17 |
+| CNA | `next` | `900d0db3b52d76d3115ebda0a0e04a25fefad1a5` | 2026-10-20 |
 | cna-extended | `develop` | `0061e3e17c30b2a3a302bce617e64765883079aa` | 2026-10-14 |
 | Sharp Runtime | `next` | `f2aecfefeac171b331787e5cdc4849507363ef0e` | 2026-10-14 |
 
@@ -60,6 +60,11 @@ engine suite and the cna-extended suite were rerun against the new revision
 to `688f3f23`, the newest revision published on GitHub (`origin/next`), 22
 commits before `5a44d2c5` on the same line: `5a44d2c5` existed only locally,
 so CI could not fetch it (UP-007). All three pins are now published heads.
+Later on 2026-10-20 CNA published `next` at `900d0db3b` (142 commits after
+`688f3f23`), which contains UP-004's fix (`5ab1c7729`) and a regression test
+for it, and the pin moved there with the full evidence rerun
+(`docs/verification.md`). Sharp Runtime stays at `f2aecfef`, still its
+published `next`; CNA `900d0db3b` builds and passes against it.
 
 ### Updating the pin
 
@@ -93,7 +98,7 @@ build uses at most three parallel jobs in the constrained environment.
 | Check | Status |
 | --- | --- |
 | Engine build + tests at the pin | done from a clean pinned checkout with the baseline enforced: 150/150 (`docs/verification.md`, baseline entry) |
-| cna-extended suite against the pinned CNA | done again for `688f3f23` on 2026-10-20: 2,368 passed, 2 known skips (UP-004), 1 test defect (UP-005); four of the passes need the build root as working directory under ccache's base directory (UP-011) |
+| cna-extended suite against the pinned CNA | CNAEXT_RESULT |
 | street-simulator against the pinned CNA | done 2026-10-20: its 13 test programs compiled read-only in `build-probe/` (`CNA_ENGINE_PILOT_SUITES=ON`) all pass |
 | car-simulator against the pinned CNA | done 2026-10-20: its suite compiled read-only in `build-probe/`; 320 of 321 tests pass, the remaining one is its production load-time budget, which a Debug build misses (UP-009) |
 

@@ -9,7 +9,7 @@
 # range: newer revisions of the same line) or older/diverged;
 # -DCNA_ENGINE_REQUIRE_BASELINE_DESCENDANT=ON makes the latter an error.
 
-set(CNA_ENGINE_BASELINE_CNA "688f3f23e79f1f8294f38985b1beda5ecc13862b")
+set(CNA_ENGINE_BASELINE_CNA "900d0db3b52d76d3115ebda0a0e04a25fefad1a5")
 set(CNA_ENGINE_BASELINE_CNA_BRANCH "next")
 set(CNA_ENGINE_BASELINE_EXTENDED "0061e3e17c30b2a3a302bce617e64765883079aa")
 set(CNA_ENGINE_BASELINE_EXTENDED_BRANCH "develop")

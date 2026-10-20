@@ -126,9 +126,9 @@ Done (see `plan.md` for per-task results):
 4. ENG-035: shadows and post-processing only when a pilot needs them (Street
    currently draws neither; see `docs/pilots/street-simulator.md`).
    Reflection probes are supported through the PBR binder's selector.
-5. Next pin move (ADR-002 procedure) once a published CNA revision contains
-   `5ab1c7729` (UP-004's fix); then cna-extended's owner can lift its two
-   skipped tests (EXT-002).
+5. The CNA pin is `900d0db3b` (published, contains UP-004's fix) since
+   2026-10-20; cna-extended's owner can now remove its two orthographic-camera
+   skips (EXT-002).
 6. Upstream, for their owners: UP-001 (no CNA package), UP-005 (cna-extended
    skinned test), UP-006 (CNA umbrella vs module targets), UP-007 (unpushed
    pin), UP-008 (Street's mesh-memory accounting), UP-009 (car-simulator's
