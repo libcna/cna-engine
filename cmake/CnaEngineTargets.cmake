@@ -4,6 +4,16 @@
 # CnaEngine::<alias>, the shared public include root, and warning flags that
 # stay on cna-engine's own targets (dependency flags are never changed).
 
+# Instruments one of cna-engine's own targets (libraries, tests, examples)
+# with CNA_ENGINE_SANITIZE. CNA and cna-extended are compiled as before, so a
+# sanitizer tree shares their objects with the ordinary tree through ccache.
+function(cna_engine_sanitize target)
+    if(CNA_ENGINE_SANITIZE AND NOT MSVC)
+        target_compile_options(${target} PRIVATE -fsanitize=${CNA_ENGINE_SANITIZE} -fno-omit-frame-pointer)
+        target_link_options(${target} PUBLIC "$<BUILD_INTERFACE:-fsanitize=${CNA_ENGINE_SANITIZE}>")
+    endif()
+endfunction()
+
 function(cna_engine_add_library target alias)
     add_library(${target} STATIC ${ARGN})
     add_library(CnaEngine::${alias} ALIAS ${target})
@@ -21,6 +31,7 @@ function(cna_engine_add_library target alias)
         target_compile_options(${target} PRIVATE -Wall -Wextra
             $<$<BOOL:${CNA_ENGINE_WARNINGS_AS_ERRORS}>:-Werror>)
     endif()
+    cna_engine_sanitize(${target})
 endfunction()
 
 # Links CNA / cna-extended targets. They are not part of any export set

@@ -12,7 +12,8 @@ Plan item: `REL-003`. What is checked, where, and how a failure shows.
 | Installed consumers | `tools/run_consumer_probes.sh` (`build-consumer/`) | the installed package works for strict and enhanced consumers; the strict link closure has no cna-extended target | local, CI |
 | Pilot probes | `pilot` (needs the pilot checkouts) | engine facilities match car-simulator's and street-simulator's own code on identical inputs; car-simulator's checker accepts the strict surface | local only (pilots are separate repositories) |
 | Baseline | configure with `CNA_ENGINE_ENFORCE_BASELINE=ON` | dependencies are exactly the pinned revisions with clean tracked files | CI, local baseline runs |
-| Upstream compatibility | cna-extended suite against the pinned CNA (`build-probe/`) | the enhanced dependency still works on the pin | local, on pin updates |
+| Sanitizers | `build-asan/` with `CNA_ENGINE_SANITIZE=address,undefined`, all non-pilot tests (UBSan fatal, LeakSanitizer on) | no memory error, undefined behaviour or leak in engine code under the tests | local |
+| Upstream compatibility | CI job `cna-extended` (cna-extended's suite and examples at the pins), weekly `upstream-canary` (engine against upstream heads) | the enhanced dependency still works on the pin; upstream API breaks show before a pin move | CI (blocked by UP-007), local on pin updates |
 | Visual | examples' PNG output, pixel-equality pilot probes | rendering matches the pilots exactly where both draw the same thing | local |
 | Performance | not yet automated | — (no pilot-agreed budget yet; see MILESTONE-2) | — |
 

@@ -4,6 +4,20 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20 (night) — sanitizers
+
+`build-asan/` configured with `-DCNA_ENGINE_SANITIZE=address,undefined
+-DCNA_ENGINE_PILOT_PROBES=OFF` (shared CNA worktree at `d77ee1df`, not
+baseline evidence; only the engine's libraries, tests and examples are
+instrumented). Build 5 min 42 s with 3 jobs.
+
+    ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1 \
+        ctest --test-dir build-asan --parallel 3
+
+Result: **158 of 158 passed** (every non-pilot test, examples included), with
+UBSan findings fatal and LeakSanitizer on; also 158/158 with leak detection
+off.
+
 ## 2026-10-20 (night) — reflection-probe selector, quick-start game
 
 `build/` **180 of 180**, baseline `build-probe/` **181 of 181** (new:

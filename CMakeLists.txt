@@ -29,6 +29,8 @@ option(CNA_ENGINE_WITH_ENHANCED_GRAPHICS
     "Build CnaEngine::EnhancedGraphics (CNA graphics extensions such as PbrEffect; no cna-extended)" ON)
 option(CNA_ENGINE_INSTALL "Generate install and package-export rules" ${CNA_ENGINE_IS_TOP_LEVEL})
 option(CNA_ENGINE_WARNINGS_AS_ERRORS "Treat warnings in cna-engine's own targets as errors" ON)
+set(CNA_ENGINE_SANITIZE "" CACHE STRING
+    "Sanitizers for cna-engine's own targets (GCC/Clang -fsanitize= list, e.g. address,undefined); dependencies stay uninstrumented")
 option(CNA_ENGINE_ENFORCE_BASELINE
     "Fail configuration when CNA/cna-extended/Sharp Runtime differ from the pinned baseline (ADR-002)" OFF)
 

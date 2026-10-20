@@ -44,6 +44,7 @@ add_executable(cna_engine_tests
     Assets/AssetRegistryTests.cpp
 )
 target_link_libraries(cna_engine_tests PRIVATE cna_engine_core cna_engine_graphics GTest::gtest_main)
+cna_engine_sanitize(cna_engine_tests)
 gtest_discover_tests(cna_engine_tests
     TEST_PREFIX "cna_engine."
     DISCOVERY_MODE PRE_TEST
@@ -57,6 +58,7 @@ if(CNA_ENGINE_WITH_EXTENDED)
         Extended/WorldCameraSyncTests.cpp
     )
     target_link_libraries(cna_engine_extended_tests PRIVATE cna_engine_extended GTest::gtest_main)
+    cna_engine_sanitize(cna_engine_extended_tests)
     gtest_discover_tests(cna_engine_extended_tests
         TEST_PREFIX "cna_engine_extended."
         DISCOVERY_MODE PRE_TEST
@@ -69,6 +71,7 @@ if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
         Enhanced/PbrMaterialBinderTests.cpp
     )
     target_link_libraries(cna_engine_enhanced_tests PRIVATE cna_engine_enhanced GTest::gtest_main)
+    cna_engine_sanitize(cna_engine_enhanced_tests)
     gtest_discover_tests(cna_engine_enhanced_tests
         TEST_PREFIX "cna_engine_enhanced."
         DISCOVERY_MODE PRE_TEST
