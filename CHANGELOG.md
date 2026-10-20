@@ -28,6 +28,11 @@ became pilot-validated (their changes of that day are listed below);
 
 ### Pilot-validated API changes
 
+- `Graphics/QualitySchema.hpp`, additive: `PresetValues(name)` — the values
+  a preset was defined with, nothing else. Reason: street-simulator's presets
+  are overlays (a preset leaves the settings it does not list as they are),
+  which `Resolve` cannot express.
+
 - `Graphics/Camera.hpp`, additive: `SetMatrices(view, projection)` and
   `ProjectionKind::Custom` — a game's own matrices used verbatim, the pose
   (and, for perspective matrices, the projection parameters) derived from

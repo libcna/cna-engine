@@ -57,6 +57,18 @@ namespace CnaEngine::Graphics
         EXPECT_EQ(reach.decisions[0].reason, "device supports at most 0");
     }
 
+    TEST(QualitySchemaTests, PresetValuesAreOnlyWhatThePresetLists)
+    {
+        const QualitySchema schema = MakeSchema();
+        const auto* low = schema.PresetValues("low");
+        ASSERT_NE(low, nullptr);
+        EXPECT_EQ(low->size(), 2u);
+        EXPECT_EQ(std::get<bool>(low->at("bloom")), false);
+        EXPECT_EQ(std::get<float>(low->at("crowdDensity")), 0.25f);
+        EXPECT_FALSE(low->contains("msaa")) << "left out: the overlay keeps the current value";
+        EXPECT_EQ(schema.PresetValues("ultra"), nullptr);
+    }
+
     TEST(QualitySchemaTests, InvalidDefinitionsAreRejected)
     {
         QualitySchema schema = MakeSchema();

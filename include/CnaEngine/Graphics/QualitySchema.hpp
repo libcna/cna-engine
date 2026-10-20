@@ -74,6 +74,11 @@ namespace CnaEngine::Graphics
         void DefinePreset(std::string name, std::map<std::string, QualityValue> values);
 
         [[nodiscard]] bool HasPreset(std::string_view name) const;
+        /// The values preset `name` was defined with -- only those; the
+        /// settings it leaves out resolve to their defaults -- or null for an
+        /// unknown preset. For games whose presets are overlays on the current
+        /// settings rather than complete sets (street-simulator's).
+        [[nodiscard]] const std::map<std::string, QualityValue>* PresetValues(std::string_view name) const;
         [[nodiscard]] std::vector<std::string> PresetNames() const;
         [[nodiscard]] const std::vector<QualitySetting>& Settings() const noexcept { return settings_; }
 

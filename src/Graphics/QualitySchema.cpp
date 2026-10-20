@@ -138,6 +138,12 @@ namespace CnaEngine::Graphics
 
     bool QualitySchema::HasPreset(const std::string_view name) const { return presets_.find(name) != presets_.end(); }
 
+    const std::map<std::string, QualityValue>* QualitySchema::PresetValues(const std::string_view name) const
+    {
+        const auto preset = presets_.find(name);
+        return preset == presets_.end() ? nullptr : &preset->second;
+    }
+
     std::vector<std::string> QualitySchema::PresetNames() const { return presetOrder_; }
 
     QualityResult QualitySchema::Resolve(const QualitySelection& selection, const DeviceCapabilities& capabilities) const

@@ -11,7 +11,7 @@ CnaEngine/Graphics/MeshData.hpp 2c2217b8ca071d20
 CnaEngine/Graphics/VertexLayouts.hpp 61ffd5e805325c5a
 CnaEngine/Graphics/GpuMesh.hpp 10d0559e38157af8
 CnaEngine/Graphics/ScreenCapture.hpp d88bfcc0ed6e2cac
-CnaEngine/Graphics/QualitySchema.hpp ed31d38bf307e865
+CnaEngine/Graphics/QualitySchema.hpp b443359f740e0a6b
 CnaEngine/Assets/AssetRegistry.hpp bb84cc840d5c174d
 CnaEngine/Core/FixedStepClock.hpp 7d8301690ba6b541
 CnaEngine/Graphics/Material.hpp 8f6d2848cf0e54ea
