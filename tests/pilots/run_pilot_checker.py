@@ -68,7 +68,19 @@ def main() -> int:
         for line in unexpected:
             print("  " + line)
         return 1
-    scanned = re.search(r"in (\d+) file", result.stdout)
+    scanned = re.search(r"in (\d+) file", result.stdout) or re.search(r"\((\d+) files scanned", result.stdout)
+    if allowed == 0 and result.returncode == 0 and "CNA_ENGINE_STRICT_PREFIXES" in checker.read_text():
+        # Since car-simulator adopted the engine (2026-10-20) its checker
+        # carries the ADR-001 allowance itself, so engine includes are no
+        # longer reported: a clean run over the shadow tree is the proof.
+        files = int(scanned.group(1)) if scanned else 0
+        if files == 0:
+            print("car-simulator checker: the shadow tree was not scanned")
+            print(result.stdout)
+            return 1
+        print(f"car-simulator checker: carries the ADR-001 allowance itself and accepts "
+              f"the strict engine ({files} files)")
+        return 0
     if allowed == 0:
         print("car-simulator checker: no engine include was reported; the shadow tree was not scanned")
         print(result.stdout)

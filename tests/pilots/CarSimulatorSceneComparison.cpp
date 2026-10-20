@@ -5,6 +5,10 @@
 // engine (ForwardRenderer + stock material binder + engine culling) over the
 // same GPU buffers and textures.
 //
+// Since 2026-10-20 car-simulator's WorldRenderer draws through the engine
+// itself (its adoption); the comparison now checks that car-simulator's use
+// of the engine and this independent engine setup over the same batches agree.
+//
 // car-simulator's sources are compiled read-only; its renderer's private batch
 // lists are read with the explicit-instantiation access idiom (the batch types
 // are private too, so the exposing templates take `auto` member pointers).
@@ -611,11 +615,12 @@ int main(int argc, char** argv)
             std::printf("images: %s %s\n", carPng.path.c_str(), enginePng.path.c_str());
             std::fflush(stdout);
 
-            // The engine's rules reproduce car-simulator's exactly when given
-            // its frustum test; the engine's own plane test may differ only on
-            // spheres outside the view (the image difference shows the rest).
-            const bool same = carStats.terrainChunksDrawn == xnaTerrain && carStats.roadBatchesDrawn == xnaRoads
-                              && carStats.objectBatchesDrawn == xnaObjects && carStats.treeBatchesDrawn == xnaTrees;
+            // Since car-simulator adopted the engine (2026-10-20) its
+            // WorldRenderer culls with the engine's rules itself, so its
+            // counts must equal the engine's own here; the `xna*` counts
+            // keep showing what XNA's GJK test would have kept.
+            const bool same = carStats.terrainChunksDrawn == terrainDrawn && carStats.roadBatchesDrawn == roadsDrawn
+                              && carStats.objectBatchesDrawn == objectsDrawn && carStats.treeBatchesDrawn == treesDrawn;
             if (!same) {
                 std::fprintf(stderr, "%s: visibility differs from car-simulator's\n", name.c_str());
                 return false;

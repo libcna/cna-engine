@@ -20,7 +20,8 @@ if(EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Input/InputMapper.cpp")
         "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/QualityTier.cpp")
     target_include_directories(cna_engine_pilot_carsim_input PUBLIC
         "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/include")
-    target_link_libraries(cna_engine_pilot_carsim_input PUBLIC CNA::Math CNA::Input)
+    # car-simulator runs on the engine since 2026-10-20: its sources include engine headers.
+    target_link_libraries(cna_engine_pilot_carsim_input PUBLIC CNA::Math CNA::Input cna_engine_core)
 
     # Camera poses and procedural meshes / GPU upload. Camera.cpp uses only
     # VehicleState data, so no simulation sources are needed.
@@ -35,7 +36,8 @@ if(EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Input/InputMapper.cpp")
         "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/PlateRenderer.cpp")
     target_include_directories(cna_engine_pilot_carsim_render PUBLIC
         "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/include")
-    target_link_libraries(cna_engine_pilot_carsim_render PUBLIC CNA::Math CNA::GraphicsCore CNA::Content SharpRuntime::Text.Json)
+    target_link_libraries(cna_engine_pilot_carsim_render PUBLIC CNA::Math CNA::GraphicsCore CNA::Content SharpRuntime::Text.Json
+        cna_engine_graphics)
 
     add_executable(cna_engine_pilot_tests CarSimulatorControlsTests.cpp CarSimulatorRenderTests.cpp CarSimulatorAssetsTests.cpp
         CarSimulatorQualityTests.cpp)
@@ -71,7 +73,7 @@ if(CNA_ENGINE_CARSIM_SCENE_COMPARISON AND EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR
     # CNA's static modules, never the `CNA` umbrella next to them (UP-006).
     target_link_libraries(cna_engine_pilot_carsim_full PUBLIC
         CNA::Runtime CNA::GraphicsCore CNA::Content CNA::Media CNA::Audio CNA::Input CNA::Storage CNA::Diagnostics
-        CNA::Core CNA::Math CNA::Platform SharpRuntime::Text.Json)
+        CNA::Core CNA::Math CNA::Platform SharpRuntime::Text.Json cna_engine_core cna_engine_graphics)
 
     add_executable(cna_engine_carsim_scene_comparison CarSimulatorSceneComparison.cpp)
     target_compile_definitions(cna_engine_carsim_scene_comparison PRIVATE
@@ -99,14 +101,9 @@ if(CNA_ENGINE_CARSIM_SCENE_COMPARISON AND EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR
         set_tests_properties(cna_engine.pilot.carsim_suite PROPERTIES LABELS pilot TIMEOUT 3600)
     endif()
 
-    # car-simulator's vehicle step loop against FixedStepClock.
-    add_executable(cna_engine_pilot_carsim_sim_tests CarSimulatorClockTests.cpp)
-    target_link_libraries(cna_engine_pilot_carsim_sim_tests PRIVATE
-        cna_engine_core cna_engine_pilot_carsim_full GTest::gtest_main)
-    gtest_discover_tests(cna_engine_pilot_carsim_sim_tests
-        TEST_PREFIX "cna_engine.pilot."
-        DISCOVERY_MODE PRE_TEST
-        PROPERTIES LABELS "pilot")
+    # The probe of car-simulator's own vehicle step loop against
+    # FixedStepClock was retired on 2026-10-20: car-simulator steps its
+    # vehicle with FixedStepClock itself since then (docs/pilots/car-simulator.md).
 endif()
 
 set(CNA_ENGINE_STREET_SIMULATOR_DIR "${PROJECT_SOURCE_DIR}/../../libcnalab/street-simulator"
@@ -129,7 +126,9 @@ if(EXISTS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Render/Camera.cpp")
         "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/src/Core/Rng.cpp")
     target_include_directories(cna_engine_pilot_street PUBLIC
         "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/include")
-    target_link_libraries(cna_engine_pilot_street PUBLIC CNA::Math CNA::Input CNA::GraphicsCore CNA::Core CNA::Content SharpRuntime::Text.Json)
+    # street-simulator runs on the engine since 2026-10-20: its sources include engine headers.
+    target_link_libraries(cna_engine_pilot_street PUBLIC CNA::Math CNA::Input CNA::GraphicsCore CNA::Core CNA::Content SharpRuntime::Text.Json
+        cna_engine_graphics)
 
     add_executable(cna_engine_pilot_street_tests StreetSimulatorTests.cpp StreetQualityTests.cpp StreetAssetsTests.cpp)
     target_link_libraries(cna_engine_pilot_street_tests PRIVATE
@@ -163,7 +162,8 @@ if(CNA_ENGINE_STREET_SCENE_COMPARISON AND CNA_CNAEXT
     # (upstream-issues.md UP-006). Link the same static modules instead.
     target_link_libraries(cna_engine_pilot_street_core PUBLIC
         CNA::Runtime CNA::GraphicsExt CNA::DevicesExt CNA::Storage CNA::Content CNA::Media CNA::Audio CNA::Input
-        CNA::GraphicsCore CNA::Diagnostics CNA::Core CNA::Math CNA::Platform SharpRuntime::Text.Json)
+        CNA::GraphicsCore CNA::Diagnostics CNA::Core CNA::Math CNA::Platform SharpRuntime::Text.Json
+        cna_engine_core cna_engine_graphics cna_engine_enhanced)
 
     if(CNA_ENGINE_PILOT_SUITES)
         # Street's tests are plain executables, one per file.
