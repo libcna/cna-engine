@@ -41,7 +41,11 @@ Lighting: `ForwardLighting`'s key, fill and ambient lights, and an optional
 image-based environment in `PbrSettings::environment` (irradiance and
 prefiltered specular cubes with their BRDF table; it replaces the flat
 ambient), all scaled by `PbrSettings::exposure`. Street's renderer is carried
-this way, with its sky drawn by a custom pass (`docs/pilots/street-simulator.md`).
+this way, with its sky drawn by a custom pass (`docs/pilots/street-simulator.md`);
+on its adoption branch Street's own `SceneRenderer` now draws its frame like
+this, handing the engine its camera matrices (`Camera::SetMatrices`) and
+converting its material description field by field
+(`docs/pilots/migration.md`).
 
 Blending: `PbrEffect` writes straight alpha, so `BlendMode::AlphaBlend` blends
 as `NonPremultiplied`; `BlendMode::PremultipliedAlpha` (glass, whose
@@ -60,6 +64,10 @@ or a borrowed skinned buffer); the binder draws it with CNA's
 
 Shadows are not managed: implement your own binder (or use
 `PbrMaterialBinder::Effect()`) where your game needs them.
+
+Quality presets that are overlays — a preset sets the settings it lists and
+leaves the rest as the player had them, as Street's do — read a preset's own
+values with `QualitySchema::PresetValues(name)` instead of resolving it.
 
 ## 2. cna-extended screens and World3D
 
