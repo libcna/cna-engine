@@ -261,3 +261,28 @@ test intends the call only for its effect.
 
 Engine handling: none (the engine compiles Street's tests without `-Werror`).
 
+## UP-011 — cna-extended's bitmap-font tests find their fixtures through `__FILE__`
+
+- Repository: `libcna/cna-extended` (`develop`),
+  `tests/CNA/Extended/BitmapFonts/BitmapFontFileReaderTests.cpp` (`FixturePath`)
+- Status: open (test robustness; the library is fine)
+- Found: 2026-10-20, rerunning the cna-extended suite against CNA `688f3f23`
+
+`FixturePath` builds `std::filesystem::path(__FILE__).parent_path() / "files"
+/ "bmfont"`, which assumes `__FILE__` is absolute. Compiled through ccache with
+a base directory (`CCACHE_BASEDIR`, which every build on the shared
+development machine sets), the compiler is given a relative source path, so
+`__FILE__` is relative to the build root. CTest runs the test binary from
+`<build>/tests` (`gtest_discover_tests`' default working directory), where that
+relative path points nowhere, and the four `BitmapFontFileReaderTests` fail
+with "Could not find a part of the path". Run from the build root, all four
+pass. Builds without a ccache base directory (the CI lane) are unaffected.
+
+Suggestion: pass the fixture directory as a compile definition
+(`target_compile_definitions(... CNA_EXTENDED_TEST_FILES="${CMAKE_CURRENT_SOURCE_DIR}/...")`)
+instead of deriving it from `__FILE__`, or give `gtest_discover_tests` a
+`WORKING_DIRECTORY` that matches.
+
+Engine handling: none needed; the local rerun records the four as passing
+when run from the build root (`docs/verification.md`).
+

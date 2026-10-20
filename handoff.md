@@ -21,7 +21,7 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
   on 2026-10-20: car-simulator and street-simulator may be changed **on new
   branches** to adopt the engine (one revertible commit per step of
   `docs/pilots/migration.md`, nothing pushed). Defects found elsewhere are
-  written to `upstream-issues.md` (UP-001 … UP-010 so far). Pilot code may be
+  written to `upstream-issues.md` (UP-001 … UP-011 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
 - Commit regularly on branch `develop`; do not push unless asked.
 - At most 3 parallel compile/test jobs. Shared ccache only:
@@ -112,7 +112,8 @@ Done (see `plan.md` for per-task results):
    to be measured when it is idle (`docs/pilots/performance-budgets.md`).
 3. CI: all three pins are published heads since the move to CNA `688f3f23`
    (2026-10-20); the CI jobs have yet to run on GitHub. The cna-extended
-   suite still has to be rerun locally against the new pin.
+   suite was rerun locally against the new pin (same result as before;
+   UP-011 is a test-fixture path artefact of ccache's base directory).
 4. ENG-035: shadows and post-processing only when a pilot needs them (Street
    currently draws neither; see `docs/pilots/street-simulator.md`).
    Reflection probes are supported through the PBR binder's selector.
@@ -123,7 +124,8 @@ Done (see `plan.md` for per-task results):
    skinned test), UP-006 (CNA umbrella vs module targets), UP-007 (unpushed
    pin), UP-008 (Street's mesh-memory accounting), UP-009 (car-simulator's
    load budget in Debug builds), UP-010 (Street test discards a nodiscard
-   result); UP-004 is resolved upstream.
+   result), UP-011 (cna-extended fixture paths under ccache's base
+   directory); UP-004 is resolved upstream.
 
 ## Pointers
 

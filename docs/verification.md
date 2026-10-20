@@ -4,6 +4,25 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20, 08:20 — cna-extended suite against CNA `688f3f23` (ADR-002)
+
+cna-extended `0061e3e1` (clean) configured as CI's lane does (Debug, tests and
+examples, SDL and video off) in `build-consumer/cna-extended/`, against the
+clean pinned clones `~/deps/cna-baseline` (`688f3f23`) and
+`~/deps/sharp-runtime-baseline` (`f2aecfef`); build 7 min 52 s with 3 jobs.
+2,371 tests: **2,364 passed under CTest, 5 failed, 2 skipped.**
+
+- Skipped (known): the two `OrthographicCameraTest.Contains*` cases — UP-004,
+  fixed upstream only after this pin.
+- Failed (known): `AnimationSystem3DEXTTest.DifferentAnimationTimes_ProduceDifferentPixelOutput`
+  — UP-005.
+- Failed (environment): the four `BitmapFontFileReaderTests` — their fixture
+  path comes from `__FILE__`, which ccache's base directory makes relative;
+  run from the build root they pass (UP-011).
+
+So the result equals the previous pin's: 2,368 passing, 2 known skips, 1
+known test defect.
+
 ## 2026-10-20, 07:50 — car-simulator adopts the engine (branch `engine-adoption`)
 
 Engine `build/` with `Camera::SetMatrices` (`98c8c28`): **197 of 197 tests
