@@ -152,5 +152,23 @@ namespace CnaEngine::Graphics
         rigid.Update(camera, {}, 0.001f);
         EXPECT_EQ(rigid.Position(), Vector3(4.0f, 1.0f, 1.0f));
     }
+
+    TEST(CameraControllersTests, FollowCutsAndAppliesWithoutMoving)
+    {
+        using Microsoft::Xna::Framework::Matrix;
+        Camera camera;
+        FollowCameraController follow(Vector3(0.0f, 2.0f, 6.0f), 0.5f);
+        follow.SetTargetPosition(Vector3(10.0f, 0.0f, 0.0f));
+        follow.SetPosition(Vector3(-3.0f, 4.0f, 5.0f));
+        follow.Apply(camera);
+        EXPECT_EQ(follow.Position(), Vector3(-3.0f, 4.0f, 5.0f)) << "Apply does not move the camera on";
+        EXPECT_EQ(camera.Position(), Vector3(-3.0f, 4.0f, 5.0f));
+        EXPECT_EQ(camera.View(), Matrix::CreateLookAt(Vector3(-3.0f, 4.0f, 5.0f), Vector3(10.0f, 0.0f, 0.0f),
+                                                      Vector3::Up));
+        const auto revision = camera.Revision();
+        follow.SetPosition(follow.TargetPosition());
+        follow.Apply(camera);
+        EXPECT_EQ(camera.Revision(), revision) << "no view while the camera stands on its target";
+    }
 }
 

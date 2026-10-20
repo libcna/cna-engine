@@ -173,6 +173,11 @@ namespace CnaEngine::Graphics
             t = 1.0f - std::pow(1.0f - smoothing_, elapsedSeconds * referenceFramesPerSecond);
         }
         position_ = Vector3::Lerp(position_, desired, t);
+        Apply(camera);
+    }
+
+    void FollowCameraController::Apply(Camera& camera) const
+    {
         if (Vector3::DistanceSquared(position_, target_) > 1e-12f) {
             camera.SetLookAt(position_, target_, Vector3::Up);
         }

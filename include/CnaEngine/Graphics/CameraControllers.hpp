@@ -207,8 +207,14 @@ namespace CnaEngine::Graphics
         [[nodiscard]] float Smoothing() const noexcept { return smoothing_; }
         void SetSmoothing(float smoothing) noexcept { smoothing_ = smoothing; }
         [[nodiscard]] const Microsoft::Xna::Framework::Vector3& Position() const noexcept { return position_; }
+        /// Puts the camera anywhere (a cut); the next Update() moves on from there.
+        void SetPosition(const Microsoft::Xna::Framework::Vector3& position) noexcept { position_ = position; }
         /// Jumps to target + offset (a cut instead of a pan).
         void Snap() noexcept;
+        /// Places `camera` at Position() looking at the target
+        /// (Camera::SetLookAt) without moving towards it; leaves the camera
+        /// as it is while the two coincide.
+        void Apply(Camera& camera) const;
 
         /// Starts from the camera's current position.
         void SyncFrom(const Camera& camera) override;

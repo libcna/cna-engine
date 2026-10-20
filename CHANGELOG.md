@@ -107,7 +107,10 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 - `Graphics/CameraControllers.hpp`, additive: `OrbitCameraController`
   (`OrbitSettings`) and `FollowCameraController` — easy-3d's `OrbitCamera`
   and `FollowCamera`, same positions bit for bit, now driving a `Camera`.
-  Reason: PILOT-004.
+  Reason: PILOT-004. Later the same day, additive:
+  `FollowCameraController::SetPosition` (a cut to any point) and `Apply`
+  (place the camera without moving on) — easy-3d's `FollowCamera::SetPosition`
+  and `ApplyTo`, the only easy-3d features the first pass had left out.
 - `Graphics/GpuMesh.hpp`, additive: `Draw(device, effect, statistics)` — the
   mesh drawn once per pass of the effect's current technique, for games that
   configure their own effect (easy-3d's mesh renderers). Reason: PILOT-004.

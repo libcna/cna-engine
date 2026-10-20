@@ -6,7 +6,7 @@ CnaEngine/Input/Bindings.hpp d6970dc4cf617600
 CnaEngine/Input/InputNames.hpp 96d0c4ca932daa3b
 CnaEngine/Input/InputSnapshot.hpp 016ec2faa05551dd
 CnaEngine/Graphics/Camera.hpp 3e6566b9370e9f41
-CnaEngine/Graphics/CameraControllers.hpp cd1f95ae29e2ef65
+CnaEngine/Graphics/CameraControllers.hpp 907c48e547053d6e
 CnaEngine/Graphics/MeshData.hpp 2c2217b8ca071d20
 CnaEngine/Graphics/VertexLayouts.hpp 61ffd5e805325c5a
 CnaEngine/Graphics/GpuMesh.hpp ca593698177e40a2

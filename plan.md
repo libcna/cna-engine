@@ -766,7 +766,19 @@ frames, behavioral trace and startup screenshots are byte-identical to the
 easy-3d build, under llvmpipe and on the GPU; the editor runs in an
 `OPENGL33` build (`docs/pilots/migration.md`, "galaxy-eggbert"). What is
 left: the owner's decision to merge the branch (and push it), and archiving
-easy-3d, which nothing uses any more.
+easy-3d, which nothing uses any more. The owner merged and pushed it the same
+day (galaxy-eggbert `develop` at `5c5b727`).
+
+Audit (2026-10-20, owner's question whether everything useful moved): every
+public declaration of easy-3d's 13 headers, its tests, its example and its
+documentation's six recipes checked against the engine. Everything has an
+engine counterpart except, deliberately: the CPU batches (`CubeBatch`,
+`BillboardBatch`: the builder is the batch), the pyramid tip (galaxy-eggbert's
+hanging teleporter spike with its own texture mapping, built in the game),
+`DebugDraw`'s box list (the engine stores boxes as their twelve edges and
+draws them) and easy-3d's version constants. One gap was found and closed:
+`FollowCamera::SetPosition`/`ApplyTo` became
+`FollowCameraController::SetPosition`/`Apply` (equivalence probe extended).
 
 ## Phase 6 — release readiness
 

@@ -243,5 +243,18 @@ namespace CnaEngine::Pilot
             followOurs.Update(camera, {}, dt);
             ASSERT_TRUE(Same(follow.GetPosition(), followOurs.Position())) << n;
         }
+
+        // A cut and a camera placed without moving (easy-3d's SetPosition and ApplyTo).
+        for (int n = 0; n < 100; ++n) {
+            const Vector3 position = random.Point(30.0f);
+            const Vector3 target = random.Point(30.0f);
+            follow.SetPosition(position);
+            Easy3D::Camera3D theirs;
+            follow.ApplyTo(theirs, target);
+            followOurs.SetPosition(position);
+            followOurs.SetTargetPosition(target);
+            followOurs.Apply(camera);
+            ASSERT_TRUE(Same(camera.View(), theirs.GetViewMatrix())) << n;
+        }
     }
 }
