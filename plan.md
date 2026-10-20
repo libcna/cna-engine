@@ -696,6 +696,15 @@ Acceptance:
 
 Blocked by: PILOT-001 and PILOT-002.
 
+Progress (2026-10-20): both pilots' adoption branches replace their own code
+step by step, each step measured before the pilot's code was removed
+(`docs/pilots/migration.md`: suites, captures against the agreed tolerance,
+benchmarks); every step is one revertible commit with its known differences
+listed. `docs/api-status.md` records which facilities each branch uses; the
+nine both use are the candidates for `stable`, which waits for the owner to
+merge the branches. The API snapshot test is the compatibility check for
+them.
+
 ## Phase 6 — release readiness
 
 Progress: facilities validated by both pilots are marked `pilot-validated`
