@@ -11,8 +11,9 @@ which the enforced baseline check rejected; `build-probe/` now uses a clean
 clone at the pin, `~/deps/sharp-runtime-baseline` (rebuild 13 min with 3
 jobs). Results:
 
-- `build-probe/`: **204 of 204** (`-E carsim_suite`; the car-simulator suite
-  ran on its own earlier the same day: 320/321, UP-009).
+- `build-probe/`: **204 of 204** with `-E carsim_suite`, and the
+  car-simulator suite on its own with UP-009's test excluded by name: passed
+  in 869 s — **205 of 205** in all.
 - `build/`: **190 of 190**.
 - Both scene comparisons now enforce the proposed screenshot tolerance
   (`docs/pilots/screenshot-tolerances.md`); every view is within it.
