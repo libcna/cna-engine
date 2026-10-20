@@ -21,8 +21,10 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
   on 2026-10-20: car-simulator and street-simulator may be changed **on new
   branches** to adopt the engine (one revertible commit per step of
   `docs/pilots/migration.md`; the branches were pushed at the owner's
-  request on 2026-10-20). Defects found elsewhere are
-  written to `upstream-issues.md` (UP-001 … UP-013 so far). Pilot code may be
+  request on 2026-10-20). A second exception the same day: galaxy-eggbert
+  moves from easy-3d to the engine on a new branch (PILOT-004; branch
+  `engine-adoption`, not pushed). Defects found elsewhere are
+  written to `upstream-issues.md` (UP-001 … UP-015 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
 - Commit regularly on branch `develop`; do not push unless asked.
 - At most 3 parallel compile/test jobs. Shared ccache only:
@@ -49,7 +51,8 @@ shared worktree is still clean at its pin); move them with
 ## State
 
 All work is committed on `develop`. Latest evidence (`docs/verification.md`):
-198 tests pass in `build/`, 213 in the baseline build (`build-probe/`, which
+213 tests pass in `build/` (21:40, with the easy-3d facilities and their
+equivalence probe), 213 in the baseline build (17:50, before them; `build-probe/`, which
 also runs the Street scene comparison and both pilots' own suites; the
 car-simulator suite alone takes ~15 min and excludes UP-009's test by name);
 2 consumer probes pass.
@@ -119,6 +122,11 @@ Done (see `plan.md` for per-task results):
    is left for both: nothing; both are checked on the
    software renderer, on OpenGL via Mesa llvmpipe and on the machine's AMD
    GPU (`SDL_VIDEODRIVER=offscreen` reaches it headless).
+   PILOT-004: galaxy-eggbert runs on the engine instead of easy-3d on its
+   branch `engine-adoption` (worktree `openeggbert/galaxy-eggbert-engine`,
+   builds `build/` = `OPENGLES3`, `build-probe/` = `OPENGL33`; eight
+   commits, not pushed). Every step left its suite green and its captures
+   byte-identical. Open: the owner's merge and push, and archiving easy-3d.
 2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)
    is recorded but not enforced until it is measured on this machine in a
    Release build when the machine is idle (`docs/pilots/performance-budgets.md`).
@@ -138,7 +146,10 @@ Done (see `plan.md` for per-task results):
    result), UP-011 (cna-extended fixture paths under ccache's base
    directory), UP-012 (Street's blended instance groups missing from its
    draw statistics), UP-013 (Street's asset pipeline: stale checksums,
-   Blender 4.3 tree export, MPFB first run); UP-004 is resolved upstream.
+   Blender 4.3 tree export, MPFB first run), UP-014 (galaxy-eggbert's
+   editor draws wireframe on OpenGL ES contexts that cannot), UP-015
+   (cna-extended's `SizeF` class/struct mismatch under Clang); UP-004 is
+   resolved upstream.
 
 ## Pointers
 

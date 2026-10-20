@@ -22,3 +22,5 @@ CnaEngine/Graphics/ForwardRenderer.hpp 9b2801b057367b28
 CnaEngine/Graphics/Instancing.hpp 50caf56545e60a04
 CnaEngine/Enhanced/PbrMaterialBinder.hpp 629d2f81a3648489
 CnaEngine/Graphics/RenderStatistics.hpp 89b259ce46724a4e
+CnaEngine/Graphics/MeshBuilder.hpp 473a8434a1c8972a
+CnaEngine/Graphics/TextureAtlas.hpp 4fa26a81db7e94eb

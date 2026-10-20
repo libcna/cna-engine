@@ -149,6 +149,58 @@ Stays in street-simulator: `SkySystem`, `AtmosphereModel`,
 `CharacterLibrary` and animation, and its debug overlay (the engine's
 cna-extended `DebugOverlay` can replace it later, as a separate step).
 
+## galaxy-eggbert (strict, easy-3d replaced; PILOT-004)
+
+galaxy-eggbert (`openeggbert/galaxy-eggbert`) used the helper library
+easy-3d (`openeggbert/easy-3d`, namespace `Easy3D`), whose only consumer it
+was. The owner decided on 2026-10-20 to move what is useful into the engine
+and to migrate the game. The engine took over easy-3d's camera, cameras,
+atlas, mesh shapes, mesh renderers and debug lines (`Easy3DEquivalenceTests`
+compiles easy-3d read-only and finds the same vertices, indices and matrices
+bit for bit); the game links `CnaEngine::Graphics` only.
+
+| Step | Game code replaced | Engine facility | Known differences |
+| --- | --- | --- | --- |
+| 1 build | `easy3d` beside CNA | `CnaEngine::Core`, `CnaEngine::Graphics`; CNA static (UP-006) | none |
+| 2 camera | `Easy3D::Camera3D` | `Camera::SetLookAt`, `SetPerspective` | an eye on its target used to give a NaN view for that frame; the camera keeps the previous view |
+| 3 geometry and drawing | vertex/index lists, `CubeBatch`/`BillboardBatch`, `Append*Mesh`, `Cube/BillboardMeshRenderer`, `UvRect`, `PlateAxis`, `CubeFace` | `MeshBuilder` (`AddBox` with `BoxFaces`, `AddPlate`, `AddCrossedPlates`, `AddBillboard`), `GpuMesh::Upload`/`Draw(device, effect)`, `UvRect`, `PlateAxis`, `BoxFace` | none; the pyramid tip under teleporters stays in the game (`AddPyramidTip`, same vertices), and the order of geometry in each buffer is kept |
+| 4 removal | easy-3d in CMake, CI, docs | — | — |
+
+Not used by the game, so validated by the probe only: the orbit and follow
+controllers, `TextureAtlas` itself (the game computes its tile regions) and
+`DebugDraw`.
+
+### galaxy-eggbert adoption (branch `engine-adoption`)
+
+Worktree `openeggbert/galaxy-eggbert-engine`, branched from galaxy-eggbert's
+`develop` at `44d27bf`; not pushed. Every commit was checked in a Release
+`OPENGLES3` build against `~/deps/cna-baseline` (`900d0db3b`) with
+galaxy-eggbert's suite (93 CTest cases, `-E easy-gl-resource-smoke-tests`)
+and its deterministic outputs — the three golden frames
+(`--golden-capture`), the behavioral trace (`--golden-capture-trace`) and the
+startup screenshots — under Xvfb (llvmpipe) and on the GPU
+(`SDL_VIDEODRIVER=offscreen`, Radeon 780M), against the build before the
+first step.
+
+| Commit | Step | Result |
+| --- | --- | --- |
+| `1676150` | build | 93/93; all 12 captures byte-identical |
+| `61600dd` | camera | 93/93; all 12 captures byte-identical |
+| `01c6d8f` | geometry and drawing | 93/93; all 12 captures byte-identical |
+| `1780a35` | remove easy-3d | 93/93; all 12 captures byte-identical |
+| `b66ed2d` | docs site | — |
+| `5c5b727` | records | 93/93 and 12/12 again against engine `d86c62d` |
+
+Two runs of the pre-migration build were byte-identical, so the captures are
+deterministic and any difference would have been real. An `OPENGL33` build of
+the final state ran the menus and the editor under Xvfb (browser, new world,
+palette, placing blocks, flying the camera); the 20 changed sources and the
+engine's strict modules compile with Emscripten's `em++` against the `WEBGL2`
+headers (the web build itself was not linked or run). Found on the way,
+independent of the migration: galaxy-eggbert's committed golden references
+are stale against its `develop` with this CNA, and its editor terminates on
+OpenGL ES contexts without polygon mode (UP-014).
+
 ## Order of work
 
 Each pilot: input and fixed-step first (no rendering change), then camera,

@@ -758,6 +758,16 @@ probe compares all of them with easy-3d's sources bit for bit. Not taken over:
 the pyramid tip (one game's shape, built in galaxy-eggbert with `AddVertex`/
 `AddTriangle`).
 
+Result (2026-10-20): galaxy-eggbert runs on the engine on its branch
+`engine-adoption` (worktree `openeggbert/galaxy-eggbert-engine`, not
+pushed): build, camera, geometry and drawing, removal of easy-3d, docs —
+one commit each. After every step its 93 CTest cases pass and its golden
+frames, behavioral trace and startup screenshots are byte-identical to the
+easy-3d build, under llvmpipe and on the GPU; the editor runs in an
+`OPENGL33` build (`docs/pilots/migration.md`, "galaxy-eggbert"). What is
+left: the owner's decision to merge the branch (and push it), and archiving
+easy-3d, which nothing uses any more.
+
 ## Phase 6 — release readiness
 
 Progress: facilities validated by both pilots are marked `pilot-validated`

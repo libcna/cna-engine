@@ -4,6 +4,35 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20, 21:40 — easy-3d taken over; galaxy-eggbert on the engine (PILOT-004)
+
+Engine `develop` at `e56fa0f` (easy-3d facilities) and `d86c62d` (build
+fixes); CNA worktree `../cna` at `16b38aac`, then `c875d324` (moved by other
+agents; `build/` is not baseline evidence).
+
+- `build/` (GCC, Debug): **213 of 213 tests passed** at both commits,
+  including `Easy3DEquivalenceTests` (5 tests: atlas regions and grids,
+  200 random faced and plain cubes, 200 plates and triple crosses, 200
+  billboards, 200 camera matrix pairs, orbit positions and 300 follow steps
+  — all bit-identical to easy-3d's sources compiled read-only).
+- Clang: all 74 engine translation units (`build/compile_commands.json`,
+  compiler swapped, `-fsyntax-only`) compile without a warning with
+  `-Werror` after `d86c62d`; before it, `RenderQueue`'s unused member and
+  cna-extended's `SizeF` (UP-015) failed. Emscripten `em++` 6.0.9 compiles
+  the strict modules against CNA's `WEBGL2` headers.
+- galaxy-eggbert (`engine-adoption`, worktree
+  `openeggbert/galaxy-eggbert-engine`, Release, `OPENGLES3`, CNA
+  `~/deps/cna-baseline` `900d0db3b` and Sharp Runtime `f2aecfef`, both
+  confirmed by the engine's baseline check, easy-gl v0.1.1, meta-gl v0.4.1):
+  before the first step and after each of the four code steps 93/93 CTest
+  cases pass (`-E easy-gl-resource-smoke-tests`), and the golden frames
+  60/120/180, the behavioral trace and both startup screenshots are
+  byte-identical to the pre-migration build under Xvfb (llvmpipe) and with
+  `SDL_VIDEODRIVER=offscreen` (Radeon 780M) — 12 of 12 files every time.
+  `OPENGL33` build (`build-probe/` there): menus and editor driven under
+  Xvfb with xdotool. Not run: the Emscripten build (only its changed sources
+  were compiled with `em++`) and Android.
+
 ## 2026-10-20, 17:50 — pin moved to CNA `900d0db3b` (UP-004's fix published)
 
 CNA published `next` at `900d0db3b52d76d3115ebda0a0e04a25fefad1a5`

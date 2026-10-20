@@ -31,7 +31,9 @@ First development line. Highlights:
 API snapshot baseline taken 2026-10-19 (12 headers); extended 2026-10-20 to 20
 headers as the render facilities, the fixed-step clock and the PBR binder
 became pilot-validated (their changes of that day are listed below);
-`Graphics/RenderStatistics.hpp` joined on 2026-10-20 (21 headers).
+`Graphics/RenderStatistics.hpp` joined on 2026-10-20 (21 headers), and
+`Graphics/MeshBuilder.hpp` and `Graphics/TextureAtlas.hpp` (its `UvRect`)
+the same day, when galaxy-eggbert moved onto them (23 headers).
 
 ### Pilot-validated API changes
 
