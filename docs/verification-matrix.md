@@ -15,7 +15,7 @@ Plan item: `REL-003`. What is checked, where, and how a failure shows.
 | Sanitizers | `build-asan/` with `CNA_ENGINE_SANITIZE=address,undefined`, all non-pilot tests (UBSan fatal, LeakSanitizer on) | no memory error, undefined behaviour or leak in engine code under the tests | local |
 | Upstream compatibility | CI job `cna-extended` (cna-extended's suite and examples at the pins), weekly `upstream-canary` (engine against upstream heads) | the enhanced dependency still works on the pin; upstream API breaks show before a pin move | CI (blocked by UP-007), local on pin updates |
 | Visual | examples' PNG output, pixel-equality pilot probes | rendering matches the pilots exactly where both draw the same thing | local |
-| Performance | not yet automated | — (no pilot-agreed budget yet; see MILESTONE-2) | — |
+| Performance | `performance`: scaling checks (`cna_engine_performance_tests`) | culling, sorting, instance culling and action updates grow linearly or as n log n (16x the items within 64x the time; measured 16-21x); absolute budgets still need the owner (MILESTONE-2) | local, CI (serial step) |
 
 ## Supported combinations
 

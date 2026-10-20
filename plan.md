@@ -730,7 +730,9 @@ Blocked by: PILOT-003.
 Progress: `docs/verification-matrix.md` separates unit, boundary, example,
 installed-consumer, pilot, baseline, upstream and visual checks and lists the
 verified combinations; CI caps jobs at three and fails on skipped tests.
-Open: performance checks with agreed budgets (MILESTONE-2).
+Performance scaling checks run under their own label since 2026-10-20 (no
+budgets: they fail on super-linear growth). Open: absolute budgets agreed with
+the owner (MILESTONE-2).
 
 ## Deferred work and non-goals for 1.0
 

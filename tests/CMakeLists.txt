@@ -51,6 +51,15 @@ gtest_discover_tests(cna_engine_tests
     DISCOVERY_MODE PRE_TEST
     PROPERTIES LABELS unit)
 
+# --- Performance scaling checks (REL-003): their own label, no budgets. -------
+add_executable(cna_engine_performance_tests Performance/ScalingTests.cpp)
+target_link_libraries(cna_engine_performance_tests PRIVATE cna_engine_core cna_engine_graphics GTest::gtest_main)
+cna_engine_sanitize(cna_engine_performance_tests)
+gtest_discover_tests(cna_engine_performance_tests
+    TEST_PREFIX "cna_engine.performance."
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES LABELS performance)
+
 # --- Enhanced tests: the only executable linking cna-extended. -----------------
 if(CNA_ENGINE_WITH_EXTENDED)
     add_executable(cna_engine_extended_tests

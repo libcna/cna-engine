@@ -83,6 +83,11 @@ jobs:
         working-directory: cna-engine
         run: ctest --test-dir build -L example --output-on-failure --parallel "$JOBS"
 
+      # Serial: timing checks compare runs of the same process.
+      - name: Performance scaling
+        working-directory: cna-engine
+        run: ctest --test-dir build -L performance --output-on-failure
+
       - name: No test may be skipped silently
         working-directory: cna-engine
         shell: bash
