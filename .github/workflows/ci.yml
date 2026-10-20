@@ -95,7 +95,9 @@ jobs:
         shell: bash
         run: |
           ctest --test-dir build --parallel "$JOBS" --output-on-failure 2>&1 | tee ctest.log
-          if grep -Eq "Not Run|Disabled|Skipped" ctest.log; then
+          # CTest's own markers (a disabled test reports "***Not Run (Disabled)");
+          # test names that merely contain such words must not match.
+          if grep -Eq "\*\*\*(Skipped|Not Run)" ctest.log; then
             echo "::error::a test was skipped or disabled"; exit 1
           fi
 
@@ -114,7 +116,9 @@ jobs:
     timeout-minutes: 120
     env:
       # UP-005: the test builds a skinned mesh from an undeclared vertex buffer.
-      KNOWN_FAILURE: '^AnimationSystem3DEXTTest\.DifferentAnimationTimes_ProduceDifferentPixelOutput$'
+      # UP-011: the bitmap-font tests find their fixtures through __FILE__, which is
+      # relative here, from a working directory it does not resolve against.
+      KNOWN_FAILURE: '^(AnimationSystem3DEXTTest\.DifferentAnimationTimes_ProduceDifferentPixelOutput|BitmapFontFileReaderTests\.Read(BinaryFile|XmlFile|XmlFileWithUtf8Bom|TextFile))$'
       # UP-004: CNA's BoundingFrustum::Contains(Vector3) deviates from XNA.
       KNOWN_SKIPS: 'OrthographicCameraTest\.Contains(Point|Vector2)_WithDefaultCamera_ReturnsCorrectContainment'
     steps:
@@ -162,7 +166,7 @@ jobs:
         run: |
           ctest --test-dir cna-extended-build --parallel "$JOBS" --output-on-failure -E "$KNOWN_FAILURE" 2>&1 | tee ctest.log
           test "${PIPESTATUS[0]}" -eq 0
-          unexpected=$(grep -E "\*\*\*(Skipped|Not Run)|Disabled" ctest.log | grep -Ev "$KNOWN_SKIPS" || true)
+          unexpected=$(grep -E "\*\*\*(Skipped|Not Run)" ctest.log | grep -Ev "$KNOWN_SKIPS" || true)
           if [ -n "$unexpected" ]; then
             echo "::error::unexpected skipped tests:"; echo "$unexpected"; exit 1
           fi
@@ -170,11 +174,11 @@ jobs:
             echo "::notice::the UP-004 skips are gone; update KNOWN_SKIPS and upstream-issues.md"
           fi
 
-      - name: Known failure still failing (UP-005)
+      - name: Known failures still failing (UP-005, UP-011)
         shell: bash
         run: |
           if ctest --test-dir cna-extended-build -R "$KNOWN_FAILURE" --output-on-failure; then
-            echo "::notice::UP-005 passes now; remove KNOWN_FAILURE and update upstream-issues.md"
+            echo "::notice::UP-005 and UP-011 pass now; remove KNOWN_FAILURE and update upstream-issues.md"
           fi
 
   # EXT-003 early warning: the engine against the upstream development heads

@@ -276,15 +276,19 @@ development machine sets), the compiler is given a relative source path, so
 `<build>/tests` (`gtest_discover_tests`' default working directory), where that
 relative path points nowhere, and the four `BitmapFontFileReaderTests` fail
 with "Could not find a part of the path". Run from the build root, all four
-pass. Builds without a ccache base directory (the CI lane) are unaffected.
+pass. The first GitHub run of the CI lane (2026-10-20, no ccache base
+directory) failed the same way — `__FILE__` was `../cna-extended/tests/...`
+there too — so any build where the compiler sees a relative source path is
+affected, not only builds through ccache.
 
 Suggestion: pass the fixture directory as a compile definition
 (`target_compile_definitions(... CNA_EXTENDED_TEST_FILES="${CMAKE_CURRENT_SOURCE_DIR}/...")`)
 instead of deriving it from `__FILE__`, or give `gtest_discover_tests` a
 `WORKING_DIRECTORY` that matches.
 
-Engine handling: none needed; the local rerun records the four as passing
-when run from the build root (`docs/verification.md`).
+Engine handling: the CI lane lists the four by exact name in
+`KNOWN_FAILURE` (and reports when they pass); the local rerun records them as
+passing when run from the build root (`docs/verification.md`).
 
 ## UP-012 — street-simulator's statistics leave out blended instance groups
 
