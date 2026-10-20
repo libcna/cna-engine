@@ -1,6 +1,7 @@
 # CNA Engine Handoff
 
-Date: 2026-10-19 (supersedes the 2026-10-14 handoff, which is in git history)
+Date: 2026-10-21 (first written 2026-10-19; supersedes the 2026-10-14
+handoff, which is in git history)
 
 Audience: the next AI agent working on `cna-engine`
 
@@ -31,7 +32,7 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
 | Directory | Content |
 | --- | --- |
 | `build/` | day-to-day engine build against the shared `../cna` worktree (which other agents edit; not baseline evidence) |
-| `build-probe/` | baseline build against `~/deps/cna-baseline` (clean clone at the pinned CNA revision) with `CNA_ENGINE_ENFORCE_BASELINE=ON`, `CNA_ENGINE_CNA_CNAEXT=ON` and `CNA_ENGINE_PILOT_SUITES=ON`; the only tree that builds the Street scene comparison and runs both pilots' own suites (the car-simulator suite alone takes ~18 min; `-E "carsim_suite"` skips it) |
+| `build-probe/` | baseline build against `~/deps/cna-baseline` and `~/deps/sharp-runtime-baseline` (clean clones at the pins) with `CNA_ENGINE_ENFORCE_BASELINE=ON`, `CNA_ENGINE_CNA_CNAEXT=ON` and `CNA_ENGINE_PILOT_SUITES=ON`; the only tree that builds the Street scene comparison and runs both pilots' own suites (the car-simulator suite alone takes ~15 min; `-E "carsim_suite"` skips it) |
 | `build-consumer/` | installed-package consumer probes (`tools/run_consumer_probes.sh`) |
 | `build-asan/` | `CNA_ENGINE_SANITIZE=address,undefined`, pilot probes off, shared CNA worktree; engine targets instrumented only |
 
@@ -54,12 +55,12 @@ practically identically to the pilots' own renderers: Street's procedural
 city with the PBR binder carrying Street's lighting and its sky as a custom
 pass, traffic and pedestrians included (vehicles as dynamic items, people
 as skinned render items; visible items, instances, figures and all 1,284
-draw calls identical; mean image difference 0.01/255) and car-simulator's `lipova` map with the strict stock binder
-(every visibility count and all draw calls identical by day, at night and
-with the headlights on and in a rear-view mirror — additive lamp light, the
-headlight fill as nested renderers and the mirrored camera included;
-0.05/255 by day). See
-`docs/pilots/`.
+draw calls identical; mean image difference 0.01/255) and car-simulator's
+`lipova` map with the strict stock binder (every visibility count and all
+draw calls identical by day, at night, with the headlights on and in a
+rear-view mirror — additive lamp light, the headlight fill as nested
+renderers and the mirrored camera included; 0.05/255 by day). Both
+comparisons enforce the proposed screenshot tolerance. See `docs/pilots/`.
 
 The shared `../cna` worktree is changed by other agents all the time (on
 2026-10-20 e.g. XNA-exact `BoundingFrustum` containment and GJK
