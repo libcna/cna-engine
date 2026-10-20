@@ -29,8 +29,8 @@ namespace CnaEngine::Graphics
 
     /// A small forward renderer: ordering, buckets, render states and custom
     /// passes. How a material becomes effect parameters is delegated to an
-    /// IMaterialBinder — by default the StockMaterialBinder over XNA's
-    /// BasicEffect/AlphaTestEffect, so strict-XNA games can use it as is.
+    /// IMaterialBinder — by default the StockMaterialBinder over XNA's stock
+    /// effects, so strict-XNA games can use it as is.
     ///
     /// Pass order: [BeforeOpaque] Opaque, AlphaTested [AfterOpaque]
     /// Transparent [AfterTransparent] Overlay [AfterOverlay]. Custom passes run
@@ -39,11 +39,14 @@ namespace CnaEngine::Graphics
     ///
     /// State contract: before each bucket the renderer sets the blend, depth
     /// and rasterizer states it needs (opaque/alpha-tested: Opaque blend,
-    /// Default depth, counter-clockwise culling; transparent: material blend,
-    /// DepthRead; overlay: AlphaBlend, no depth); double-sided materials
-    /// disable culling and biased materials get a biased rasterizer state. Custom passes receive the device in the state of the
-    /// preceding bucket. After Render() the blend, depth-stencil and rasterizer
-    /// states are restored to what they were before the call.
+    /// Default depth, counter-clockwise culling; transparent and overlay: the
+    /// blend state the binder chooses per item (BlendStateFor), DepthRead for
+    /// transparent, no depth for overlay); double-sided materials disable
+    /// culling and biased materials get a biased rasterizer state. Binders set
+    /// the sampler states of the texture slots they use from the material.
+    /// Custom passes receive the device in the state of the preceding bucket.
+    /// After Render() the blend, depth-stencil and rasterizer states and
+    /// samplers 0-4 are restored to what they were before the call.
     ///
     /// Fallbacks taken by the binder are deterministic and reported, once each,
     /// in LastFallbacks().
