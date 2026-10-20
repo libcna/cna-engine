@@ -355,3 +355,47 @@ after its renderer moved onto the engine (renderer files of `64d1c07` against
 `b137025`, 1024 × 576, hardware GPU) differ by 0.083/255 on average, 0.53 %
 of pixels visibly — inside the agreed tolerance.
 
+
+## UP-014 — galaxy-eggbert's editor draws wireframe on contexts that cannot
+
+- Repository: `openeggbert/galaxy-eggbert` (`develop`),
+  `src/GalaxyEggbert/Editor/EditorHighlightRenderer.cpp`, `Draw`
+- Status: open (independent of the easy-3d migration)
+- Found: 2026-10-20, driving the migrated editor under Xvfb with the native
+  default renderer (`OPENGLES3`)
+
+The editor's highlight box draws its edges with `FillMode::WireFrame`
+without asking `GraphicsDevice::SupportsCapability(GraphicsCapability::WireFrame)`.
+On an OpenGL ES context without `GL_NV_polygon_mode` CNA's EasyGL renderer
+can only emulate wireframe for a Position+Normal mesh drawn with a stock
+effect; the highlight box is Position+Texture (as it was with easy-3d's
+`CubeMeshRenderer`), so CNA throws `System::NotSupportedException` and the
+game terminates as soon as the editor shows a placement preview. Neither
+llvmpipe's nor the Radeon 780M's (radeonsi) OpenGL ES context on this
+machine offers `GL_NV_polygon_mode`, so the native OpenGL ES 3 build's editor
+cannot be used here; the OpenGL 3.3 build (galaxy-eggbert's verified
+configuration, `build-cna-opengl3`) has native polygon mode and is unaffected.
+
+Suggestion: draw the edges with `FillMode::Solid` (or as a line list) when
+the capability is missing.
+
+Engine handling: none needed. `CnaEngine::Graphics::DebugDraw` draws box
+outlines as lines and works on every context.
+
+## UP-015 — cna-extended declares `SizeF` as a class and defines it as a struct
+
+- Repository: `libcna/cna-extended` (`develop`),
+  `include/CNA/Extended/Size.hpp` (`class SizeF;`) and
+  `include/CNA/Extended/SizeF.hpp` (`struct SizeF`)
+- Status: open
+- Found: 2026-10-20, compiling every engine translation unit with Clang
+
+Clang warns (`-Wmismatched-tags`) in every translation unit that includes
+both headers, so a project compiling them with `-Werror` under Clang fails;
+with the Microsoft C++ ABI the mismatch can also give link errors.
+
+Suggestion: forward-declare `struct SizeF;`.
+
+Engine handling: the engine treats CNA's and cna-extended's headers as
+system headers for its own targets (`cna_engine_link_external`), so their
+warnings no longer fail the engine's `-Werror` build.

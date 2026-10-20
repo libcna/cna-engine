@@ -63,8 +63,21 @@ set(CNA_ENGINE_REQUIRED_CNA_TARGETS
     CNA::Content
 )
 
+# The checkouts the baseline check (CnaEngineBaseline.cmake) inspects: this
+# project's own directories, or the parent's when it provides the targets.
+set(CNA_ENGINE_CNA_CHECKOUT "${CNA_ENGINE_CNA_DIR}")
+set(CNA_ENGINE_SHARP_RUNTIME_CHECKOUT "${CNA_ENGINE_SHARP_RUNTIME_DIR}")
+set(CNA_ENGINE_EXTENDED_CHECKOUT "${CNA_ENGINE_EXTENDED_DIR}")
+
 if(TARGET CNA::Core)
     message(STATUS "cna-engine: using CNA targets provided by the parent project")
+    # project() caches every project's source directory.
+    if(DEFINED CNA_SOURCE_DIR)
+        set(CNA_ENGINE_CNA_CHECKOUT "${CNA_SOURCE_DIR}")
+    endif()
+    if(DEFINED SHARP_RUNTIME_SOURCE_DIR)
+        set(CNA_ENGINE_SHARP_RUNTIME_CHECKOUT "${SHARP_RUNTIME_SOURCE_DIR}")
+    endif()
     if(COMMAND sharp_runtime_enable_components)
         sharp_runtime_enable_components(${CNA_ENGINE_SHARP_RUNTIME_COMPONENTS})
     endif()
@@ -111,6 +124,9 @@ foreach(_target IN LISTS CNA_ENGINE_REQUIRED_CNA_TARGETS)
     endif()
 endforeach()
 
+if(CNA_ENGINE_WITH_EXTENDED AND TARGET CNA::Extended AND DEFINED cna_extended_SOURCE_DIR)
+    set(CNA_ENGINE_EXTENDED_CHECKOUT "${cna_extended_SOURCE_DIR}")
+endif()
 if(CNA_ENGINE_WITH_EXTENDED AND NOT TARGET CNA::Extended)
     if(NOT EXISTS "${CNA_ENGINE_EXTENDED_DIR}/CMakeLists.txt")
         message(FATAL_ERROR

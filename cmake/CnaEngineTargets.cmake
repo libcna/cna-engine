@@ -38,9 +38,15 @@ endfunction()
 # (upstream-issues.md UP-001), so they are linked for the build tree only and
 # recorded in CNA_ENGINE_EXTERNAL_LINKS_<target>; CnaEngineConfig.cmake re-adds
 # them to the imported targets after checking that the consumer defined them.
+#
+# Their headers are system headers for the engine's own compilation: a warning
+# inside CNA or cna-extended (cna-extended's SizeF under Clang, UP-015) must
+# not fail the engine's -Werror build.
 function(cna_engine_link_external target)
     foreach(_dependency IN LISTS ARGN)
         target_link_libraries(${target} PUBLIC "$<BUILD_INTERFACE:${_dependency}>")
+        target_include_directories(${target} SYSTEM PRIVATE
+            "$<TARGET_PROPERTY:${_dependency},INTERFACE_INCLUDE_DIRECTORIES>")
     endforeach()
     set_property(GLOBAL APPEND PROPERTY CNA_ENGINE_EXTERNAL_LINKS_${target} ${ARGN})
 endfunction()

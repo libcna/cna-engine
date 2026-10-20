@@ -109,6 +109,5 @@ namespace CnaEngine::Graphics
         std::array<std::vector<RenderItem>, static_cast<std::size_t>(RenderBucket::Count)> sorted_;
         std::unordered_map<const Material*, std::uint32_t> materialRanks_;
         std::uint32_t sequence_ = 0;
-        bool dirty_ = false;
     };
 }

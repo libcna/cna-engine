@@ -110,6 +110,11 @@ became pilot-validated (their changes of that day are listed below);
   mesh drawn once per pass of the effect's current technique, for games that
   configure their own effect (easy-3d's mesh renderers). Reason: PILOT-004.
 
+- `Graphics/RenderQueue.hpp`: an unused private member removed (no API
+  change; the header's fingerprint changes). Reason: Clang reports it
+  (`-Wunused-private-field`), which failed the engine's `-Werror` build with
+  Clang (Emscripten, Android NDK, macOS).
+
 ### Other API additions (experimental headers)
 
 - `Graphics/TextureAtlas.hpp`: `TextureAtlas`, `AtlasRect`, `UvRect` (named
