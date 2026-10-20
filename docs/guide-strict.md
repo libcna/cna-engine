@@ -126,6 +126,18 @@ depth and rasterizer states and samplers 0–4 are what they were before.
   drawn afterwards with `SpriteBatch` (`examples/quick_start`).
 - **Your own camera behaviour:** implement `ICameraController` (chase,
   cockpit, cinematic stay in the game).
+- **Your own camera math:** a game that already computes its view and
+  projection (both pilots do) hands them to `Camera::SetMatrices`; the engine
+  culls and draws with exactly those matrices, so moving a renderer onto the
+  engine does not move the picture by a rounding step.
+- **Game passes between engine draws:** layers that must land between two
+  groups of surfaces (car-simulator's lying snow on the terrain before the
+  roads are drawn, its wet sheen on the roads before the buildings) are drawn
+  between several `Render` calls of one renderer, each over its own queue;
+  every call restores the device state the game had set.
+- **Existing meshes:** a game's own mesh class can expose its buffers as a
+  borrowed `GpuMesh` (`GpuMesh::Borrow`) built once beside them, so its draws
+  can go through the engine without a second upload.
 - **Direct access:** every engine object exposes the CNA objects it wraps
   (`GpuMesh::Vertices()/Indices()`, `ForwardRenderer::LitEffect()`).
 
