@@ -31,6 +31,10 @@ set(CNA_ENABLE_DRACO OFF CACHE BOOL "" FORCE)
 set(CNA_GRAPHICS_RENDERER SOFTWARE CACHE STRING "" FORCE)
 set(CNA_PLATFORM HEADLESS CACHE STRING "" FORCE)
 set(CNA_AUDIO_PLATFORM NULL CACHE STRING "" FORCE)
+# Headless consumers need neither CNA's vendored SDL nor video playback (a CNA
+# checkout without its SDL submodule, as in CI, must still configure).
+set(CNA_ENABLE_SDL OFF CACHE STRING "" FORCE)
+set(CNA_ENABLE_VIDEO OFF CACHE STRING "" FORCE)
 set(CNA_SHARP_RUNTIME_ROOT "${PROBE_SHARP_RUNTIME_DIR}" CACHE PATH "" FORCE)
 set(SHARP_RUNTIME_COMPONENTS
     "Core.Base;IO;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Storage;Security.Cryptography;IO.Compression;Text.Json;Threading.Tasks;Xml"
