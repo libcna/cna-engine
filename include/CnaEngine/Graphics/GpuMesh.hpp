@@ -8,6 +8,7 @@
 #include "Microsoft/Xna/Framework/BoundingBox.hpp"
 #include "Microsoft/Xna/Framework/BoundingSphere.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BufferUsage.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Effect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/IndexBuffer.hpp"
 #include "Microsoft/Xna/Framework/Graphics/IndexElementSize.hpp"
@@ -88,6 +89,12 @@ namespace CnaEngine::Graphics
         /// the mesh is empty or its buffers have been disposed.
         bool Draw(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
                   RenderStatistics* statistics = nullptr) const;
+        /// Applies each pass of `effect`'s current technique and draws the
+        /// mesh after it -- the XNA draw loop, for code that sets its effects
+        /// up itself. Adds one draw per pass to `statistics`; returns false
+        /// (and applies nothing) when the mesh is not drawable.
+        bool Draw(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
+                  Microsoft::Xna::Framework::Graphics::Effect& effect, RenderStatistics* statistics = nullptr) const;
 
         [[nodiscard]] bool IsDrawable() const noexcept;
         [[nodiscard]] bool OwnsBuffers() const noexcept { return owned_; }

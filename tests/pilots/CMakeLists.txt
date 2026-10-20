@@ -185,3 +185,30 @@ if(CNA_ENGINE_STREET_SCENE_COMPARISON AND CNA_CNAEXT
     # Building Street's procedural city in a Debug software-rendered build is slow.
     set_tests_properties(cna_engine.pilot.street_scene_comparison PROPERTIES LABELS pilot TIMEOUT 3600)
 endif()
+
+# easy-3d (galaxy-eggbert's former helper library): what the engine took over
+# from it must produce exactly easy-3d's vertices, indices and matrices.
+set(CNA_ENGINE_EASY3D_DIR "${PROJECT_SOURCE_DIR}/../../openeggbert/easy-3d"
+    CACHE PATH "easy-3d checkout used by the equivalence probe (read-only)")
+
+if(EXISTS "${CNA_ENGINE_EASY3D_DIR}/src/CubeMesh.cpp")
+    add_library(cna_engine_pilot_easy3d STATIC
+        "${CNA_ENGINE_EASY3D_DIR}/src/TextureAtlas.cpp"
+        "${CNA_ENGINE_EASY3D_DIR}/src/CubeBatch.cpp"
+        "${CNA_ENGINE_EASY3D_DIR}/src/CubeMesh.cpp"
+        "${CNA_ENGINE_EASY3D_DIR}/src/BillboardBatch.cpp"
+        "${CNA_ENGINE_EASY3D_DIR}/src/BillboardMesh.cpp"
+        "${CNA_ENGINE_EASY3D_DIR}/src/Camera3D.cpp"
+        "${CNA_ENGINE_EASY3D_DIR}/src/OrbitCamera.cpp"
+        "${CNA_ENGINE_EASY3D_DIR}/src/FollowCamera.cpp")
+    target_include_directories(cna_engine_pilot_easy3d PUBLIC "${CNA_ENGINE_EASY3D_DIR}/include")
+    target_link_libraries(cna_engine_pilot_easy3d PUBLIC CNA::Math)
+
+    add_executable(cna_engine_easy3d_equivalence_tests Easy3DEquivalenceTests.cpp)
+    target_link_libraries(cna_engine_easy3d_equivalence_tests PRIVATE
+        cna_engine_graphics cna_engine_pilot_easy3d GTest::gtest_main)
+    gtest_discover_tests(cna_engine_easy3d_equivalence_tests
+        TEST_PREFIX "cna_engine.pilot."
+        DISCOVERY_MODE PRE_TEST
+        PROPERTIES LABELS "pilot")
+endif()

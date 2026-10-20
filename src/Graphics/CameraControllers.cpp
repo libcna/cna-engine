@@ -108,4 +108,73 @@ namespace CnaEngine::Graphics
         }
         camera.SetPosition(position);
     }
+
+    OrbitCameraController::OrbitCameraController(const OrbitSettings settings) : settings_(settings) {}
+
+    Vector3 OrbitCameraController::Position() const
+    {
+        const float cosPitch = std::cos(pitch_);
+        const float sinPitch = std::sin(pitch_);
+        const float cosYaw = std::cos(yaw_);
+        const float sinYaw = std::sin(yaw_);
+        return Vector3(target_.X + distance_ * cosPitch * sinYaw, target_.Y + distance_ * sinPitch,
+                       target_.Z + distance_ * cosPitch * cosYaw);
+    }
+
+    void OrbitCameraController::Apply(Camera& camera) const { camera.SetLookAt(Position(), target_, Vector3::Up); }
+
+    void OrbitCameraController::SyncFrom(const Camera& camera)
+    {
+        const Vector3 offset = camera.Position() - target_;
+        const float distance = offset.Length();
+        if (distance < 1e-6f) {
+            return;
+        }
+        distance_ = distance;
+        pitch_ = std::asin(std::clamp(offset.Y / distance, -1.0f, 1.0f));
+        yaw_ = std::atan2(offset.X, offset.Z);
+    }
+
+    void OrbitCameraController::Update(Camera& camera, const CameraControlInput& input, const float elapsedSeconds)
+    {
+        float speed = settings_.zoomSpeed;
+        if (input.fast) {
+            speed *= settings_.fastMultiplier;
+        }
+        if (input.slow) {
+            speed *= settings_.slowMultiplier;
+        }
+        yaw_ += input.yaw;
+        pitch_ = std::clamp(pitch_ - input.pitch, -settings_.maxPitch, settings_.maxPitch);
+        distance_ = std::clamp(distance_ - input.move.Z * speed * elapsedSeconds, settings_.minDistance,
+                               settings_.maxDistance);
+        Apply(camera);
+    }
+
+    FollowCameraController::FollowCameraController(const Vector3& offset, const float smoothing)
+        : offset_(offset), smoothing_(smoothing)
+    {
+    }
+
+    void FollowCameraController::Snap() noexcept { position_ = target_ + offset_; }
+
+    void FollowCameraController::SyncFrom(const Camera& camera) { position_ = camera.Position(); }
+
+    void FollowCameraController::Update(Camera& camera, const CameraControlInput& input, const float elapsedSeconds)
+    {
+        (void)input;
+        // The share of the way closed per 1/60 s, compounded over the elapsed time.
+        constexpr float referenceFramesPerSecond = 60.0f;
+        const Vector3 desired(target_.X + offset_.X, target_.Y + offset_.Y, target_.Z + offset_.Z);
+        float t = 0.0f;
+        if (smoothing_ >= 1.0f) {
+            t = 1.0f;
+        } else if (smoothing_ > 0.0f) {
+            t = 1.0f - std::pow(1.0f - smoothing_, elapsedSeconds * referenceFramesPerSecond);
+        }
+        position_ = Vector3::Lerp(position_, desired, t);
+        if (Vector3::DistanceSquared(position_, target_) > 1e-12f) {
+            camera.SetLookAt(position_, target_, Vector3::Up);
+        }
+    }
 }

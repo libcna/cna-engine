@@ -31,6 +31,8 @@ add_executable(cna_engine_tests
     Graphics/CameraControllersTests.cpp
     Graphics/MeshDataTests.cpp
     Graphics/MeshBuilderTests.cpp
+    Graphics/TextureAtlasTests.cpp
+    Graphics/DebugDrawTests.cpp
     Graphics/VertexLayoutsTests.cpp
     Graphics/GpuMeshTests.cpp
     Graphics/ScreenCaptureTests.cpp

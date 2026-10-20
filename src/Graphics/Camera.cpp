@@ -91,34 +91,58 @@ namespace CnaEngine::Graphics
         SetOrientation(Quaternion::CreateFromYawPitchRoll(yaw, pitch, roll));
     }
 
+    namespace
+    {
+        // Orientation looking from `position` at `target`; throws (and changes
+        // nothing) for bad input.
+        Quaternion LookAtOrientation(const Vector3& position, const Vector3& target, const Vector3& up)
+        {
+            const Vector3 direction = target - position;
+            if (!Finite(target) || direction.LengthSquared() < 1e-12f) {
+                throw std::invalid_argument("Camera: LookAt target must be finite and differ from the position");
+            }
+            const Vector3 forward = Vector3::Normalize(direction);
+            Vector3 upHint = up.LengthSquared() > 1e-12f ? Vector3::Normalize(up) : Vector3::Up;
+            if (std::fabs(Vector3::Dot(forward, upHint)) > 0.9999f) {
+                // Looking straight along the up hint: any perpendicular up works;
+                // prefer the one that keeps "screen up" pointing towards -Z/+Z.
+                upHint = std::fabs(forward.Y) > 0.5f ? (forward.Y > 0.0f ? Vector3::Backward : Vector3::Forward)
+                                                     : Vector3::Up;
+            }
+            const Vector3 right = Vector3::Normalize(Vector3::Cross(forward, upHint));
+            const Vector3 trueUp = Vector3::Cross(right, forward);
+            // Rotation matrix whose Forward (-Z row) is `forward` and Up row is `trueUp`.
+            Matrix rotation = Matrix::getIdentityProperty();
+            rotation.M11 = right.X;
+            rotation.M12 = right.Y;
+            rotation.M13 = right.Z;
+            rotation.M21 = trueUp.X;
+            rotation.M22 = trueUp.Y;
+            rotation.M23 = trueUp.Z;
+            rotation.M31 = -forward.X;
+            rotation.M32 = -forward.Y;
+            rotation.M33 = -forward.Z;
+            return Quaternion::CreateFromRotationMatrix(rotation);
+        }
+    }
+
     void Camera::LookAt(const Vector3& target, const Vector3& up)
     {
-        const Vector3 direction = target - position_;
-        if (!Finite(target) || direction.LengthSquared() < 1e-12f) {
-            throw std::invalid_argument("Camera: LookAt target must be finite and differ from the position");
+        SetOrientation(LookAtOrientation(position_, target, up));
+    }
+
+    void Camera::SetLookAt(const Vector3& position, const Vector3& target, const Vector3& up)
+    {
+        if (!Finite(position) || !Finite(up)) {
+            throw std::invalid_argument("Camera: SetLookAt needs a finite position and up vector");
         }
-        const Vector3 forward = Vector3::Normalize(direction);
-        Vector3 upHint = up.LengthSquared() > 1e-12f ? Vector3::Normalize(up) : Vector3::Up;
-        if (std::fabs(Vector3::Dot(forward, upHint)) > 0.9999f) {
-            // Looking straight along the up hint: any perpendicular up works;
-            // prefer the one that keeps "screen up" pointing towards -Z/+Z.
-            upHint = std::fabs(forward.Y) > 0.5f ? (forward.Y > 0.0f ? Vector3::Backward : Vector3::Forward)
-                                                 : Vector3::Up;
-        }
-        const Vector3 right = Vector3::Normalize(Vector3::Cross(forward, upHint));
-        const Vector3 trueUp = Vector3::Cross(right, forward);
-        // Rotation matrix whose Forward (-Z row) is `forward` and Up row is `trueUp`.
-        Matrix rotation = Matrix::getIdentityProperty();
-        rotation.M11 = right.X;
-        rotation.M12 = right.Y;
-        rotation.M13 = right.Z;
-        rotation.M21 = trueUp.X;
-        rotation.M22 = trueUp.Y;
-        rotation.M23 = trueUp.Z;
-        rotation.M31 = -forward.X;
-        rotation.M32 = -forward.Y;
-        rotation.M33 = -forward.Z;
-        SetOrientation(Quaternion::CreateFromRotationMatrix(rotation));
+        const Quaternion orientation = LookAtOrientation(position, target, up);
+        const Matrix view = Matrix::CreateLookAt(position, target, up);
+        position_ = position;
+        orientation_ = Quaternion::Normalize(orientation);
+        hasCustomView_ = Invertible(view);
+        customView_ = view;
+        Invalidate();
     }
 
     Vector3 Camera::Forward() const { return Vector3::Normalize(Vector3::Transform(Vector3::Forward, orientation_)); }

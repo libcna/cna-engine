@@ -93,4 +93,64 @@ namespace CnaEngine::Graphics
         EXPECT_FLOAT_EQ(input.yaw, 0.5f);
         EXPECT_TRUE(input.fast);
     }
+
+    TEST(CameraControllersTests, OrbitCirclesItsTargetAndLooksAtIt)
+    {
+        using Microsoft::Xna::Framework::Matrix;
+        Camera camera;
+        OrbitCameraController orbit(OrbitSettings{1.0f, 50.0f, 1.2f, 10.0f});
+        orbit.SetTarget(Vector3(1.0f, 2.0f, 3.0f));
+        orbit.SetYaw(0.0f);
+        orbit.SetPitch(0.0f);
+        orbit.SetDistance(5.0f);
+        orbit.Apply(camera);
+        EXPECT_EQ(camera.Position(), Vector3(1.0f, 2.0f, 8.0f)) << "yaw 0 views from +Z";
+        EXPECT_EQ(camera.View().M11, Matrix::CreateLookAt(Vector3(1.0f, 2.0f, 8.0f), Vector3(1.0f, 2.0f, 3.0f), Vector3::Up).M11);
+
+        CameraControlInput input;
+        input.yaw = MathHelper::PiOver2;      // look left: the camera moves to +X
+        input.pitch = -0.5f;                  // look down: the camera rises
+        input.move = Vector3(0.0f, 0.0f, 1.0f);
+        orbit.Update(camera, input, 0.1f);
+        EXPECT_NEAR(camera.Position().X, 1.0f + 4.0f * std::cos(0.5f), 1e-4f);
+        EXPECT_GT(camera.Position().Y, 2.0f);
+        EXPECT_NEAR(orbit.Distance(), 4.0f, 1e-5f) << "forward zooms in";
+        EXPECT_NEAR(Vector3::Dot(camera.Forward(), Vector3::Normalize(orbit.Target() - camera.Position())), 1.0f, 1e-5f);
+
+        input = CameraControlInput{};
+        input.pitch = -10.0f;
+        input.move = Vector3(0.0f, 0.0f, 100.0f);
+        orbit.Update(camera, input, 1.0f);
+        EXPECT_FLOAT_EQ(orbit.Pitch(), 1.2f) << "pitch is clamped";
+        EXPECT_FLOAT_EQ(orbit.Distance(), 1.0f) << "distance is clamped";
+
+        // Adopting a camera's position keeps the view where it is.
+        OrbitCameraController adopted;
+        adopted.SetTarget(orbit.Target());
+        adopted.SyncFrom(camera);
+        EXPECT_NEAR(Vector3::Distance(adopted.Position(), camera.Position()), 0.0f, 1e-4f);
+    }
+
+    TEST(CameraControllersTests, FollowClosesTheGapAtAnyFrameRate)
+    {
+        Camera camera;
+        FollowCameraController follow(Vector3(0.0f, 2.0f, 6.0f), 0.5f);
+        follow.SetTargetPosition(Vector3(10.0f, 0.0f, 0.0f));
+        // Two 1/60 s steps close as much as one 1/30 s step.
+        FollowCameraController coarse = follow;
+        follow.Update(camera, {}, 1.0f / 60.0f);
+        follow.Update(camera, {}, 1.0f / 60.0f);
+        coarse.Update(camera, {}, 1.0f / 30.0f);
+        EXPECT_NEAR(Vector3::Distance(follow.Position(), coarse.Position()), 0.0f, 1e-5f);
+        EXPECT_NEAR(follow.Position().X, 10.0f * 0.75f, 1e-4f);
+        EXPECT_NEAR(Vector3::Dot(camera.Forward(), Vector3::Normalize(follow.TargetPosition() - camera.Position())), 1.0f,
+                    1e-5f);
+        follow.Snap();
+        EXPECT_EQ(follow.Position(), Vector3(10.0f, 2.0f, 6.0f));
+        FollowCameraController rigid(Vector3(0.0f, 1.0f, 1.0f), 1.0f);
+        rigid.SetTargetPosition(Vector3(4.0f, 0.0f, 0.0f));
+        rigid.Update(camera, {}, 0.001f);
+        EXPECT_EQ(rigid.Position(), Vector3(4.0f, 1.0f, 1.0f));
+    }
 }
+

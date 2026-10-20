@@ -125,4 +125,96 @@ namespace CnaEngine::Graphics
         }
         EXPECT_FALSE(builder.Mesh().Has(VertexAttribute::Normal));
     }
+
+    TEST(MeshBuilderTests, BoxFacesTakeTheirRegionsAndHiddenFacesAreLeftOut)
+    {
+        using Microsoft::Xna::Framework::Vector2;
+        MeshBuilder builder({VertexAttribute::Position, VertexAttribute::TexCoord0});
+        BoxFaces faces;
+        faces[static_cast<std::size_t>(BoxFace::PositiveY)].uv = UvRect{0.5f, 0.0f, 0.75f, 0.25f};
+        faces[static_cast<std::size_t>(BoxFace::NegativeY)].visible = false;
+        faces[static_cast<std::size_t>(BoxFace::NegativeX)].visible = false;
+        builder.AddBox(Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f, 1.0f, 1.0f), faces);
+        const MeshData& box = builder.Mesh();
+        EXPECT_EQ(box.VertexCount(), 16u) << "four visible faces";
+        EXPECT_EQ(box.TriangleCount(), 8u);
+        ExpectOutwardFaces(box, Vector3(0.5f, 0.5f, 0.5f));
+        // The top face is the fifth in BoxFace order, the fourth one emitted
+        // (-X is hidden); its corners are top-left, top-right, bottom-right,
+        // bottom-left as seen from outside.
+        EXPECT_EQ(box.texCoords0[12], Vector2(0.5f, 0.0f));
+        EXPECT_EQ(box.texCoords0[14], Vector2(0.75f, 0.25f));
+        EXPECT_EQ(box.positions[12], Vector3(0.0f, 1.0f, 0.0f));
+        EXPECT_EQ(box.positions[14], Vector3(1.0f, 1.0f, 1.0f));
+        // Corners are the bounds exactly, not reconstructed from a centre.
+        const Vector3 min(0.1f, -0.7f, 3.3f);
+        const Vector3 max(0.9f, 0.2f, 4.1f);
+        MeshBuilder exact({VertexAttribute::Position});
+        exact.AddBox(min, max);
+        for (const Vector3& p : exact.Mesh().positions) {
+            EXPECT_TRUE(p.X == min.X || p.X == max.X);
+            EXPECT_TRUE(p.Y == min.Y || p.Y == max.Y);
+            EXPECT_TRUE(p.Z == min.Z || p.Z == max.Z);
+        }
+    }
+
+    TEST(MeshBuilderTests, PlatesAreDoubleSidedAlongTheirAxis)
+    {
+        for (const PlateAxis axis : {PlateAxis::Z, PlateAxis::X, PlateAxis::Y}) {
+            MeshBuilder builder;
+            builder.AddPlate(Vector3(1.0f, 2.0f, 3.0f), 2.0f, 4.0f, axis);
+            const MeshData& plate = builder.Mesh();
+            ASSERT_EQ(plate.VertexCount(), 8u);
+            ASSERT_EQ(plate.TriangleCount(), 4u);
+            const Vector3 front = Vector3::Normalize(plate.FaceNormal(0));
+            const Vector3 back = Vector3::Normalize(plate.FaceNormal(2));
+            EXPECT_NEAR(Vector3::Dot(front, back), -1.0f, 1e-5f) << "one copy per side";
+            const Vector3 expected = axis == PlateAxis::Z ? Vector3::UnitZ : axis == PlateAxis::X ? Vector3::UnitX
+                                                                                                 : Vector3::UnitY;
+            EXPECT_NEAR(std::fabs(Vector3::Dot(front, expected)), 1.0f, 1e-5f);
+            for (std::size_t i = 0; i < 4; ++i) {
+                EXPECT_EQ(plate.positions[i], plate.positions[i + 4]) << "the same corners twice";
+                EXPECT_GT(Vector3::Dot(plate.normals[i], front), 0.99f);
+                EXPECT_GT(Vector3::Dot(plate.normals[i + 4], back), 0.99f);
+            }
+        }
+    }
+
+    TEST(MeshBuilderTests, CrossedPlatesTurnAboutY)
+    {
+        MeshBuilder builder({VertexAttribute::Position, VertexAttribute::TexCoord0});
+        builder.AddCrossedPlates(Vector3::Zero, 2.0f, 1.0f);
+        const MeshData& cross = builder.Mesh();
+        EXPECT_EQ(cross.VertexCount(), 24u) << "three double-sided plates";
+        EXPECT_EQ(cross.TriangleCount(), 12u);
+        // The second plate is turned 60 degrees: its first corner is at -cos/-sin of 60.
+        EXPECT_NEAR(cross.positions[8].X, -std::cos(MathHelper::ToRadians(60.0f)), 1e-6f);
+        EXPECT_NEAR(cross.positions[8].Z, -std::sin(MathHelper::ToRadians(60.0f)), 1e-6f);
+        EXPECT_THROW(builder.AddCrossedPlates(Vector3::Zero, 1.0f, 1.0f, 0), std::invalid_argument);
+    }
+
+    TEST(MeshBuilderTests, BillboardFacesTheCamera)
+    {
+        using Microsoft::Xna::Framework::Vector2;
+        // A camera looking down -Z: right +X, up +Y; the quad must face +Z.
+        MeshBuilder builder({VertexAttribute::Position, VertexAttribute::Normal, VertexAttribute::TexCoord0});
+        builder.AddBillboard(Vector3(0.0f, 0.0f, -5.0f), Vector2(2.0f, 1.0f), Vector3::UnitX, Vector3::UnitY,
+                             UvRect{0.0f, 0.0f, 0.5f, 0.5f});
+        const MeshData& quad = builder.Mesh();
+        ASSERT_EQ(quad.VertexCount(), 4u);
+        EXPECT_GT(Vector3::Dot(Vector3::Normalize(quad.FaceNormal(0)), Vector3::UnitZ), 0.99f);
+        EXPECT_GT(Vector3::Dot(Vector3::Normalize(quad.FaceNormal(1)), Vector3::UnitZ), 0.99f);
+        EXPECT_GT(Vector3::Dot(quad.normals[0], Vector3::UnitZ), 0.99f);
+        EXPECT_EQ(quad.positions[0], Vector3(-1.0f, -0.5f, -5.0f)) << "bottom-left";
+        EXPECT_EQ(quad.positions[2], Vector3(1.0f, 0.5f, -5.0f)) << "top-right";
+        EXPECT_EQ(quad.texCoords0[0], Vector2(0.0f, 0.5f)) << "the region's bottom-left";
+        EXPECT_EQ(quad.texCoords0[2], Vector2(0.5f, 0.0f));
+        // A pivot at the bottom centre and a quarter turn.
+        MeshBuilder turned({VertexAttribute::Position});
+        turned.AddBillboard(Vector3::Zero, Vector2(2.0f, 1.0f), Vector3::UnitX, Vector3::UnitY, UvRect::Full(),
+                            Vector2(0.5f, 0.0f), MathHelper::PiOver2);
+        EXPECT_NEAR(turned.Mesh().positions[1].Y, 1.0f, 1e-6f) << "bottom-right swings up";
+        EXPECT_NEAR(turned.Mesh().positions[1].X, 0.0f, 1e-6f);
+    }
 }
+

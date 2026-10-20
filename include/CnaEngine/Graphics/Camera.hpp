@@ -79,6 +79,20 @@ namespace CnaEngine::Graphics
         [[nodiscard]] float NearPlane() const noexcept { return nearPlane_; }
         [[nodiscard]] float FarPlane() const noexcept { return farPlane_; }
 
+        /// Places the camera at `position` looking at `target`, and makes
+        /// View() exactly XNA's Matrix::CreateLookAt(position, target, up) --
+        /// the matrix a game computing its own look-at view already has, so
+        /// moving such a game onto the engine camera does not move its picture
+        /// by a rounding step. Position() and Orientation() follow as for
+        /// SetPosition and LookAt; a later pose setter derives the view from
+        /// the pose again. When `up` is parallel to the view direction,
+        /// XNA's matrix is undefined and the view is derived as LookAt does.
+        /// Throws std::invalid_argument (camera unchanged) for non-finite
+        /// input or `target == position`.
+        void SetLookAt(const Microsoft::Xna::Framework::Vector3& position,
+                       const Microsoft::Xna::Framework::Vector3& target,
+                       const Microsoft::Xna::Framework::Vector3& up = Microsoft::Xna::Framework::Vector3::Up);
+
         /// Uses a game's own matrices verbatim, for games that keep their own
         /// camera math (car-simulator's CameraPose) and render through the
         /// engine: View() and Projection() return them bit for bit, Position()

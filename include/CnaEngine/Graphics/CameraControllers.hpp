@@ -54,8 +54,9 @@ namespace CnaEngine::Graphics
                                                      float elapsedSeconds = 0.0f);
 
     /// Policy that moves a Camera; the camera stays a passive state object.
-    /// Game-specific controllers (chase, cockpit, cinematic) implement this in
-    /// the game and are not part of the engine.
+    /// The engine ships the general ones (fly, walk, orbit, follow);
+    /// game-specific controllers (chase, cockpit, cinematic) implement this in
+    /// the game.
     class ICameraController
     {
     public:
@@ -128,5 +129,95 @@ namespace CnaEngine::Graphics
         GroundHeight ground_;
         float yaw_ = 0.0f;
         float pitch_ = 0.0f;
+    };
+
+    /// Distance limits and speeds of an OrbitCameraController.
+    struct OrbitSettings
+    {
+        float minDistance = 0.5f;
+        float maxDistance = 1000.0f;
+        /// Radians; the camera never goes past straight above or below.
+        float maxPitch = 1.53f;
+        /// World units per second at move.Z = 1 (forward zooms in).
+        float zoomSpeed = 10.0f;
+        float fastMultiplier = 4.0f;
+        float slowMultiplier = 0.25f;
+    };
+
+    /// Circles a target point at a distance -- model viewers, editors,
+    /// strategy maps.
+    ///
+    /// The camera sits at target + distance * (cos(pitch) sin(yaw),
+    /// sin(pitch), cos(pitch) cos(yaw)) and looks at the target: yaw 0 views
+    /// from +Z, positive pitch from above. Input yaw turns the view as in the
+    /// first-person controllers (positive looks left, so the camera moves
+    /// towards +X); input pitch looks up by lowering the camera; move.Z zooms.
+    class OrbitCameraController final : public ICameraController
+    {
+    public:
+        explicit OrbitCameraController(OrbitSettings settings = {});
+
+        [[nodiscard]] const Microsoft::Xna::Framework::Vector3& Target() const noexcept { return target_; }
+        void SetTarget(const Microsoft::Xna::Framework::Vector3& target) noexcept { target_ = target; }
+        [[nodiscard]] float Yaw() const noexcept { return yaw_; }
+        void SetYaw(float radians) noexcept { yaw_ = radians; }
+        [[nodiscard]] float Pitch() const noexcept { return pitch_; }
+        void SetPitch(float radians) noexcept { pitch_ = radians; }
+        [[nodiscard]] float Distance() const noexcept { return distance_; }
+        void SetDistance(float distance) noexcept { distance_ = distance; }
+        [[nodiscard]] OrbitSettings& Settings() noexcept { return settings_; }
+
+        /// Where the camera stands for the current target, yaw, pitch and distance.
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 Position() const;
+        /// Places `camera` at Position() looking at the target (Camera::SetLookAt).
+        void Apply(Camera& camera) const;
+
+        /// Takes yaw, pitch and distance from where the camera stands
+        /// relative to the target.
+        void SyncFrom(const Camera& camera) override;
+        void Update(Camera& camera, const CameraControlInput& input, float elapsedSeconds) override;
+
+    private:
+        OrbitSettings settings_;
+        Microsoft::Xna::Framework::Vector3 target_ = Microsoft::Xna::Framework::Vector3::Zero;
+        float yaw_ = 0.0f;
+        float pitch_ = 0.3f;
+        float distance_ = 10.0f;
+    };
+
+    /// Trails a moving target at a fixed offset and looks at it -- simple
+    /// third-person views.
+    ///
+    /// Each update moves the camera towards target + offset by
+    /// 1 - (1 - smoothing)^(60 * elapsed seconds) of the way, so the
+    /// smoothing means "the share closed per 1/60 s" at any frame rate;
+    /// smoothing 1 follows rigidly, 0 never moves. Input is ignored.
+    class FollowCameraController final : public ICameraController
+    {
+    public:
+        explicit FollowCameraController(
+            const Microsoft::Xna::Framework::Vector3& offset = Microsoft::Xna::Framework::Vector3(0.0f, 5.0f, 10.0f),
+            float smoothing = 0.15f);
+
+        /// What the camera follows; set it before each Update().
+        void SetTargetPosition(const Microsoft::Xna::Framework::Vector3& target) noexcept { target_ = target; }
+        [[nodiscard]] const Microsoft::Xna::Framework::Vector3& TargetPosition() const noexcept { return target_; }
+        [[nodiscard]] const Microsoft::Xna::Framework::Vector3& Offset() const noexcept { return offset_; }
+        void SetOffset(const Microsoft::Xna::Framework::Vector3& offset) noexcept { offset_ = offset; }
+        [[nodiscard]] float Smoothing() const noexcept { return smoothing_; }
+        void SetSmoothing(float smoothing) noexcept { smoothing_ = smoothing; }
+        [[nodiscard]] const Microsoft::Xna::Framework::Vector3& Position() const noexcept { return position_; }
+        /// Jumps to target + offset (a cut instead of a pan).
+        void Snap() noexcept;
+
+        /// Starts from the camera's current position.
+        void SyncFrom(const Camera& camera) override;
+        void Update(Camera& camera, const CameraControlInput& input, float elapsedSeconds) override;
+
+    private:
+        Microsoft::Xna::Framework::Vector3 position_ = Microsoft::Xna::Framework::Vector3::Zero;
+        Microsoft::Xna::Framework::Vector3 target_ = Microsoft::Xna::Framework::Vector3::Zero;
+        Microsoft::Xna::Framework::Vector3 offset_;
+        float smoothing_;
     };
 }

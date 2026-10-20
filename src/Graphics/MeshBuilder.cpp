@@ -82,35 +82,146 @@ namespace CnaEngine::Graphics
         return vertex;
     }
 
-    void MeshBuilder::AddBox(const Vector3& min, const Vector3& max)
+    void MeshBuilder::AddBox(const Vector3& min, const Vector3& max) { AddBox(min, max, BoxFaces{}); }
+
+    void MeshBuilder::AddBox(const Vector3& min, const Vector3& max, const BoxFaces& faces)
     {
-        const Vector3 center = (min + max) * 0.5f;
-        const Vector3 half = (max - min) * 0.5f;
+        // Corners of each face top-left, top-right, bottom-right, bottom-left
+        // as seen from outside -- clockwise from the front, MeshData's
+        // winding -- in BoxFace order, with the face's outward normal.
         struct Face
         {
+            Vector3 corners[4];
             Vector3 normal;
-            Vector3 right; // screen right seen from the front; cross(right, up) == normal
-            Vector3 up;
         };
-        const Face faces[] = {
-            {Vector3::UnitZ, Vector3::UnitX, Vector3::UnitY},
-            {-Vector3::UnitZ, -Vector3::UnitX, Vector3::UnitY},
-            {Vector3::UnitX, -Vector3::UnitZ, Vector3::UnitY},
-            {-Vector3::UnitX, Vector3::UnitZ, Vector3::UnitY},
-            {Vector3::UnitY, Vector3::UnitX, -Vector3::UnitZ},
-            {-Vector3::UnitY, Vector3::UnitX, Vector3::UnitZ},
+        const Face table[6] = {
+            {{{min.X, max.Y, max.Z}, {max.X, max.Y, max.Z}, {max.X, min.Y, max.Z}, {min.X, min.Y, max.Z}},
+             Vector3::UnitZ},
+            {{{max.X, max.Y, min.Z}, {min.X, max.Y, min.Z}, {min.X, min.Y, min.Z}, {max.X, min.Y, min.Z}},
+             -Vector3::UnitZ},
+            {{{max.X, max.Y, max.Z}, {max.X, max.Y, min.Z}, {max.X, min.Y, min.Z}, {max.X, min.Y, max.Z}},
+             Vector3::UnitX},
+            {{{min.X, max.Y, min.Z}, {min.X, max.Y, max.Z}, {min.X, min.Y, max.Z}, {min.X, min.Y, min.Z}},
+             -Vector3::UnitX},
+            {{{min.X, max.Y, min.Z}, {max.X, max.Y, min.Z}, {max.X, max.Y, max.Z}, {min.X, max.Y, max.Z}},
+             Vector3::UnitY},
+            {{{min.X, min.Y, max.Z}, {max.X, min.Y, max.Z}, {max.X, min.Y, min.Z}, {min.X, min.Y, min.Z}},
+             -Vector3::UnitY},
         };
-        auto scaled = [&](const Vector3& axis) { return axis * std::fabs(Vector3::Dot(axis, half)); };
-        for (const auto& face : faces) {
-            const Vector3 c = center + scaled(face.normal);
-            const Vector3 r = scaled(face.right);
-            const Vector3 u = scaled(face.up);
-            const auto tl = AddVertex(Vertex(c - r + u, face.normal, Vector2(0.0f, 0.0f)));
-            const auto tr = AddVertex(Vertex(c + r + u, face.normal, Vector2(1.0f, 0.0f)));
-            const auto br = AddVertex(Vertex(c + r - u, face.normal, Vector2(1.0f, 1.0f)));
-            const auto bl = AddVertex(Vertex(c - r - u, face.normal, Vector2(0.0f, 1.0f)));
+        for (std::size_t f = 0; f < 6; ++f) {
+            const BoxFaceStyle& style = faces[f];
+            if (!style.visible) {
+                continue;
+            }
+            const Face& face = table[f];
+            const UvRect& uv = style.uv;
+            const auto tl = AddVertex(Vertex(face.corners[0], face.normal, Vector2(uv.u0, uv.v0)));
+            const auto tr = AddVertex(Vertex(face.corners[1], face.normal, Vector2(uv.u1, uv.v0)));
+            const auto br = AddVertex(Vertex(face.corners[2], face.normal, Vector2(uv.u1, uv.v1)));
+            const auto bl = AddVertex(Vertex(face.corners[3], face.normal, Vector2(uv.u0, uv.v1)));
             AddQuad(tl, tr, br, bl);
         }
+    }
+
+    void MeshBuilder::AddDoubleSidedQuad(const std::array<Vector3, 4>& corners,
+                                         const std::array<Vector2, 4>& texCoords)
+    {
+        // The side that sees corners 0-1-2 clockwise is the one the normal
+        // of cross(c - a, b - a) points at.
+        const Vector3 n = Vector3::Normalize(Vector3::Cross(corners[2] - corners[0], corners[1] - corners[0]));
+        for (const bool reversed : {false, true}) {
+            const Vector3 normal = reversed ? -n : n;
+            std::uint32_t index[4];
+            for (std::size_t i = 0; i < 4; ++i) {
+                index[i] = AddVertex(Vertex(corners[i], normal, texCoords[i]));
+            }
+            if (!reversed) {
+                AddTriangle(index[0], index[1], index[2]);
+                AddTriangle(index[0], index[2], index[3]);
+            } else {
+                AddTriangle(index[0], index[2], index[1]);
+                AddTriangle(index[0], index[3], index[2]);
+            }
+        }
+    }
+
+    void MeshBuilder::AddPlate(const Vector3& center, const float width, const float height, const PlateAxis axis,
+                               const UvRect& uv)
+    {
+        const float halfW = width * 0.5f;
+        const float halfH = height * 0.5f;
+        std::array<Vector3, 4> corners;
+        switch (axis) {
+            case PlateAxis::Z:
+                corners = {Vector3(center.X - halfW, center.Y - halfH, center.Z),
+                           Vector3(center.X + halfW, center.Y - halfH, center.Z),
+                           Vector3(center.X + halfW, center.Y + halfH, center.Z),
+                           Vector3(center.X - halfW, center.Y + halfH, center.Z)};
+                break;
+            case PlateAxis::X:
+                corners = {Vector3(center.X, center.Y - halfH, center.Z - halfW),
+                           Vector3(center.X, center.Y - halfH, center.Z + halfW),
+                           Vector3(center.X, center.Y + halfH, center.Z + halfW),
+                           Vector3(center.X, center.Y + halfH, center.Z - halfW)};
+                break;
+            case PlateAxis::Y:
+                corners = {Vector3(center.X - halfW, center.Y, center.Z - halfH),
+                           Vector3(center.X + halfW, center.Y, center.Z - halfH),
+                           Vector3(center.X + halfW, center.Y, center.Z + halfH),
+                           Vector3(center.X - halfW, center.Y, center.Z + halfH)};
+                break;
+        }
+        AddDoubleSidedQuad(corners, {Vector2(uv.u0, uv.v0), Vector2(uv.u1, uv.v0), Vector2(uv.u1, uv.v1),
+                                     Vector2(uv.u0, uv.v1)});
+    }
+
+    void MeshBuilder::AddCrossedPlates(const Vector3& center, const float width, const float height,
+                                       const int planes, const UvRect& uv)
+    {
+        if (planes < 1) {
+            throw std::invalid_argument("MeshBuilder::AddCrossedPlates: planes must be at least 1");
+        }
+        constexpr float pi = 3.14159265358979323846f;
+        const float halfW = width * 0.5f;
+        const float halfH = height * 0.5f;
+        const std::array<Vector2, 4> texCoords = {Vector2(uv.u0, uv.v0), Vector2(uv.u1, uv.v0),
+                                                  Vector2(uv.u1, uv.v1), Vector2(uv.u0, uv.v1)};
+        const float step = 180.0f / static_cast<float>(planes);
+        for (int i = 0; i < planes; ++i) {
+            const float radians = static_cast<float>(i) * step * pi / 180.0f;
+            const float dx = std::cos(radians) * halfW;
+            const float dz = std::sin(radians) * halfW;
+            AddDoubleSidedQuad({Vector3(center.X - dx, center.Y - halfH, center.Z - dz),
+                                Vector3(center.X + dx, center.Y - halfH, center.Z + dz),
+                                Vector3(center.X + dx, center.Y + halfH, center.Z + dz),
+                                Vector3(center.X - dx, center.Y + halfH, center.Z - dz)},
+                               texCoords);
+        }
+    }
+
+    void MeshBuilder::AddBillboard(const Vector3& position, const Vector2& size, const Vector3& cameraRight,
+                                   const Vector3& cameraUp, const UvRect& uv, const Vector2& origin,
+                                   const float rotation)
+    {
+        // Bottom-left, bottom-right, top-right, top-left of the quad (u, v
+        // across it, v up), with the region's texture coordinates.
+        const float corners[4][2] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+        const Vector2 texCoords[4] = {Vector2(uv.u0, uv.v1), Vector2(uv.u1, uv.v1), Vector2(uv.u1, uv.v0),
+                                      Vector2(uv.u0, uv.v0)};
+        const float cosR = std::cos(rotation);
+        const float sinR = std::sin(rotation);
+        const Vector3 normal = Vector3::Normalize(Vector3::Cross(cameraRight, cameraUp));
+        std::uint32_t index[4];
+        for (std::size_t i = 0; i < 4; ++i) {
+            const float du = (corners[i][0] - origin.X) * size.X;
+            const float dv = (corners[i][1] - origin.Y) * size.Y;
+            const float rdu = du * cosR - dv * sinR;
+            const float rdv = du * sinR + dv * cosR;
+            index[i] = AddVertex(Vertex(position + cameraRight * rdu + cameraUp * rdv, normal, texCoords[i]));
+        }
+        // bl-tr-br and bl-tl-tr: clockwise as the camera sees them.
+        AddTriangle(index[0], index[2], index[1]);
+        AddTriangle(index[0], index[3], index[2]);
     }
 
     void MeshBuilder::AddGrid(const Vector3& center, const float sizeX, const float sizeZ, const int segmentsX,

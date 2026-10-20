@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CnaEngine/Graphics/MeshData.hpp"
+#include "CnaEngine/Graphics/TextureAtlas.hpp"
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
@@ -25,6 +26,39 @@ namespace CnaEngine::Graphics
         Microsoft::Xna::Framework::Vector2 texCoord1 = Microsoft::Xna::Framework::Vector2::Zero;
         std::array<std::uint8_t, 4> blendIndices{0, 0, 0, 0};
         Microsoft::Xna::Framework::Vector4 blendWeights = Microsoft::Xna::Framework::Vector4(1.0f, 0.0f, 0.0f, 0.0f);
+    };
+
+    /// Faces of a box, in the order MeshBuilder::AddBox emits them.
+    enum class BoxFace : std::uint8_t
+    {
+        PositiveZ,
+        NegativeZ,
+        PositiveX,
+        NegativeX,
+        PositiveY,
+        NegativeY,
+    };
+
+    /// How one face of a box is drawn: whether at all, and which part of the
+    /// texture it shows (upright and unmirrored as seen from outside; on the
+    /// top and bottom faces the texture's top edge is towards -Z and +Z).
+    struct BoxFaceStyle
+    {
+        bool visible = true;
+        UvRect uv = UvRect::Full();
+    };
+
+    /// One style per BoxFace, indexed by the enum's value.
+    using BoxFaces = std::array<BoxFaceStyle, 6>;
+
+    /// The axis a plate's face looks along. Its width runs along X for Z and
+    /// Y plates and along Z for X plates; its height along Y for Z and X
+    /// plates and along Z for Y plates.
+    enum class PlateAxis : std::uint8_t
+    {
+        Z,
+        X,
+        Y,
     };
 
     /// Appends vertices and triangles to a MeshData while keeping every stream
@@ -60,6 +94,37 @@ namespace CnaEngine::Graphics
         // --- Procedural shapes (front faces outward) ---------------------------
         /// Axis-aligned box; each face has its own 4 vertices with a 0..1 UV square.
         void AddBox(const Microsoft::Xna::Framework::Vector3& min, const Microsoft::Xna::Framework::Vector3& max);
+        /// Axis-aligned box with a texture region per face; invisible faces are
+        /// left out (the hidden faces of adjacent blocks). Corners are taken
+        /// from `min` and `max` exactly.
+        void AddBox(const Microsoft::Xna::Framework::Vector3& min, const Microsoft::Xna::Framework::Vector3& max,
+                    const BoxFaces& faces);
+        /// A quad that is visible from both sides: the four `corners` (with
+        /// their `texCoords`) twice, once wound for each side, so the texture
+        /// is never mirrored and no culling state is needed.
+        void AddDoubleSidedQuad(const std::array<Microsoft::Xna::Framework::Vector3, 4>& corners,
+                                const std::array<Microsoft::Xna::Framework::Vector2, 4>& texCoords);
+        /// A flat, double-sided rectangle centred on `center` (signs, decals,
+        /// leaves); see PlateAxis for which way `width` and `height` run.
+        void AddPlate(const Microsoft::Xna::Framework::Vector3& center, float width, float height, PlateAxis axis,
+                      const UvRect& uv = UvRect::Full());
+        /// `planes` vertical double-sided plates through `center`, turned
+        /// 180/planes degrees apart about +Y (plants, flames, sparks that look
+        /// solid from every side).
+        void AddCrossedPlates(const Microsoft::Xna::Framework::Vector3& center, float width, float height,
+                              int planes = 3, const UvRect& uv = UvRect::Full());
+        /// A quad facing the camera, spanned by its right and up vectors
+        /// (`cameraRight`, `cameraUp`, e.g. the first two rows of the inverse
+        /// view matrix): `size` world units wide and high, pivoting about
+        /// `origin` (0..1 across the quad, (0.5, 0.5) its centre) and turned
+        /// `rotation` radians in the view plane.
+        void AddBillboard(const Microsoft::Xna::Framework::Vector3& position,
+                          const Microsoft::Xna::Framework::Vector2& size,
+                          const Microsoft::Xna::Framework::Vector3& cameraRight,
+                          const Microsoft::Xna::Framework::Vector3& cameraUp, const UvRect& uv = UvRect::Full(),
+                          const Microsoft::Xna::Framework::Vector2& origin = Microsoft::Xna::Framework::Vector2(0.5f,
+                                                                                                                0.5f),
+                          float rotation = 0.0f);
         /// Rectangle in the XZ plane at `center`, facing +Y, subdivided into
         /// `segmentsX` x `segmentsZ` cells; UVs span 0..uvScale.
         void AddGrid(const Microsoft::Xna::Framework::Vector3& center, float sizeX, float sizeZ, int segmentsX,

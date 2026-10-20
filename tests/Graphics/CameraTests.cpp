@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+#include <cmath>
 #include <limits>
 #include <stdexcept>
 
@@ -235,4 +236,33 @@ namespace CnaEngine::Graphics
         EXPECT_EQ(camera.Kind(), ProjectionKind::Perspective);
         ExpectNear(camera.View(), Matrix::getIdentityProperty());
     }
+
+    // Games that compute Matrix::CreateLookAt themselves move onto the
+    // engine camera without changing a single bit of their view.
+    TEST(CameraTests, SetLookAtGivesXnasLookAtMatrixExactly)
+    {
+        const Vector3 eye(12.25f, 3.5f, -40.125f);
+        const Vector3 target(13.0f, 2.75f, -44.0f);
+        Camera camera;
+        camera.SetPerspective(1.0f, 4.0f / 3.0f, 0.1f, 1000.0f);
+        const auto revision = camera.Revision();
+        camera.SetLookAt(eye, target, Vector3::Up);
+        EXPECT_GT(camera.Revision(), revision);
+        EXPECT_TRUE(Identical(camera.View(), Matrix::CreateLookAt(eye, target, Vector3::Up)));
+        EXPECT_TRUE(Identical(camera.Projection(), Matrix::CreatePerspectiveFieldOfView(1.0f, 4.0f / 3.0f, 0.1f, 1000.0f)));
+        EXPECT_EQ(camera.Kind(), ProjectionKind::Perspective);
+        EXPECT_EQ(camera.Position(), eye);
+        ExpectNear(camera.Forward(), Vector3::Normalize(target - eye), 1e-5f);
+
+        // A pose setter derives the view again; looking straight along up falls back to LookAt.
+        camera.SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+        Camera reference;
+        reference.SetOrientation(camera.Orientation());
+        EXPECT_TRUE(Identical(camera.View(), reference.View()));
+        camera.SetLookAt(Vector3(0.0f, 10.0f, 0.0f), Vector3::Zero, Vector3::Up);
+        ExpectNear(camera.Forward(), Vector3(0.0f, -1.0f, 0.0f));
+        EXPECT_TRUE(std::isfinite(camera.View().M11));
+        EXPECT_THROW(camera.SetLookAt(eye, eye), std::invalid_argument);
+    }
 }
+

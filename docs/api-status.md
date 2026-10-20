@@ -26,14 +26,17 @@ it is recorded in `CHANGELOG.md`.
 | Binding capture (rebinding prompt) | `Input/BindingCapture.hpp` | Core | experimental | — | tests |
 | Frame statistics | `Diagnostics/FrameStatistics.hpp` | Core | experimental | Street/car-simulator benchmark overlays | tests, example |
 | CPU profiler, scoped timers | `Diagnostics/ScopedTimer.hpp` | Core | experimental | — | tests |
-| Camera state | `Graphics/Camera.hpp` | Graphics | stable | Street `Render/Camera`, car-simulator `Render/Camera`, cna-extended `Camera3DEXT` | tests, example, car-simulator branch, Street branch |
+| Camera state | `Graphics/Camera.hpp` | Graphics | stable | Street `Render/Camera`, car-simulator `Render/Camera`, cna-extended `Camera3DEXT`, easy-3d `Camera3D` (`SetLookAt`) | tests, example, car-simulator branch, Street branch, easy-3d equivalence probe |
 | Fly/walk controllers | `Graphics/CameraControllers.hpp` | Graphics | pilot-validated (fly: Street) | Street `CameraController`, car-simulator walk mode | tests, example |
+| Orbit/follow controllers | `Graphics/CameraControllers.hpp` | Graphics | experimental | easy-3d `OrbitCamera`, `FollowCamera` | tests, easy-3d equivalence probe |
 | CPU mesh data | `Graphics/MeshData.hpp` | Graphics | pilot-validated (both) | Street `Geometry/MeshData`, car-simulator `Render/MeshData` | tests, example |
-| Mesh builder and primitives | `Graphics/MeshBuilder.hpp` | Graphics | experimental | Street `MeshBuilder`, car-simulator `MeshData::Add*` | tests, example |
+| Mesh builder and primitives | `Graphics/MeshBuilder.hpp` | Graphics | experimental | Street `MeshBuilder`, car-simulator `MeshData::Add*`, easy-3d `CubeMesh`/`BillboardMesh` (faced boxes, plates, crossed plates, billboards) | tests, example, easy-3d equivalence probe |
+| Texture atlas regions | `Graphics/TextureAtlas.hpp` | Graphics | experimental | easy-3d `TextureAtlas` | tests, easy-3d equivalence probe |
 | Vertex layouts and interleaving | `Graphics/VertexLayouts.hpp` | Graphics | pilot-validated (both) | car-simulator `VertexLayout`, Street tangent vertices | tests |
-| GPU mesh | `Graphics/GpuMesh.hpp` | Graphics | stable | Street `Render/GpuMesh`, car-simulator `Render/GpuMesh` | tests, example, car-simulator branch, Street branch |
+| GPU mesh | `Graphics/GpuMesh.hpp` | Graphics | stable | Street `Render/GpuMesh`, car-simulator `Render/GpuMesh`, easy-3d mesh renderers (`Draw` with an effect) | tests, example, car-simulator branch, Street branch |
 | GPU memory estimate (meshes, textures, materials, queues) | `Graphics/GpuMemory.hpp` | Graphics | experimental | Street `GpuMesh::gpuBytes`, `MaterialLibrary::textureBytes` | tests, Street scene comparison |
 | Render and GPU memory statistics | `Graphics/RenderStatistics.hpp` | Graphics | stable | car-simulator `GpuMesh::Submissions` | tests, example, both scene comparisons (draw calls equal the pilots' own counters), car-simulator branch, Street branch |
+| Debug lines and box outlines | `Graphics/DebugDraw.hpp` | Graphics | experimental | easy-3d `DebugDraw` (queue only) | tests |
 | Screen capture and screenshot queue | `Graphics/ScreenCapture.hpp` | Graphics | pilot-validated (car-simulator) | car-simulator `Render/Screenshot` | tests, example, car-simulator branch |
 | Materials | `Graphics/Material.hpp` | Graphics | stable | Street material descriptions, car-simulator effect setup | tests, both scene comparisons, car-simulator branch, Street branch |
 | Render items and queue (buckets, deterministic sorting) | `Graphics/RenderQueue.hpp` | Graphics | stable | Street render submission model | tests, both scene comparisons, car-simulator branch, Street branch |

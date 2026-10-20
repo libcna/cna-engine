@@ -731,6 +731,33 @@ branches; the nine facilities both pilots use are `stable`
 (`docs/api-status.md`), single-consumer facilities keep their
 `pilot-validated`/`experimental` status.
 
+### PILOT-004 — Replace easy-3d in galaxy-eggbert `[~]`
+
+easy-3d (`openeggbert/easy-3d`, namespace `Easy3D`) is a small helper library
+over CNA — position/target camera, orbit and follow cameras, texture atlas,
+cube/plate/billboard mesh builders with their renderers, a debug-line queue —
+whose only consumer is galaxy-eggbert. The owner decided on 2026-10-20 to
+move what is useful into the engine (namespace `CnaEngine`, no `Easy3D`
+compatibility layer) and to migrate galaxy-eggbert onto the engine.
+
+Acceptance:
+
+- what the engine takes over produces exactly easy-3d's vertices, indices and
+  matrices (read-only probe `Easy3DEquivalenceTests`);
+- galaxy-eggbert builds without easy-3d on its branch `engine-adoption`, its
+  suite stays green and its golden captures stay inside the agreed tolerance;
+- what is not taken over (the CPU batches, the pyramid tip) is listed with
+  where it went.
+
+Progress (2026-10-20): the engine took over `Camera3D` (`Camera::SetLookAt`),
+`OrbitCamera`/`FollowCamera` (controllers), `TextureAtlas`/`UvRect`, the
+cube/plate/triple-cross/billboard meshes (`MeshBuilder`), the mesh renderers
+(`GpuMesh::Draw` with an effect) and `DebugDraw` (now with a renderer); the
+probe compares all of them with easy-3d's sources bit for bit. Not taken over:
+`CubeBatch`/`BillboardBatch` (a vector of items; the builder is the batch) and
+the pyramid tip (one game's shape, built in galaxy-eggbert with `AddVertex`/
+`AddTriangle`).
+
 ## Phase 6 — release readiness
 
 Progress: facilities validated by both pilots are marked `pilot-validated`

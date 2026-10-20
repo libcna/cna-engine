@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 #include "CnaEngine/Graphics/GpuMesh.hpp"
 
+#include "Microsoft/Xna/Framework/Graphics/EffectPass.hpp"
+#include "Microsoft/Xna/Framework/Graphics/EffectPassCollection.hpp"
+#include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 
@@ -190,6 +193,20 @@ namespace CnaEngine::Graphics
                                      primitiveCount_);
         if (statistics != nullptr) {
             statistics->Record(static_cast<std::uint64_t>(primitiveCount_), static_cast<std::uint64_t>(vertexCount_));
+        }
+        return true;
+    }
+
+    bool GpuMesh::Draw(GraphicsDevice& device, Microsoft::Xna::Framework::Graphics::Effect& effect,
+                       RenderStatistics* statistics) const
+    {
+        if (!IsDrawable()) {
+            return false;
+        }
+        auto& passes = effect.getCurrentTechniqueProperty()->getPassesProperty();
+        for (int i = 0; i < passes.getCountProperty(); ++i) {
+            passes[i]->Apply();
+            Draw(device, statistics);
         }
         return true;
     }

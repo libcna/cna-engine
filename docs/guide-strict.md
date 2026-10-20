@@ -102,6 +102,15 @@ object is a plain member you create, update and draw.
    XNA's `SkinnedEffect`; the mesh needs `BlendIndices` and `BlendWeights`,
    e.g. `VertexLayout::PositionNormalTextureSkinned()`).
 
+Without a renderer: a game that configures its own effect (a `BasicEffect`
+with a texture, say) draws a mesh with `GpuMesh::Draw(device, effect)`, once
+per pass of the effect's current technique. Sprite-sheet and tile games keep
+their regions in a `TextureAtlas` (pixels in, `UvRect` out) and hand the
+regions to `MeshBuilder`: `AddBox` with per-face `BoxFaces` (hidden faces
+skipped), `AddPlate`, `AddCrossedPlates` (foliage), `AddBillboard` (camera
+facing, rebuilt when the camera turns). `DebugDraw` queues lines and box
+outlines and draws them with its own vertex-colored effect.
+
 Ownership: `GpuMesh` owns its buffers (move-only; `Borrow` wraps buffers owned
 elsewhere, such as a `ModelMeshPart`). Materials and textures are borrowed by
 render items and must outlive the frame. After `Render` the device's blend,
@@ -125,7 +134,9 @@ depth and rasterizer states and samplers 0–4 are what they were before.
   a render target; the renderer flips its culling, and the target can be
   drawn afterwards with `SpriteBatch` (`examples/quick_start`).
 - **Your own camera behaviour:** implement `ICameraController` (chase,
-  cockpit, cinematic stay in the game).
+  cockpit, cinematic stay in the game). The engine ships fly, walk, orbit
+  and follow controllers; a position/target camera calls
+  `Camera::SetLookAt`, whose view is exactly XNA's `CreateLookAt`.
 - **Your own camera math:** a game that already computes its view and
   projection (both pilots do) hands them to `Camera::SetMatrices`; the engine
   culls and draws with exactly those matrices, so moving a renderer onto the

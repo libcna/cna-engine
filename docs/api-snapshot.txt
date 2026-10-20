@@ -5,11 +5,11 @@ CnaEngine/Input/ActionMap.hpp 356c889b1a76770f
 CnaEngine/Input/Bindings.hpp d6970dc4cf617600
 CnaEngine/Input/InputNames.hpp 96d0c4ca932daa3b
 CnaEngine/Input/InputSnapshot.hpp 016ec2faa05551dd
-CnaEngine/Graphics/Camera.hpp 698171ccccb1ab84
-CnaEngine/Graphics/CameraControllers.hpp 9a1d429ceb782516
+CnaEngine/Graphics/Camera.hpp 3e6566b9370e9f41
+CnaEngine/Graphics/CameraControllers.hpp cd1f95ae29e2ef65
 CnaEngine/Graphics/MeshData.hpp 2c2217b8ca071d20
 CnaEngine/Graphics/VertexLayouts.hpp 61ffd5e805325c5a
-CnaEngine/Graphics/GpuMesh.hpp 10d0559e38157af8
+CnaEngine/Graphics/GpuMesh.hpp ca593698177e40a2
 CnaEngine/Graphics/ScreenCapture.hpp d88bfcc0ed6e2cac
 CnaEngine/Graphics/QualitySchema.hpp b443359f740e0a6b
 CnaEngine/Assets/AssetRegistry.hpp bb84cc840d5c174d

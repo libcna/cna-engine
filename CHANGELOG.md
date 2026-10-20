@@ -97,7 +97,31 @@ became pilot-validated (their changes of that day are listed below);
   effect configured by hand), the PBR binder reports them as ignored. Reason:
   car-simulator paints its cars with `EnvironmentMapEffect`.
 
+- `Graphics/Camera.hpp`, additive: `SetLookAt(position, target, up)` — the
+  view is XNA's `Matrix::CreateLookAt` of exactly these arguments (the
+  orientation follows it). Reason: galaxy-eggbert's camera was easy-3d's
+  `Camera3D`, a position/target camera; its matrices must not move when it
+  moves to the engine (PILOT-004, `Easy3DEquivalenceTests`).
+- `Graphics/CameraControllers.hpp`, additive: `OrbitCameraController`
+  (`OrbitSettings`) and `FollowCameraController` — easy-3d's `OrbitCamera`
+  and `FollowCamera`, same positions bit for bit, now driving a `Camera`.
+  Reason: PILOT-004.
+- `Graphics/GpuMesh.hpp`, additive: `Draw(device, effect, statistics)` — the
+  mesh drawn once per pass of the effect's current technique, for games that
+  configure their own effect (easy-3d's mesh renderers). Reason: PILOT-004.
+
 ### Other API additions (experimental headers)
+
+- `Graphics/TextureAtlas.hpp`: `TextureAtlas`, `AtlasRect`, `UvRect` (named
+  regions in pixels, normalized coordinates, frame grids) — easy-3d's atlas.
+- `Graphics/MeshBuilder.hpp`: `AddBox(min, max, BoxFaces)` (per-face
+  visibility and texture region; `AddBox(min, max)` is now its full-texture
+  case, same vertices as before), `AddDoubleSidedQuad`, `AddPlate`
+  (`PlateAxis`), `AddCrossedPlates` and `AddBillboard` — easy-3d's cube,
+  plate, triple-cross and billboard meshes, identical vertices and indices.
+- `Graphics/DebugDraw.hpp`: `DebugDraw` (lines and box outlines drawn with
+  a vertex-colored `BasicEffect`, device state restored) — easy-3d's
+  `DebugDraw` queue, which had no renderer of its own.
 
 - `Graphics/GpuMemory.hpp`: `GpuMemoryEstimate` (meshes, textures, materials,
   queues; shared resources once) and `TextureBytes`; `DiagnosticsSources::memoryEstimate`.
