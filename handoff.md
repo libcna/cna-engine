@@ -20,7 +20,8 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
   `cna-extended`, the simulators or any other app — with one exception granted
   on 2026-10-20: car-simulator and street-simulator may be changed **on new
   branches** to adopt the engine (one revertible commit per step of
-  `docs/pilots/migration.md`, nothing pushed). Defects found elsewhere are
+  `docs/pilots/migration.md`; the branches were pushed at the owner's
+  request on 2026-10-20). Defects found elsewhere are
   written to `upstream-issues.md` (UP-001 … UP-012 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
 - Commit regularly on branch `develop`; do not push unless asked.

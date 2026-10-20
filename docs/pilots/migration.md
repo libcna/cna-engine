@@ -2,7 +2,8 @@
 
 Status: **both pilots adopted on branches.** The owner allowed adoption on
 2026-10-20 on new branches of both pilots (one revertible commit per step,
-nothing pushed). Each pilot's branch `engine-adoption` carries its steps
+pushed at the owner's request on 2026-10-20). Each pilot's branch
+`engine-adoption` carries its steps
 below except the camera, which both keep (see "car-simulator adoption" and
 "street-simulator adoption"). This document is the migration plan the read-only
 probes support; it covers PILOT-003's requirement that migration notes state
@@ -45,7 +46,7 @@ content generators, the lighting rig's values, HUD and instrument cluster.
 ### car-simulator adoption (branch `engine-adoption`)
 
 Worktree `libcnalab/car-simulator-engine`, branched from car-simulator's
-`main` at `cd6d948`; not pushed. Each commit was checked with car-simulator's
+`main` at `cd6d948`; pushed to `origin/engine-adoption`. Each commit was checked with car-simulator's
 own suite (7/7 CTest programs, Release, software renderer), its unmodified
 XNA-only checker (with the ADR-001 allowance added in the first commit) and a
 deterministic headless capture against the commit before it (`--frames 3
@@ -103,7 +104,7 @@ before the next one, as before.
 ### street-simulator adoption (branch `engine-adoption`)
 
 Worktree `libcnalab/street-simulator-engine`, branched from Street's
-`develop` at `86b4a2e`; not pushed. Build `build/` there: Release, CNA's
+`develop` at `86b4a2e`; pushed to `origin/engine-adoption`. Build `build/` there: Release, CNA's
 software renderer, headless platform, null audio (the software renderer
 runs no custom effects, so Street's atmospheric sky is black in every
 capture, before and after). Each commit was checked with Street's own suite
