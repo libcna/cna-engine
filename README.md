@@ -9,8 +9,8 @@ Status: **0.1.0, experimental**. Every API may change until the pilot games
 have adopted it (see `plan.md` and `docs/api-status.md`); facilities already
 checked against both pilots' own code are marked `pilot-validated`, and both
 pilots' real scenes render through the engine practically identically
-(`docs/pilots/`). Both pilots run on the engine on their `engine-adoption`
-branches (not merged yet).
+(`docs/pilots/`). Both pilots run on the engine (merged into their main branches on
+2026-10-20); the facilities both use are `stable`.
 
 ## Modules
 

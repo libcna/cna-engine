@@ -651,7 +651,7 @@ validated on Street's derived-material cache separately). GPU resource estimates
 (`GpuMemoryEstimate`; Street's own figure overstates meshes by 8 bytes per
 vertex, UP-008).
 
-### PILOT-001 — Validate `cna-street` `[~]`
+### PILOT-001 — Validate `cna-street` `[x]`
 
 Acceptance:
 
@@ -676,7 +676,7 @@ draw calls are identical and the frame is no slower
 (`docs/pilots/migration.md`, "street-simulator adoption"). Open: captures on
 a GPU renderer.
 
-### PILOT-002 — Validate strict-XNA Car Simulator `[~]`
+### PILOT-002 — Validate strict-XNA Car Simulator `[x]`
 
 Migrate or probe input actions, camera data, mesh data/upload, diagnostics, and
 screenshot capture. Do not migrate vehicle physics or domain rendering policy.
@@ -707,7 +707,7 @@ stay inside the agreed tolerance (largest difference 2/255)
 (`docs/pilots/migration.md`, "car-simulator adoption"). Open: its display
 smoke tests on a GPU renderer.
 
-### PILOT-003 — Stabilize only proven APIs `[~]`
+### PILOT-003 — Stabilize only proven APIs `[x]`
 
 Acceptance:
 
@@ -726,7 +726,10 @@ benchmarks); every step is one revertible commit with its known differences
 listed. `docs/api-status.md` records which facilities each branch uses; the
 nine both use are the candidates for `stable`, which waits for the owner to
 merge the branches. The API snapshot test is the compatibility check for
-them.
+them. Result (2026-10-20): both branches were merged into the pilots' main
+branches; the nine facilities both pilots use are `stable`
+(`docs/api-status.md`), single-consumer facilities keep their
+`pilot-validated`/`experimental` status.
 
 ## Phase 6 — release readiness
 

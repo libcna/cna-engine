@@ -23,7 +23,10 @@ First development line. Highlights:
   their `engine-adoption` branches: car-simulator's input, physics clock,
   screenshots, caches, quality tiers and world renderer, street-simulator's
   scene renderer, presets and material cache run on the engine
-  (`docs/pilots/migration.md`).
+  (`docs/pilots/migration.md`), merged into their main branches on
+  2026-10-20. Stable since then (both pilots use them): `Graphics/Camera`,
+  `GpuMesh`, `RenderStatistics`, `Material`, `RenderQueue`, `Visibility`,
+  `ForwardRenderer`, `QualitySchema`, `Assets/AssetRegistry`.
 
 API snapshot baseline taken 2026-10-19 (12 headers); extended 2026-10-20 to 20
 headers as the render facilities, the fixed-step clock and the PBR binder

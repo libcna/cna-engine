@@ -6,13 +6,15 @@ pilots' own code pass (`docs/pilots/`); `stable` additionally requires
 adoption in the pilots themselves (PILOT-003). "Evidence" names the existing implementations that shaped
 the API; "Consumers" lists code that uses the engine facility today.
 
-Both pilots now use the engine in their own code on their `engine-adoption`
-branches (`docs/pilots/migration.md`; not merged — that is the owner's
-decision). "car-simulator branch" and "Street branch" in the Consumers column
-mark that use. The facilities both branches use — camera (`SetMatrices`),
-GPU mesh (`Borrow`), render statistics, materials, render queue, visibility
-and LOD, forward renderer, quality schema and asset registry — are the
-candidates for `stable` once the branches are merged.
+Both pilots use the engine in their own code since 2026-10-20: their
+`engine-adoption` branches were merged into car-simulator's `main` and
+street-simulator's `develop` (`docs/pilots/migration.md`). "car-simulator
+branch" and "Street branch" in the Consumers column mark that use. The nine
+facilities both pilots use — camera (`SetMatrices`), GPU mesh (`Borrow`),
+render statistics, materials, render queue, visibility and LOD, forward
+renderer, quality schema and asset registry — are `stable`; their headers are
+in the API snapshot, so a change to them fails `cna_engine.api_snapshot` until
+it is recorded in `CHANGELOG.md`.
 
 | Facility | Header | Target | Status | Evidence | Consumers |
 | --- | --- | --- | --- | --- | --- |
@@ -24,25 +26,25 @@ candidates for `stable` once the branches are merged.
 | Binding capture (rebinding prompt) | `Input/BindingCapture.hpp` | Core | experimental | — | tests |
 | Frame statistics | `Diagnostics/FrameStatistics.hpp` | Core | experimental | Street/car-simulator benchmark overlays | tests, example |
 | CPU profiler, scoped timers | `Diagnostics/ScopedTimer.hpp` | Core | experimental | — | tests |
-| Camera state | `Graphics/Camera.hpp` | Graphics | pilot-validated (both) | Street `Render/Camera`, car-simulator `Render/Camera`, cna-extended `Camera3DEXT` | tests, example, car-simulator branch, Street branch |
+| Camera state | `Graphics/Camera.hpp` | Graphics | stable | Street `Render/Camera`, car-simulator `Render/Camera`, cna-extended `Camera3DEXT` | tests, example, car-simulator branch, Street branch |
 | Fly/walk controllers | `Graphics/CameraControllers.hpp` | Graphics | pilot-validated (fly: Street) | Street `CameraController`, car-simulator walk mode | tests, example |
 | CPU mesh data | `Graphics/MeshData.hpp` | Graphics | pilot-validated (both) | Street `Geometry/MeshData`, car-simulator `Render/MeshData` | tests, example |
 | Mesh builder and primitives | `Graphics/MeshBuilder.hpp` | Graphics | experimental | Street `MeshBuilder`, car-simulator `MeshData::Add*` | tests, example |
 | Vertex layouts and interleaving | `Graphics/VertexLayouts.hpp` | Graphics | pilot-validated (both) | car-simulator `VertexLayout`, Street tangent vertices | tests |
-| GPU mesh | `Graphics/GpuMesh.hpp` | Graphics | pilot-validated (both) | Street `Render/GpuMesh`, car-simulator `Render/GpuMesh` | tests, example, car-simulator branch, Street branch |
+| GPU mesh | `Graphics/GpuMesh.hpp` | Graphics | stable | Street `Render/GpuMesh`, car-simulator `Render/GpuMesh` | tests, example, car-simulator branch, Street branch |
 | GPU memory estimate (meshes, textures, materials, queues) | `Graphics/GpuMemory.hpp` | Graphics | experimental | Street `GpuMesh::gpuBytes`, `MaterialLibrary::textureBytes` | tests, Street scene comparison |
-| Render and GPU memory statistics | `Graphics/RenderStatistics.hpp` | Graphics | pilot-validated (both) | car-simulator `GpuMesh::Submissions` | tests, example, both scene comparisons (draw calls equal the pilots' own counters), car-simulator branch, Street branch |
+| Render and GPU memory statistics | `Graphics/RenderStatistics.hpp` | Graphics | stable | car-simulator `GpuMesh::Submissions` | tests, example, both scene comparisons (draw calls equal the pilots' own counters), car-simulator branch, Street branch |
 | Screen capture and screenshot queue | `Graphics/ScreenCapture.hpp` | Graphics | pilot-validated (car-simulator) | car-simulator `Render/Screenshot` | tests, example, car-simulator branch |
-| Materials | `Graphics/Material.hpp` | Graphics | pilot-validated (both) | Street material descriptions, car-simulator effect setup | tests, both scene comparisons, car-simulator branch, Street branch |
-| Render items and queue (buckets, deterministic sorting) | `Graphics/RenderQueue.hpp` | Graphics | pilot-validated (both) | Street render submission model | tests, both scene comparisons, car-simulator branch, Street branch |
-| Visibility policies and LOD selection | `Graphics/Visibility.hpp` | Graphics | pilot-validated (both) | Street culling/LOD, island-simulator culling | tests, both scene comparisons, car-simulator branch, Street branch |
+| Materials | `Graphics/Material.hpp` | Graphics | stable | Street material descriptions, car-simulator effect setup | tests, both scene comparisons, car-simulator branch, Street branch |
+| Render items and queue (buckets, deterministic sorting) | `Graphics/RenderQueue.hpp` | Graphics | stable | Street render submission model | tests, both scene comparisons, car-simulator branch, Street branch |
+| Visibility policies and LOD selection | `Graphics/Visibility.hpp` | Graphics | stable | Street culling/LOD, island-simulator culling | tests, both scene comparisons, car-simulator branch, Street branch |
 | Skinned render items (bone palettes, skinned layouts) | `Graphics/RenderQueue.hpp`, `Graphics/VertexLayouts.hpp` | Graphics | pilot-validated (Street) | Street `SceneRenderer::drawSkinned` | tests, Street scene comparison, Street branch |
-| Forward renderer (buckets, passes, state restore, fallbacks) | `Graphics/ForwardRenderer.hpp` | Graphics | pilot-validated (both) | Street `SceneRenderer`, car-simulator world renderer | tests, both scene comparisons, car-simulator branch, Street branch |
+| Forward renderer (buckets, passes, state restore, fallbacks) | `Graphics/ForwardRenderer.hpp` | Graphics | stable | Street `SceneRenderer`, car-simulator world renderer | tests, both scene comparisons, car-simulator branch, Street branch |
 | Material binders (interface, stock-effect binder) | `Graphics/MaterialBinder.hpp` | Graphics | pilot-validated (stock: car-simulator) | Street `SceneRenderer::applyMaterial` | tests, car-simulator scene comparison, car-simulator branch (stock binder) |
 | PBR material binder (CNA `PbrEffect`) | `Enhanced/PbrMaterialBinder.hpp` | EnhancedGraphics | pilot-validated (Street) | Street `SceneRenderer::applyMaterial`, `Material` | tests, Street scene comparison, Street branch |
 | Quality presets and capability resolution | `Graphics/Quality.hpp` | Graphics | experimental | car-simulator `QualityTier`, island-simulator quality profiles | tests, street_slice |
-| Quality schema (game-declared settings, presets, limits, persistence) | `Graphics/QualitySchema.hpp` | Graphics | pilot-validated (both) | car-simulator `QualityTier`, Street `RenderSettings` | tests, pilot probes, car-simulator branch, Street branch |
+| Quality schema (game-declared settings, presets, limits, persistence) | `Graphics/QualitySchema.hpp` | Graphics | stable | car-simulator `QualityTier`, Street `RenderSettings` | tests, pilot probes, car-simulator branch, Street branch |
 | Instancing (hardware + per-instance fallback) | `Graphics/Instancing.hpp` | Graphics | pilot-validated (Street) | Street `InstancedMesh` | tests, Street instancing probe and scene comparison, Street branch |
-| Asset registry | `Assets/AssetRegistry.hpp` | Graphics | pilot-validated (both) | Street `Assets/*Library`, house-simulator caches | tests, car-simulator branch, Street branch |
+| Asset registry | `Assets/AssetRegistry.hpp` | Graphics | stable | Street `Assets/*Library`, house-simulator caches | tests, car-simulator branch, Street branch |
 | World3D screen driven by engine input/camera | `Extended/EngineWorldScreen.hpp` | ExtendedIntegration | experimental | cna-extended `World3DScreenEXT` | tests, consumer probe |
 | World3D camera sync | `Extended/WorldCameraSync.hpp` | ExtendedIntegration | experimental | cna-extended `Camera3DEXT` | tests |

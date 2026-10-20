@@ -106,7 +106,9 @@ Done (see `plan.md` for per-task results):
 
 ## Open, in priority order
 
-1. Pilot adoption (PILOT-001/002), allowed on new branches. car-simulator:
+1. Pilot adoption (PILOT-001/002/003) is done: both `engine-adoption`
+   branches are merged into car-simulator's `main` and street-simulator's
+   `develop` (2026-10-20). car-simulator:
    done on branch `engine-adoption` in the worktree
    `libcnalab/car-simulator-engine` (eight commits; the camera stays the
    game's, see `docs/pilots/migration.md`). street-simulator: done on
@@ -114,7 +116,7 @@ Done (see `plan.md` for per-task results):
    `libcnalab/street-simulator-engine` (five commits: build, mesh views,
    `SceneRenderer` through the engine, presets as a `QualitySchema`,
    derived materials in an `AssetRegistry`). What
-   is left for both: the owner's merge decision. Both are checked on the
+   is left for both: nothing; both are checked on the
    software renderer, on OpenGL via Mesa llvmpipe and on the machine's AMD
    GPU (`SDL_VIDEODRIVER=offscreen` reaches it headless).
 2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)

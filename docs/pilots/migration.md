@@ -1,8 +1,11 @@
 # Migrating the pilots to cna-engine
 
-Status: **both pilots adopted on branches.** The owner allowed adoption on
-2026-10-20 on new branches of both pilots (one revertible commit per step,
-pushed at the owner's request on 2026-10-20). Each pilot's branch
+Status: **both pilots run on the engine.** The owner allowed adoption on
+2026-10-20 on new branches of both pilots (one revertible commit per step);
+the same day the branches were pushed and, at the owner's request, merged
+fast-forward into car-simulator's `main` and street-simulator's `develop`
+(each also gained a commit naming cna-engine as a sibling checkout, and
+car-simulator's CI checks it out). Each pilot's branch
 `engine-adoption` carries its steps
 below except the camera, which both keep (see "car-simulator adoption" and
 "street-simulator adoption"). This document is the migration plan the read-only
