@@ -39,7 +39,7 @@ but not enforced yet:
   draw-call counts), so the difference is the engine's own CPU work — queue,
   culling, binder — which should stay a small fraction of a frame.
 
-## Decision (2026-10-21)
+## Decision (2026-10-20)
 
 The owner chose **this development machine, a Release build, measured later
 when the machine is idle** as the reference. Until that measurement exists the

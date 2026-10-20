@@ -110,7 +110,7 @@ traffic or pedestrians), and draws the first viewpoint twice into the same
    engine's frame.
 
 Result (software renderer, Debug, CNA baseline `5a44d2c5`), with Street's
-traffic and pedestrians on (since 2026-10-21; the whole program takes about
+traffic and pedestrians on (since 2026-10-20; the whole program takes about
 3 minutes and 2.7 GB):
 
 | Measure | Street | Engine |

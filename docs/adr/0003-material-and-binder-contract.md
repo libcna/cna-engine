@@ -1,9 +1,9 @@
 # ADR-003 — What a material describes and what a binder decides
 
-Date: 2026-10-21
+Date: 2026-10-20
 
 Status: accepted (records decisions made while carrying both pilots' scenes
-through the engine, 2026-10-19 … 2026-10-21)
+through the engine, 2026-10-19 … 2026-10-20)
 
 Plan items: ENG-031, ENG-032, ENG-035 in `plan.md`
 

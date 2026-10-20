@@ -4,7 +4,7 @@
 // tolerance they enforce.
 //
 // MILESTONE-2's agreed screenshot tolerance ("screenshot comparisons have
-// agreed tolerances"; accepted by the owner on 2026-10-21), derived from the
+// agreed tolerances"; accepted by the owner on 2026-10-20), derived from the
 // measured differences in docs/pilots/screenshot-tolerances.md. A comparison
 // whose image leaves it fails like one whose visibility differs.
 #pragma once

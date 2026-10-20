@@ -145,7 +145,7 @@ Result: policy and pin accepted in `docs/adr/0002-compatibility-baseline.md`;
 (`CNA_ENGINE_ENFORCE_BASELINE=ON` for CI; `.github/workflows/ci.yml`). The
 cna-extended suite was rerun against the pin (one new test-defect failure,
 UP-005). street-simulator's and car-simulator's own suites were run against the
-pin on 2026-10-21 (`CNA_ENGINE_PILOT_SUITES`): 13/13 and 320/321, the one
+pin on 2026-10-20 (`CNA_ENGINE_PILOT_SUITES`): 13/13 and 320/321, the one
 failure a Release-only load budget (UP-009). Open: CI cannot fetch the pinned
 CNA revision until it is pushed (UP-007), so the last acceptance point waits
 for the owner.
@@ -619,7 +619,7 @@ escape hatch), the images are practically identical: mean difference
 0.01/255, 68 of 129,600 pixels differ (`docs/pilots/street-simulator.md`).
 Screenshot tolerances (mean ≤ 0.5/255, ≤ 1 % of pixels visibly different)
 are enforced by both scene comparisons and were agreed by the owner on
-2026-10-21 (`docs/pilots/screenshot-tolerances.md`). Open: the performance
+2026-10-20 (`docs/pilots/screenshot-tolerances.md`). Open: the performance
 budget measurement (reference: this machine, Release, when idle); adoption inside street-simulator (needs permission). Engine input
 drives the slice's camera since 2026-10-20 (a third view reached by an
 `ActionMap` and a `FlyCameraController`: visibility and draw calls identical,

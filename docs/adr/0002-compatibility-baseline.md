@@ -2,7 +2,7 @@
 
 Date: 2026-10-19
 
-Status: accepted (policy and pin); all consumer reruns done (2026-10-21); CI
+Status: accepted (policy and pin); all consumer reruns done (2026-10-20); CI
 reproduction blocked until the pinned CNA revision is pushed (UP-007) — see
 "Verification status"
 
@@ -35,7 +35,7 @@ enables).
 
 The warning also places a differing checkout relative to the pin, which makes
 the supported range — the pin and its descendants on the same line —
-machine-checked (added 2026-10-21): "N commits after the baseline" or "does
+machine-checked (added 2026-10-20): "N commits after the baseline" or "does
 not contain the baseline (older or diverged)".
 `-DCNA_ENGINE_REQUIRE_BASELINE_DESCENDANT=ON` turns the second case into an
 error, for consumers that want to build only against revisions at least as new
@@ -56,7 +56,7 @@ cna-extended's pin is the read-only loader fix (EXT-001) and matches
 History: the first pin (`705ea232`, 2026-10-19) was replaced the same day by
 `5a44d2c5` after CNA `next` advanced by five math-conformance commits; the
 engine suite and the cna-extended suite were rerun against the new revision
-(`docs/verification.md`). On 2026-10-21 the owner chose to move the pin back
+(`docs/verification.md`). On 2026-10-20 the owner chose to move the pin back
 to `688f3f23`, the newest revision published on GitHub (`origin/next`), 22
 commits before `5a44d2c5` on the same line: `5a44d2c5` existed only locally,
 so CI could not fetch it (UP-007). All three pins are now published heads.
@@ -76,7 +76,7 @@ clean clone at the pinned revision (`~/deps/cna-baseline`, updated with
 selected with `-DCNA_ENGINE_CNA_DIR=$HOME/deps/cna-baseline`, and likewise a
 clean clone of Sharp Runtime (`~/deps/sharp-runtime-baseline`, selected with
 `-DCNA_ENGINE_SHARP_RUNTIME_DIR=$HOME/deps/sharp-runtime-baseline`; added
-2026-10-21 when the shared Sharp Runtime worktree gained uncommitted edits),
+2026-10-20 when the shared Sharp Runtime worktree gained uncommitted edits),
 plus
 `-DCNA_ENGINE_ENFORCE_BASELINE=ON -DCNA_ENABLE_SDL=OFF -DCNA_ENABLE_VIDEO=OFF`
 (the vendored SDL is not part of CNA's git tree).
@@ -94,8 +94,8 @@ build uses at most three parallel jobs in the constrained environment.
 | --- | --- |
 | Engine build + tests at the pin | done from a clean pinned checkout with the baseline enforced: 150/150 (`docs/verification.md`, baseline entry) |
 | cna-extended suite against the pinned CNA | done: 2,368 passed, 2 known skips (UP-004), 1 test defect (UP-005) |
-| street-simulator against the pinned CNA | done 2026-10-21: its 13 test programs compiled read-only in `build-probe/` (`CNA_ENGINE_PILOT_SUITES=ON`) all pass |
-| car-simulator against the pinned CNA | done 2026-10-21: its suite compiled read-only in `build-probe/`; 320 of 321 tests pass, the remaining one is its production load-time budget, which a Debug build misses (UP-009) |
+| street-simulator against the pinned CNA | done 2026-10-20: its 13 test programs compiled read-only in `build-probe/` (`CNA_ENGINE_PILOT_SUITES=ON`) all pass |
+| car-simulator against the pinned CNA | done 2026-10-20: its suite compiled read-only in `build-probe/`; 320 of 321 tests pass, the remaining one is its production load-time budget, which a Debug build misses (UP-009) |
 
 The two simulators moved from `libcna/cna-street` and
 `libcna/cna-car-simulator` to `libcnalab/street-simulator` and

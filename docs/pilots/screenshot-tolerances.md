@@ -1,6 +1,6 @@
 # Screenshot tolerances (MILESTONE-2)
 
-Status: **agreed** (the owner accepted the proposal unchanged on 2026-10-21).
+Status: **agreed** (the owner accepted the proposal unchanged on 2026-10-20).
 MILESTONE-2 asks for "screenshot comparisons with agreed tolerances"; these
 are they. The scene comparisons enforce them, so a rendering regression fails
 a test instead of only changing a printed number.
@@ -21,7 +21,7 @@ Visibility is checked separately and exactly: the engine must reach the same
 visible sets (items, instances, figures) as the pilot, so a missing object
 fails even when it covers few pixels.
 
-## Measured on 2026-10-21 (baseline build, software renderer, Debug)
+## Measured on 2026-10-20 (baseline build, software renderer, Debug)
 
 | Comparison | Mean | Pixels differing | Visibly (> 3 / 255) | Share | Within |
 | --- | --- | --- | --- | --- | --- |
@@ -54,4 +54,4 @@ far.
 
 ## Decision
 
-Accepted as proposed on 2026-10-21.
+Accepted as proposed on 2026-10-20.

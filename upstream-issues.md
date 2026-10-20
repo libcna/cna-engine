@@ -179,7 +179,7 @@ must do the same (or configure `CNA_SHARED_LIBRARY=OFF`); this is recorded in
 ## UP-007 — The pinned CNA revision is not published
 
 - Repository: `libcna/cna` (remote `github.com/libcna/cna`)
-- Status: worked around — on 2026-10-21 the owner chose to move the engine's
+- Status: worked around — on 2026-10-20 the owner chose to move the engine's
   pin to the published `688f3f23`; CI can fetch every pin now
 - Found: 2026-10-20, while adding the EXT-003 upstream lane
 
@@ -226,7 +226,7 @@ Engine handling: none needed; the engine estimates from the declared stride.
 - Repository: `libcnalab/car-simulator`, `tests/Map/SampleMapTests.cpp`
   (`SampleMap.LipovaLoadsAndIsFullyConnected`, around line 73)
 - Status: open (test design; the engine excludes it by name in Debug probes)
-- Found: 2026-10-21, running car-simulator's suite against the pinned CNA
+- Found: 2026-10-20, running car-simulator's suite against the pinned CNA
   (ADR-002 consumer check)
 
 The test asserts `loadSeconds < 6.0`, the production loading budget. It
@@ -248,7 +248,7 @@ in non-Release configurations (`tests/pilots/CMakeLists.txt`).
 - Repository: `libcnalab/street-simulator`, `tests/LayoutTests.cpp` (around
   line 202, `collector.builder(&b); collector.builder(&c);`)
 - Status: open (latent: breaks the build only with `-DCNA_STREET_WERROR=ON`)
-- Found: 2026-10-21, compiling Street's suite read-only for ADR-002
+- Found: 2026-10-20, compiling Street's suite read-only for ADR-002
 
 `GeometryCollector::builder()` is declared `[[nodiscard]]`; the test calls it
 twice only for its side effect (registering a material), and GCC warns

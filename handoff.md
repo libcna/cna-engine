@@ -1,6 +1,6 @@
 # CNA Engine Handoff
 
-Date: 2026-10-21 (first written 2026-10-19; supersedes the 2026-10-14
+Date: 2026-10-20 (first written 2026-10-19; supersedes the 2026-10-14
 handoff, which is in git history)
 
 Audience: the next AI agent working on `cna-engine`
@@ -18,7 +18,7 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
 
 - **Modify only this repository.** Do not edit `cna`, `sharp-runtime`,
   `cna-extended`, the simulators or any other app — with one exception granted
-  on 2026-10-21: car-simulator and street-simulator may be changed **on new
+  on 2026-10-20: car-simulator and street-simulator may be changed **on new
   branches** to adopt the engine (one revertible commit per step of
   `docs/pilots/migration.md`, nothing pushed). Defects found elsewhere are
   written to `upstream-issues.md` (UP-001 … UP-010 so far). Pilot code may be
@@ -98,11 +98,11 @@ Done (see `plan.md` for per-task results):
 1. Pilot adoption (PILOT-001/002) — needs the owner's permission to modify the
    pilots; until then, probes are the evidence. The plan, step by step with
    known differences and reversal: `docs/pilots/migration.md`.
-2. MILESTONE-2 remainder: the screenshot tolerances are agreed (2026-10-21);
+2. MILESTONE-2 remainder: the screenshot tolerances are agreed (2026-10-20);
    the performance budget's reference is this machine in a Release build,
    to be measured when it is idle (`docs/pilots/performance-budgets.md`).
 3. CI: all three pins are published heads since the move to CNA `688f3f23`
-   (2026-10-21); the CI jobs have yet to run on GitHub. The cna-extended
+   (2026-10-20); the CI jobs have yet to run on GitHub. The cna-extended
    suite still has to be rerun locally against the new pin.
 4. ENG-035: shadows and post-processing only when a pilot needs them (Street
    currently draws neither; see `docs/pilots/street-simulator.md`).

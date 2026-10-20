@@ -4,7 +4,7 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
-## 2026-10-21 (night) — pin moved to the published CNA `688f3f23`
+## 2026-10-20, 06:38 — pin moved to the published CNA `688f3f23`
 
 `~/deps/cna-baseline` checked out at `688f3f23` (clean; `origin/next` on
 GitHub), `cmake/CnaEngineBaseline.cmake` and CI updated. `build-probe/`
@@ -15,18 +15,18 @@ Result: **208 of 208 passed** in 799 s — engine tests, examples, pilot
 probes, both scene comparisons within the agreed screenshot tolerance, both
 pilots' own suites.
 
-## 2026-10-21 (night) — full baseline run after reflective materials
+## 2026-10-20, 05:11 — full baseline run after reflective materials
 
 `build-probe/`, everything: **208 of 208 passed** in 1,249 s (the machine
 was loaded; the earlier full run took 770 s).
 
-## 2026-10-21 (late evening) — reflective materials
+## 2026-10-20, 04:46 — reflective materials
 
 `build/` **193 of 193** (new: environment-mapped materials pixel-identical
 to a hand-configured `EnvironmentMapEffect` with car-simulator's paint
 values); sanitizers **170 of 170**; consumer probes 2/2.
 
-## 2026-10-21 (evening) — full baseline run
+## 2026-10-20, 04:42 — full baseline run
 
 `build-probe/` (clean pinned CNA and Sharp Runtime clones, baseline enforced
 and matching, CNAEXT on, pilot suites on), everything:
@@ -38,20 +38,20 @@ performance tests, examples, every pilot probe, both scene comparisons (Street
 three views; car-simulator day, night, headlights and mirror, all within the
 proposed screenshot tolerance) and both pilots' own suites.
 
-## 2026-10-21 — mirrored cameras
+## 2026-10-20, 04:23 — mirrored cameras
 
 car-simulator comparison: rear-view mirror (mirrored, 320 m cap) 145/145 draw
 calls, every batch count equal to car-simulator's own; 3 visibly different
 pixels. `build/` **192 of 192**; consumer probes 2/2.
 
-## 2026-10-21 — car-simulator headlights, alpha-tested blending
+## 2026-10-20, 04:15 — car-simulator headlights, alpha-tested blending
 
 car-simulator comparison (`build-probe/`): day 867/867, night 674/674,
 headlights 798/798 draw calls (124 headlight-fill draws through nested
 renderers), all within the proposed tolerance. `build/` **191 of 191**;
 sanitizers **168 of 168**.
 
-## 2026-10-21 — tolerances enforced, clean Sharp Runtime clone
+## 2026-10-20, 03:49 — tolerances enforced, clean Sharp Runtime clone
 
 The shared Sharp Runtime worktree gained uncommitted edits (another agent),
 which the enforced baseline check rejected; `build-probe/` now uses a clean
@@ -65,7 +65,7 @@ jobs). Results:
 - Both scene comparisons now enforce the proposed screenshot tolerance
   (`docs/pilots/screenshot-tolerances.md`); every view is within it.
 
-## 2026-10-21 — static analysis
+## 2026-10-20, 03:30 — static analysis
 
 `clang-tidy` 19 over the engine's 30 source files (and their headers) with
 `bugprone-*`, `performance-*` and `clang-analyzer-*` (minus swappable
@@ -76,7 +76,7 @@ directly), identical switch branches (merged), and three string
 concatenations in error messages (left). Non-pilot tests 167/167 after the
 cleanup.
 
-## 2026-10-21 — the pilots' own suites against the pinned CNA (ADR-002)
+## 2026-10-20, 03:23 — the pilots' own suites against the pinned CNA (ADR-002)
 
 `build-probe/` (pinned, baseline enforced and matching) reconfigured with
 `-DCNA_ENGINE_PILOT_SUITES=ON`; both pilots' test sources compiled read-only
@@ -90,14 +90,14 @@ cleanup.
   (16.0 s in this Debug build on a loaded machine), excluded by name since
   (UP-009).
 
-## 2026-10-21 — Street with traffic
+## 2026-10-20, 03:00 — Street with traffic
 
 Street comparison with traffic and pedestrians (`build-probe/`, pinned):
 first view 1,110 / 192 / 123 visible, 1,284 / 1,284 draw calls, 68 pixels
 differ; walk 954 / 157 / 78, 1,087 draws, 884 pixels; close-up 787 / 104 /
 42, 869 draws, 781 pixels, none on the 4,112 figure pixels. 176 s, 2.7 GB.
 
-## 2026-10-21 — car-simulator at night, material fog
+## 2026-10-20, 02:52 — car-simulator at night, material fog
 
 Sanitizer tree `build-asan/` rebuilt with every change of 2026-10-20/21:
 **165 of 165** non-pilot tests pass with ASan, UBSan (fatal) and LSan.
@@ -107,13 +107,13 @@ car-simulator comparison (`build-probe/`, pinned): day 867/867 draw calls
 (0.05/255), night at 22:00 674/674 draw calls including 15 additive lamp
 lights (800 pixels differ, at most 20/255).
 
-## 2026-10-20 (late night) — car-simulator signs, baseline 188/188
+## 2026-10-20, 02:41 — car-simulator signs, baseline 188/188
 
 Baseline `build-probe/`: **188 of 188** (before the sign change). The
 car-simulator comparison now takes over sign batches as well: 867 of 867 draw
 calls, mean image difference 0.05/255.
 
-## 2026-10-20 (late night) — GPU memory estimate, walk view
+## 2026-10-20, 02:34 — GPU memory estimate, walk view
 
 `build/` **184 of 184**. Street comparison (`build-probe/`, pinned): three
 views now — first viewpoint (0.01/255), a walk driven by engine input
@@ -121,13 +121,13 @@ views now — first viewpoint (0.01/255), a walk driven by engine input
 plus GPU resource estimates (Street's mesh accounting is 8 bytes per vertex
 high, UP-008).
 
-## 2026-10-20 (late night) — display names, final counts of the day
+## 2026-10-20, 02:20 — display names
 
 `build/` (shared CNA worktree): **182 of 182**. Baseline `build-probe/`
 (pinned, enforced, CNAEXT on): **183 of 183**, both scene comparisons
 included.
 
-## 2026-10-20 (night) — sanitizers
+## 2026-10-20, 02:10 — sanitizers
 
 `build-asan/` configured with `-DCNA_ENGINE_SANITIZE=address,undefined
 -DCNA_ENGINE_PILOT_PROBES=OFF` (shared CNA worktree at `d77ee1df`, not
@@ -141,7 +141,7 @@ Result: **158 of 158 passed** (every non-pilot test, examples included), with
 UBSan findings fatal and LeakSanitizer on; also 158/158 with leak detection
 off.
 
-## 2026-10-20 (night) — reflection-probe selector, quick-start game
+## 2026-10-20, 02:02 — reflection-probe selector, quick-start game
 
 `build/` **180 of 180**, baseline `build-probe/` **181 of 181** (new:
 `cna_engine.example.quick_start`, the selector test). Street comparison in
@@ -149,7 +149,7 @@ probes mode, run once by hand (4 min 53 s, 2.7 GB peak): first view 75 of
 129,600 pixels differ, close-up 785 (2 on figures); visibility and draw
 calls identical (`docs/pilots/street-simulator.md`).
 
-## 2026-10-20 (evening) — skinned render items
+## 2026-10-20, 01:45 — skinned render items
 
 Baseline `build-probe/` (clean pinned dependencies, baseline enforced and
 matching; CNAEXT on), Debug, software renderer: **179 of 179 tests passed**.
@@ -161,7 +161,7 @@ image difference 0.01/255 (53 pixels); close-up of a pedestrian: 57 figures
 covering 10,412 pixels, 2 of them differ, 772 pixels in the frame
 (coplanar ground meshes under a 1.7e-6 view-matrix difference).
 
-## 2026-10-20 (later) — blend states, samplers, Street lighting, diagnostics
+## 2026-10-20, 01:05 — blend states, samplers, Street lighting, diagnostics
 
 Baseline `build-probe/` (clean pinned dependencies, baseline enforced and
 matching: CNA `5a44d2c5`, Sharp Runtime `f2aecfef`, cna-extended `0061e3e1`;
@@ -186,7 +186,7 @@ car-simulator draws 506 object and 34 tree batches where the engine's plane
 test keeps 503 and 33, with the same image; the comparison checks the
 engine's rules under car-simulator's frustum test (506/34, equal).
 
-## 2026-10-20 — car-simulator clock probe
+## 2026-10-20, 00:21 — car-simulator clock probe
 
 Day-to-day `build/` (shared CNA worktree at `b0940e0e`, which other agents
 edit — not baseline evidence; CNAEXT off), Debug, software renderer.
