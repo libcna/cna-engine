@@ -314,3 +314,39 @@ Suggestion: count them in `drawTransparent` as `drawOpaque` does.
 
 Engine handling: none needed.
 
+## UP-013 — street-simulator's asset pipeline needs manual help to reach its full look
+
+- Repository: `libcnalab/street-simulator` (`develop`), `assets/external/manifest.json`,
+  `scripts/blender-tree-lod.py`, `scripts/blender-people.py`
+- Status: open (the application runs without these assets; they decide how
+  close it looks to its reference screenshots)
+- Found: 2026-10-20, preparing a full-content build of the adoption branch
+
+1. `scripts/fetch-assets.sh` fetched 346 of 351 files; five fail their recorded
+   SHA-256 because the upstream files changed: `GlassVaseFlowers.glb` and the
+   four `mounted_fluorescent_lights_*_1k.jpg` maps. The manifest's checksums
+   (or pinned URLs) need updating.
+2. `scripts/blender-tree-lod.py` cannot export `tree_small_02` with Blender
+   4.3: the script deletes every UV layer but the first, while the
+   `tree_small_02_branches` material still reads `UV_map_01` through an
+   Attribute node, and the glTF exporter fails with
+   `KeyError: ... key "UV_map_01" not found`. Run here with a pre-step that
+   points that node at `UVMap` (and removes the scene's other objects); the
+   island and jacaranda trees and `blender-vehicles.py` work unchanged.
+3. `scripts/blender-people.py` fails on its first run (`No module named
+   'bl_ext.user_default.mpfb'`): it unpacks MPFB into the extension repository
+   after Blender has scanned it. A second run, with `BLENDER_USER_EXTENSIONS`
+   as an absolute path, builds all eight people.
+4. The sound set (`scripts/prepare-audio.py`) needs the NOX Sound Essentials
+   packs, a manual download that is not on this machine, so Street runs
+   silent here.
+5. `docs/screenshots/` no longer matches what `develop` draws with the full
+   content set (other paving, other parked-car placement): the references
+   predate later changes, and `scripts/check-screenshots.sh` would compare
+   against an older picture.
+
+Engine handling: none needed. With the full content set, Street before and
+after its renderer moved onto the engine (renderer files of `64d1c07` against
+`b137025`, 1024 × 576, hardware GPU) differ by 0.083/255 on average, 0.53 %
+of pixels visibly — inside the agreed tolerance.
+

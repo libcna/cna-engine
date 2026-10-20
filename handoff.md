@@ -22,7 +22,7 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
   branches** to adopt the engine (one revertible commit per step of
   `docs/pilots/migration.md`; the branches were pushed at the owner's
   request on 2026-10-20). Defects found elsewhere are
-  written to `upstream-issues.md` (UP-001 … UP-012 so far). Pilot code may be
+  written to `upstream-issues.md` (UP-001 … UP-013 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
 - Commit regularly on branch `develop`; do not push unless asked.
 - At most 3 parallel compile/test jobs. Shared ccache only:
@@ -135,7 +135,8 @@ Done (see `plan.md` for per-task results):
    load budget in Debug builds), UP-010 (Street test discards a nodiscard
    result), UP-011 (cna-extended fixture paths under ccache's base
    directory), UP-012 (Street's blended instance groups missing from its
-   draw statistics); UP-004 is resolved upstream.
+   draw statistics), UP-013 (Street's asset pipeline: stale checksums,
+   Blender 4.3 tree export, MPFB first run); UP-004 is resolved upstream.
 
 ## Pointers
 
