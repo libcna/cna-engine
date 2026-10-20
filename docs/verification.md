@@ -4,6 +4,11 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 (night) — full baseline run after reflective materials
+
+`build-probe/`, everything: **208 of 208 passed** in 1,249 s (the machine
+was loaded; the earlier full run took 770 s).
+
 ## 2026-10-21 (late evening) — reflective materials
 
 `build/` **193 of 193** (new: environment-mapped materials pixel-identical
