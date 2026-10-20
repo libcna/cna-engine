@@ -72,6 +72,9 @@ Radeon 780M, radeonsi, reached headless through SDL's offscreen video driver
 and EGL): largest difference 12/255, at most one pixel per image visibly
 different.
 
+On the hardware GPU the world pass is not slower either (best of three,
+1280 × 720: 6.73 ms before, 4.71 ms after; `performance-budgets.md`).
+
 CPU time of the world pass (car-simulator's `--benchmark`, Release, software
 renderer, 320 × 180, day, best of three alternating runs at load average ~8):
 1,313 ms before `dc83bb4`, 1,358 ms after (+3.4 %, inside the proposed 1.15 ×
@@ -127,7 +130,8 @@ two alternating runs at load average ~22): draw calls identical (baseline
 1,571, crowd 1,294); best CPU frame 2,068 → 1,924 ms (baseline) and 1,547 →
 1,486 ms (crowd). The engine's instanced-draw and triangle counts are
 slightly higher because Street's own transparent pass never counted blended
-instance groups (UP-012).
+instance groups (UP-012). On the hardware GPU (1280 × 720): `baseline`
+11.54 → 10.82 ms, `crowd` 10.34 → 10.34 ms (best of three and of five).
 
 Known differences, beyond the comparison's: Street's apply-versus-draw
 timing split (`opaqueApplyMs`, `opaqueDrawMs`, `skinnedMs`) is not

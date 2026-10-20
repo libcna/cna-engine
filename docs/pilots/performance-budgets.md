@@ -56,6 +56,21 @@ the renderer step, alternating runs on the same machine
 All are inside the 1.15 × budget; the software renderer's rasterizer
 dominates these frames, so they bound the engine's overhead only loosely.
 
+On the machine's hardware GPU (AMD Radeon 780M, radeonsi, through SDL's
+offscreen video driver; GL builds of both pilots, 1280 × 720, load ~5–8),
+where frames are bound by CPU submission and the engine's own work shows:
+
+| Pilot | Measure | Before | After | After / before |
+| --- | --- | --- | --- | --- |
+| car-simulator | world pass, best of 3 | 6.73 ms | 4.71 ms | 0.70 |
+| car-simulator | CPU draw, best of 3 | 9.66 ms | 7.20 ms | 0.75 |
+| street-simulator | CPU frame, `baseline`, best of 3 | 11.54 ms | 10.82 ms | 0.94 |
+| street-simulator | CPU frame, `crowd` (133 skinned figures), best of 5 | 10.34 ms | 10.34 ms | 1.00 |
+
+Single runs swing by 50 % with the machine's load (a first three-round
+`crowd` comparison showed +13 % best-to-best; five rounds gave equal bests),
+which is why the budget asks for an idle machine and best of five.
+
 ## Decision (2026-10-20)
 
 The owner chose **this development machine, a Release build, measured later
