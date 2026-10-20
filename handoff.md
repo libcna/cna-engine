@@ -31,7 +31,7 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
 | Directory | Content |
 | --- | --- |
 | `build/` | day-to-day engine build against the shared `../cna` worktree (which other agents edit; not baseline evidence) |
-| `build-probe/` | baseline build against `~/deps/cna-baseline` (clean clone at the pinned CNA revision) with `CNA_ENGINE_ENFORCE_BASELINE=ON` and `CNA_ENGINE_CNA_CNAEXT=ON`; the only tree that builds the Street scene comparison (`build/` builds the car-simulator one) |
+| `build-probe/` | baseline build against `~/deps/cna-baseline` (clean clone at the pinned CNA revision) with `CNA_ENGINE_ENFORCE_BASELINE=ON`, `CNA_ENGINE_CNA_CNAEXT=ON` and `CNA_ENGINE_PILOT_SUITES=ON`; the only tree that builds the Street scene comparison and runs both pilots' own suites (the car-simulator suite alone takes ~18 min; `-E "carsim_suite"` skips it) |
 | `build-consumer/` | installed-package consumer probes (`tools/run_consumer_probes.sh`) |
 | `build-asan/` | `CNA_ENGINE_SANITIZE=address,undefined`, pilot probes off, shared CNA worktree; engine targets instrumented only |
 
