@@ -242,3 +242,21 @@ build type and the machine's load.
 Engine handling: `cna_engine.pilot.carsim_suite` excludes exactly this test
 in non-Release configurations (`tests/pilots/CMakeLists.txt`).
 
+## UP-010 — street-simulator's layout test discards a `[[nodiscard]]` result
+
+- Repository: `libcnalab/street-simulator`, `tests/LayoutTests.cpp` (around
+  line 202, `collector.builder(&b); collector.builder(&c);`)
+- Status: open (latent: breaks the build only with `-DCNA_STREET_WERROR=ON`)
+- Found: 2026-10-21, compiling Street's suite read-only for ADR-002
+
+`GeometryCollector::builder()` is declared `[[nodiscard]]`; the test calls it
+twice only for its side effect (registering a material), and GCC warns
+(`-Wunused-result`). Street's warnings are not errors by default, so its own
+build passes; with its `CNA_STREET_WERROR` option on, this test stops
+compiling.
+
+Suggestion: `(void)collector.builder(&b);` or `static_cast<void>(…)`, as the
+test intends the call only for its effect.
+
+Engine handling: none (the engine compiles Street's tests without `-Werror`).
+
