@@ -98,7 +98,7 @@ build uses at most three parallel jobs in the constrained environment.
 | Check | Status |
 | --- | --- |
 | Engine build + tests at the pin | done from a clean pinned checkout with the baseline enforced: 150/150 (`docs/verification.md`, baseline entry) |
-| cna-extended suite against the pinned CNA | CNAEXT_RESULT |
+| cna-extended suite against the pinned CNA | done for `900d0db3b` on 2026-10-20: 2,368 passed, 2 skips (UP-004's tests, still skipped unconditionally in cna-extended), 1 test defect (UP-005); four of the passes need the build root as working directory (UP-011) |
 | street-simulator against the pinned CNA | done 2026-10-20: its 13 test programs compiled read-only in `build-probe/` (`CNA_ENGINE_PILOT_SUITES=ON`) all pass |
 | car-simulator against the pinned CNA | done 2026-10-20: its suite compiled read-only in `build-probe/`; 320 of 321 tests pass, the remaining one is its production load-time budget, which a Debug build misses (UP-009) |
 

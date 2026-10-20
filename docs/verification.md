@@ -4,6 +4,22 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20, 17:50 — pin moved to CNA `900d0db3b` (UP-004's fix published)
+
+CNA published `next` at `900d0db3b52d76d3115ebda0a0e04a25fefad1a5`
+(142 commits after `688f3f23`; contains `5ab1c7729` and a regression test for
+the orthographic case). `~/deps/cna-baseline` checked out there (clean), Sharp
+Runtime unchanged at `f2aecfef` (its published `next`), cna-extended at
+`0061e3e1`.
+
+- Baseline tree `build-probe/` (baseline enforced, both pilots' own suites,
+  scene comparisons): build 4 min 51 s, **213 of 213 tests passed** (15 min).
+- cna-extended suite (`build-consumer/cna-extended/`, CI's lane
+  configuration): 2,371 tests — 2,364 passed under CTest, 2 skipped (UP-004's
+  tests, skipped unconditionally in cna-extended's sources), 1 known failure
+  (UP-005), 4 fixture-path failures that pass from the build root (UP-011):
+  the same 2,368 as at the previous pin.
+
 ## 2026-10-20, 12:55 — CI green on GitHub
 
 After `develop` and the pilots' branches were pushed (owner's request), the
