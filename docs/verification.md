@@ -4,6 +4,35 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20, 07:50 — car-simulator adopts the engine (branch `engine-adoption`)
+
+Engine `build/` with `Camera::SetMatrices` (`98c8c28`): **197 of 197 tests
+passed** (three new camera tests, one new camera-sync test).
+
+car-simulator worktree `libcnalab/car-simulator-engine`, branch
+`engine-adoption` from `cd6d948`, build `build/software` (Release, software
+renderer, headless, no audio, CNA and Sharp Runtime from the shared
+worktrees, cna-engine from this repository): after each of the eight
+adoption commits its own CTest suite passed (**7 of 7**) and
+`scripts/check_xna_only.py` reported OK (235 files). Deterministic captures
+(`--frames 3 --lockstep --time-scale 0 --no-save --no-audio`) of the world
+renderer step (`dc83bb4`) against the commit before it, under the agreed
+tolerance:
+
+| Scenario | Mean | Largest | Visible (> 3/255) |
+| --- | --- | --- | --- |
+| day, 10:30, clear | 0.055/255 | 2 | 0 |
+| night, 22:00, headlights | 0.003/255 | 1 | 0 |
+| rain | 0.027/255 | 1 | 0 |
+| snow | 0.066/255 | 2 | 0 |
+| fog | 0.031/255 | 1 | 0 |
+| cockpit with mirrors | 0.039/255 | 2 | 0 |
+| low tier | 0.055/255 | 2 | 0 |
+
+The plate-cache and quality-tier steps were pixel-identical. World pass CPU
+time (best of three alternating Release runs, 320 × 180, load ~8): 1,313 ms
+before, 1,358 ms after (+3.4 %).
+
 ## 2026-10-20, 06:38 — pin moved to the published CNA `688f3f23`
 
 `~/deps/cna-baseline` checked out at `688f3f23` (clean; `origin/next` on
