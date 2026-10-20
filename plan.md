@@ -588,7 +588,7 @@ cna-extended's shape drawing and text with a game-supplied `BitmapFont`.
 Pixel tests cover the panel, the budget-coloured graph and the text path
 (with a font built in code).
 
-### MILESTONE-2 — Street rendering vertical slice `[ ]`
+### MILESTONE-2 — Street rendering vertical slice `[x]`
 
 Exit criteria:
 
@@ -598,6 +598,19 @@ Exit criteria:
 - CPU time, draw calls, submissions, culled objects, and GPU resource estimates
   are compared with the original implementation;
 - direct CNA escape hatches are demonstrated and documented.
+
+Result (2026-10-20): Street's own `SceneRenderer` draws its city through the
+engine on Street's adoption branch — engine camera state (Street's
+matrices), generic meshes (borrowed), materials, render queue, culling and
+LOD, instancing, an `AssetRegistry` for its derived materials, a
+`QualitySchema` for its presets — and the scene comparison reaches a view by
+engine input. Screenshots stay inside the agreed tolerance on the software
+renderer and on OpenGL; CPU time, draw calls, submissions, culled objects and
+GPU resource estimates are compared with Street's own implementation
+(`docs/pilots/street-simulator.md`, `docs/pilots/migration.md`); the sky
+pass and `ForwardRenderer::LitEffect()` are the documented escape hatches.
+Enforcing the performance budget waits for the idle-machine measurement the
+owner chose (REL-003, `docs/pilots/performance-budgets.md`).
 
 Estimated active AI-agent effort from project start: 180–300 hours for a useful
 MVP; 320–500 hours for the complete Phase 4 scope with robust tests.
@@ -620,7 +633,9 @@ escape hatch), the images are practically identical: mean difference
 Screenshot tolerances (mean ≤ 0.5/255, ≤ 1 % of pixels visibly different)
 are enforced by both scene comparisons and were agreed by the owner on
 2026-10-20 (`docs/pilots/screenshot-tolerances.md`). Open: the performance
-budget measurement (reference: this machine, Release, when idle); adoption inside street-simulator (needs permission). Engine input
+budget measurement (reference: this machine, Release, when idle). Street
+itself draws through the engine on its adoption branch since 2026-10-20
+(PILOT-001). Engine input
 drives the slice's camera since 2026-10-20 (a third view reached by an
 `ActionMap` and a `FlyCameraController`: visibility and draw calls identical,
 0.20/255); Street's own asset libraries stay (the engine's `AssetRegistry` is

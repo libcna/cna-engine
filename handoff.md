@@ -115,9 +115,9 @@ Done (see `plan.md` for per-task results):
    derived materials in an `AssetRegistry`). What
    is left for both: captures on a hardware GPU (Street's are checked on
    OpenGL via Mesa llvmpipe too) and the owner's merge decision.
-2. MILESTONE-2 remainder: the screenshot tolerances are agreed (2026-10-20);
-   the performance budget's reference is this machine in a Release build,
-   to be measured when it is idle (`docs/pilots/performance-budgets.md`).
+2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)
+   is recorded but not enforced until it is measured on this machine in a
+   Release build when the machine is idle (`docs/pilots/performance-budgets.md`).
 3. CI: all three pins are published heads since the move to CNA `688f3f23`
    (2026-10-20); the CI jobs have yet to run on GitHub. The cna-extended
    suite was rerun locally against the new pin (same result as before;
