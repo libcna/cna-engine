@@ -110,7 +110,7 @@ then calls `find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics)`.
 - `docs/guide-strict.md`, `docs/guide-enhanced.md` — how to use each profile
 - `docs/conventions.md` — API, error, ownership and stability rules
 - `docs/verification-matrix.md` — what is checked where
-- `docs/pilots/` — equivalence probes against the two pilot games
+- `docs/pilots/` — equivalence probes against the two pilot games; `docs/pilots/migration.md` — how each pilot would adopt the engine
 - `CHANGELOG.md`, `NOTICE.md`, `LICENSE`
 - `docs/api-status.md` — status of every public facility
 - `docs/verification.md` — what was built and tested, with which revisions

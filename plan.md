@@ -675,6 +675,8 @@ Progress: facilities validated by both pilots are marked `pilot-validated`
 in `docs/api-status.md`, their headers are fingerprinted
 (`docs/api-snapshot.txt`, test `cna_engine.api_snapshot`) and changes go to
 `CHANGELOG.md`. `stable` status waits for adoption in the pilots.
+`docs/pilots/migration.md` is the step-by-step migration plan for both pilots
+with the evidence, known differences and reversal of every step.
 
 ### REL-001 — Package and version the library `[~]`
 

@@ -82,7 +82,8 @@ Done (see `plan.md` for per-task results):
 ## Open, in priority order
 
 1. Pilot adoption (PILOT-001/002) — needs the owner's permission to modify the
-   pilots; until then, probes are the evidence.
+   pilots; until then, probes are the evidence. The plan, step by step with
+   known differences and reversal: `docs/pilots/migration.md`.
 2. MILESTONE-2 remainder: screenshot tolerances must be agreed with the owner
    (the scene comparisons give the measured differences to start from).
 3. ENG-035: shadows and post-processing only when a pilot needs them (Street
