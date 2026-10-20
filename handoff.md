@@ -42,7 +42,7 @@ when the pin changes (ADR-002 "Local reproduction").
 ## State
 
 All work is committed on `develop`. Latest evidence (`docs/verification.md`):
-184 tests pass in `build/`, 183 in the baseline build (`build-probe/`, which
+187 tests pass in `build/`, 188 in the baseline build (`build-probe/`, which
 also runs the Street scene comparison), 2 consumer probes pass.
 
 Both pilots' real scenes render through the engine's `ForwardRenderer`
@@ -51,7 +51,8 @@ city with the PBR binder carrying Street's lighting and its sky as a custom
 pass, pedestrians included as skinned render items (visible items,
 instances, figures and draw calls identical; mean image difference
 0.01/255) and car-simulator's `lipova` map with the strict stock binder
-(every visibility count identical; 0.1/255). See `docs/pilots/`.
+(every visibility count and all 867 draw calls identical; 0.05/255). See
+`docs/pilots/`.
 
 The shared `../cna` worktree is being changed by another agent (math:
 XNA-exact `BoundingFrustum::Intersects` via GJK, uncommitted on 2026-10-20);
