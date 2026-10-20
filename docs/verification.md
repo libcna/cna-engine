@@ -4,6 +4,12 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 (late evening) — reflective materials
+
+`build/` **193 of 193** (new: environment-mapped materials pixel-identical
+to a hand-configured `EnvironmentMapEffect` with car-simulator's paint
+values); sanitizers **170 of 170**; consumer probes 2/2.
+
 ## 2026-10-21 (evening) — full baseline run
 
 `build-probe/` (clean pinned CNA and Sharp Runtime clones, baseline enforced
