@@ -154,13 +154,16 @@ buffers and textures, engine culling with car-simulator's rules, the strict
 | Road and marking batches | 77 | **77** |
 | Object batches | 503 | **503** |
 | Tree batches | 33 | **33** |
-| Mean image difference | — | **0.1 / 255** per channel |
-| CPU frame time | 6.6 s | 6.6 s |
+| Sign batches (since 2026-10-20) | 46 (not counted by car-simulator; its rule) | **46** |
+| Draw calls | 867 (every world pass) | **867** |
+| Image difference | — | mean **0.05 / 255** per channel; 14,030 of 129,600 pixels differ, 13,891 of them by one level, 39 by more than three |
+| CPU frame time | 5.2–6.6 s | 6.6–8.1 s (software renderer, Debug; varies with machine load) |
 
 The engine's image is practically identical to car-simulator's
-(`docs/pilots/images/carsim-scene-*.png`). The 46 extra car-simulator draw
-calls are its special passes (terrain skirt sharing, signs, lamp glows) that
-the comparison does not take over.
+(`docs/pilots/images/carsim-scene-*.png`); the one-level differences are
+rounding in lit facades and road noise. Signs draw with the tree material,
+double-sided. car-simulator's headlight-fill and lamp-light passes draw
+nothing at this daytime view, so the draw calls match in full.
 
 The engine sets every sampler from the materials (car-simulator's anisotropic
 wrap for terrain, roads and objects, linear clamp for the terrain's macro layer

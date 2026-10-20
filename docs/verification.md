@@ -4,6 +4,12 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20 (late night) — car-simulator signs, baseline 188/188
+
+Baseline `build-probe/`: **188 of 188** (before the sign change). The
+car-simulator comparison now takes over sign batches as well: 867 of 867 draw
+calls, mean image difference 0.05/255.
+
 ## 2026-10-20 (late night) — GPU memory estimate, walk view
 
 `build/` **184 of 184**. Street comparison (`build-probe/`, pinned): three

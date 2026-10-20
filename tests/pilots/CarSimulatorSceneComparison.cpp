@@ -71,6 +71,7 @@ namespace
     CNA_ENGINE_EXPOSE(RoadBatches, roadBatches_);
     CNA_ENGINE_EXPOSE(ObjectBatches, objectBatches_);
     CNA_ENGINE_EXPOSE(TreeBatches, treeBatches_);
+    CNA_ENGINE_EXPOSE(SignBatches, signBatches_);
     CNA_ENGINE_EXPOSE(TerrainChunks, terrainChunks_);
     CNA_ENGINE_EXPOSE(TerrainSkirt, terrainSkirt_);
     CNA_ENGINE_EXPOSE(TextureFor, TextureFor);
@@ -182,6 +183,7 @@ int main(int argc, char** argv)
         const auto& roads = renderer.*Get(RoadBatches{});
         const auto& objects = renderer.*Get(ObjectBatches{});
         const auto& trees = renderer.*Get(TreeBatches{});
+        const auto& signs = renderer.*Get(SignBatches{});
         const auto& chunks = renderer.*Get(TerrainChunks{});
         const auto& skirt = renderer.*Get(TerrainSkirt{});
         const Vector3 baked = renderer.*Get(BakedScale{});
@@ -361,6 +363,25 @@ int main(int argc, char** argv)
             submit(*b.mesh, material(tree), 4, b.mesh->Sphere());
             ++treesDrawn;
         }
+
+        // Sign faces: the tree material, both sides, frustum culling only.
+        int signsDrawn = 0;
+        int xnaSigns = 0;
+        for (const auto& b : signs) {
+            if (!b.mesh) {
+                continue;
+            }
+            xnaSigns += xnaFrustum(b.mesh->Sphere());
+            if (!inFrustum(b.mesh->Sphere())) {
+                continue;
+            }
+            Graphics::Material sign = treeMaterial;
+            sign.name = "sign";
+            sign.baseTexture = b.texture;
+            sign.doubleSided = true;
+            submit(*b.mesh, material(sign), 5, b.mesh->Sphere());
+            ++signsDrawn;
+        }
         queue.Sort(camera.Position());
 
         Graphics::ForwardRenderer engine(device);
@@ -411,6 +432,7 @@ int main(int argc, char** argv)
         std::printf("  road batches   %d / %d / %d\n", carStats.roadBatchesDrawn, xnaRoads, roadsDrawn);
         std::printf("  object batches %d / %d / %d\n", carStats.objectBatchesDrawn, xnaObjects, objectsDrawn);
         std::printf("  tree batches   %d / %d / %d\n", carStats.treeBatchesDrawn, xnaTrees, treesDrawn);
+        std::printf("  sign batches   (not counted) / %d / %d\n", xnaSigns, signsDrawn);
         std::printf("draw calls: car-simulator %d (all world passes), engine %llu (compared geometry)\n",
                     carStats.drawCalls, static_cast<unsigned long long>(engineStats.drawCalls));
         std::printf("cpu frame: car-simulator %.1f ms, engine %.1f ms (software renderer, Debug)\n", carMs, engineMs);
