@@ -526,4 +526,35 @@ namespace CnaEngine::Graphics
         glow.fog = false;
         EXPECT_TRUE(Near(draw(), 255, 255, 255)) << "a glow keeps its color";
     }
+
+    TEST_F(Fixture, BlendedMaterialsCanDiscardBelowTheCutoff)
+    {
+        // Left texel opaque, right texel 40 % alpha; a half-bright glow added
+        // over gray.
+        Texture2D texture(device, 2, 1);
+        const Color texels[2] = {Color(255, 255, 255, 255), Color(255, 255, 255, 102)};
+        texture.SetData(texels, 2);
+        const Material gray = Unlit("gray", Vector3(0.25f, 0.25f, 0.25f));
+        Material glow = Unlit("glow", Vector3(0.5f, 0.5f, 0.5f));
+        glow.blend = BlendMode::Additive;
+        glow.baseTexture = &texture;
+        glow.sampler = &Microsoft::Xna::Framework::Graphics::SamplerState::PointClamp;
+        auto draw = [&] {
+            RenderQueue queue;
+            queue.Submit(Item(gray, 0.0f));
+            queue.Submit(Item(glow, 1.0f));
+            return Draw(queue);
+        };
+        // Additive weights the glow by its alpha: 64 + 128 and 64 + 0.4 * 128.
+        const auto blended = draw();
+        EXPECT_TRUE(Near(At(blended, 4, Size / 2), 192, 192, 192));
+        EXPECT_TRUE(Near(At(blended, Size - 4, Size / 2), 115, 115, 115));
+
+        glow.alphaCutoff = 0.5f;
+        glow.discardBelowCutoff = true;
+        const auto cut = draw();
+        EXPECT_TRUE(Near(At(cut, 4, Size / 2), 192, 192, 192)) << "kept and added";
+        EXPECT_TRUE(Near(At(cut, Size - 4, Size / 2), 64, 64, 64)) << "below the cutoff: discarded";
+        EXPECT_TRUE(renderer.LastFallbacks().empty()) << "unlit: nothing lost";
+    }
 }

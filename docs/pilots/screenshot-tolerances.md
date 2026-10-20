@@ -28,6 +28,7 @@ fails even when it covers few pixels.
 | --- | --- | --- | --- | --- | --- |
 | car-simulator, day | 0.05 | 14,030 | 39 | 0.03 % | yes |
 | car-simulator, night | 0.00 | 800 | 37 | 0.03 % | yes |
+| car-simulator, night with headlights | 0.01 | 809 | 47 | 0.04 % | yes |
 | Street, first viewpoint (traffic, pedestrians) | 0.01 | 68 | 56 | 0.04 % | yes |
 | Street, walk driven by engine input | 0.21 | 884 | 620 | 0.48 % | yes |
 | Street, pedestrian close-up | 0.13 | 781 | 775 | 0.60 % | yes |
@@ -46,7 +47,7 @@ far.
   differently; a GPU run would need its own measurement before the same
   limits are applied.
 - Frames the pilots draw with passes the engine does not take over
-  (car-simulator's mirrors, rain and headlights; Street's reflection-probe
+  (car-simulator's mirrors, rain and snow; Street's reflection-probe
   bake, which the probes mode measures by hand: 75 differing pixels).
 - Performance: CPU frame times are reported next to the images but have no
   budget yet (see `docs/verification-matrix.md`, "Performance").

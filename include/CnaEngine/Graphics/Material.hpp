@@ -57,8 +57,16 @@ namespace CnaEngine::Graphics
         Microsoft::Xna::Framework::Vector3 emissiveColor = Microsoft::Xna::Framework::Vector3::Zero;
         Microsoft::Xna::Framework::Vector3 specularColor = Microsoft::Xna::Framework::Vector3::Zero;
         float specularPower = 16.0f;
-        /// BlendMode::AlphaTest only, 0..1.
+        /// Pixels with alpha below this are discarded: always for
+        /// BlendMode::AlphaTest, for blended modes when `discardBelowCutoff`
+        /// is set. 0..1.
         float alphaCutoff = 0.5f;
+        /// Blended materials (AlphaBlend, Additive, PremultipliedAlpha) also
+        /// discard pixels below `alphaCutoff` — foliage cards relit
+        /// additively, cut-out decals that blend. The stock binder draws them
+        /// with XNA's AlphaTestEffect (unlit); the PBR binder with its Mask
+        /// mode, after which the surface blends with alpha 1.
+        bool discardBelowCutoff = false;
 
         /// Multiply by the mesh's vertex colors (needs a Color attribute).
         bool vertexColors = false;

@@ -185,6 +185,23 @@ double-sided, unfogged (`Material::fog = false`) items with the stock binder:
 
 Images: `docs/pilots/images/carsim-night-*.png`.
 
+With the headlights on. A third view switches car-simulator's low beams on
+at the driver's position (`WorldRenderer::SetHeadlights`). car-simulator then
+draws a headlight fill: objects, trees and signs inside the beam once more,
+lit by the headlights alone, faded to black with distance and added on top.
+The engine expresses it as a second and third `ForwardRenderer` (the
+headlights' own lighting and fog) run from a custom `AfterOpaque` pass of the
+main one; the cards use `Material::discardBelowCutoff` (alpha-tested and
+additive at once).
+
+| Measure (22:00, low beams) | car-simulator | Engine |
+| --- | --- | --- |
+| Headlight fill draws | 124 (its rule) | **124** |
+| Draw calls | 798 | **798** |
+| Image difference | — | mean 0.01 / 255; 809 pixels differ, 47 visibly |
+
+Images: `docs/pilots/images/carsim-headlights-*.png`.
+
 Frustum test. car-simulator culls with `BoundingFrustum::Intersects(sphere)`,
 the engine with the plane test (`Contains(sphere) != Disjoint`). At the pinned
 CNA the two agree. CNA `5ab1c7729` (2026-10-20, after the pin) implements
@@ -201,7 +218,8 @@ Generalizations made because of this comparison: fill lights and per-pixel
 lighting in `ForwardLighting` (car-simulator's sun / sky fill / ground bounce
 rig), `Material::secondaryTexture` (`DualTextureEffect` terrain),
 `Material::depthBias` for road markings, `Material::sampler` /
-`secondarySampler`, and `Material::fog` for the lamp light.
+`secondarySampler`, `Material::fog` for the lamp light, and
+`Material::discardBelowCutoff` for the headlit cards.
 
 ## Still open for this pilot
 - The strict checker allowance (ADR-001) applied in an integration branch of

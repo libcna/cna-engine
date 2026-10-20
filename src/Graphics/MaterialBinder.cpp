@@ -119,7 +119,8 @@ namespace CnaEngine::Graphics
             }
         }
 
-        if (bucket == RenderBucket::AlphaTested) {
+        const bool blended = bucket == RenderBucket::Transparent || bucket == RenderBucket::Overlay;
+        if (bucket == RenderBucket::AlphaTested || (blended && material.discardBelowCutoff)) {
             if (material.shading != ShadingModel::Unlit) {
                 fallback(material, "alpha-tested surfaces draw unlit (XNA AlphaTestEffect)");
             }

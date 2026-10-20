@@ -61,6 +61,11 @@ became pilot-validated (their changes of that day are listed below);
   of the scene's fog in both binders. Reason: car-simulator's street-lamp
   light is unfogged.
 
+- `Material::discardBelowCutoff` (default false), additive: blended
+  materials can also discard below `alphaCutoff` (stock binder:
+  AlphaTestEffect; PBR binder: Mask mode). Reason: car-simulator relights its
+  tree and sign cards additively under the headlights.
+
 ### Other API additions (experimental headers)
 
 - `Graphics/GpuMemory.hpp`: `GpuMemoryEstimate` (meshes, textures, materials,

@@ -135,7 +135,9 @@ namespace CnaEngine::Enhanced
                 case Graphics::RenderBucket::AlphaTested: effect.setAlphaModeEXTProperty(AlphaModeEXT::Mask); break;
                 case Graphics::RenderBucket::Transparent:
                 case Graphics::RenderBucket::Overlay:
-                case Graphics::RenderBucket::Count: effect.setAlphaModeEXTProperty(AlphaModeEXT::Blend); break;
+                case Graphics::RenderBucket::Count:
+                    effect.setAlphaModeEXTProperty(material.discardBelowCutoff ? AlphaModeEXT::Mask : AlphaModeEXT::Blend);
+                    break;
             }
             effect.setAlphaCutoffEXTProperty(material.alphaCutoff);
             effect.setDoubleSidedEXTProperty(material.doubleSided);

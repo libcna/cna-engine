@@ -14,7 +14,7 @@ CnaEngine/Graphics/ScreenCapture.hpp d88bfcc0ed6e2cac
 CnaEngine/Graphics/QualitySchema.hpp ed31d38bf307e865
 CnaEngine/Assets/AssetRegistry.hpp bb84cc840d5c174d
 CnaEngine/Core/FixedStepClock.hpp 7d8301690ba6b541
-CnaEngine/Graphics/Material.hpp 16da825afe1cf7d3
+CnaEngine/Graphics/Material.hpp 34d91fe0eb1f7601
 CnaEngine/Graphics/MaterialBinder.hpp 24093af74242cf79
 CnaEngine/Graphics/RenderQueue.hpp d93eefd7791aa175
 CnaEngine/Graphics/Visibility.hpp aab30c7a3179c144
