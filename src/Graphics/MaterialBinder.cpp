@@ -44,6 +44,7 @@ namespace CnaEngine::Graphics
     void StockMaterialBinder::BeginFrame(GraphicsDevice&, const Camera&, const ForwardLighting& lighting)
     {
         defaultLighting_ = lighting.defaultLighting;
+        fogEnabled_ = lighting.fogEnabled;
         // BasicEffect and SkinnedEffect light the same way.
         auto light = [&](auto& effect) {
             if (lighting.defaultLighting) {
@@ -134,6 +135,7 @@ namespace CnaEngine::Graphics
             effect.setReferenceAlphaProperty(
                 static_cast<int>(std::lround(std::clamp(material.alphaCutoff, 0.0f, 1.0f) * 255.0f)));
             device.getSamplerStatesProperty()[0] = SamplerFor(material);
+            effect.setFogEnabledProperty(fogEnabled_ && material.fog);
             effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
             return true;
         }
@@ -170,6 +172,7 @@ namespace CnaEngine::Graphics
             device.getSamplerStatesProperty()[0] = SamplerFor(material);
             device.getSamplerStatesProperty()[1] = SecondarySamplerFor(material);
             effect.setVertexColorEnabledProperty(vertexColors);
+            effect.setFogEnabledProperty(fogEnabled_ && material.fog);
             effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
             return true;
         }
@@ -195,6 +198,7 @@ namespace CnaEngine::Graphics
             device.getSamplerStatesProperty()[0] = SamplerFor(material);
         }
         effect.setVertexColorEnabledProperty(vertexColors);
+        effect.setFogEnabledProperty(fogEnabled_ && material.fog);
         effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         return true;
     }
@@ -234,6 +238,7 @@ namespace CnaEngine::Graphics
         effect.setWeightsPerVertexProperty(4);
         effect.SetBoneTransforms(*item.bones);
         device.getSamplerStatesProperty()[0] = SamplerFor(material);
+        effect.setFogEnabledProperty(fogEnabled_ && material.fog);
         effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         return true;
     }

@@ -4,6 +4,12 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 — car-simulator at night, material fog
+
+car-simulator comparison (`build-probe/`, pinned): day 867/867 draw calls
+(0.05/255), night at 22:00 674/674 draw calls including 15 additive lamp
+lights (800 pixels differ, at most 20/255).
+
 ## 2026-10-20 (late night) — car-simulator signs, baseline 188/188
 
 Baseline `build-probe/`: **188 of 188** (before the sign change). The

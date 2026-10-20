@@ -142,6 +142,7 @@ namespace CnaEngine::Graphics
         /// 1x1 white texture for untextured alpha-tested materials.
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::Texture2D> white_;
         bool defaultLighting_ = true;
+        bool fogEnabled_ = false;
         bool fillEnabled_[2] = {false, false};
     };
 }

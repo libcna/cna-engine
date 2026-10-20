@@ -507,4 +507,23 @@ namespace CnaEngine::Graphics
         EXPECT_EQ(renderer.LastFallbacks()[0], "material 'glow': not drawn: more bones than XNA SkinnedEffect's 72");
         EXPECT_TRUE(Near(At(none, Size / 2, Size / 2), 0, 0, 0));
     }
+
+    TEST_F(Fixture, MaterialsCanOptOutOfTheFog)
+    {
+        // Fog that has fully set in at the quad's distance, colored red.
+        auto& lighting = renderer.Lighting();
+        lighting.fogEnabled = true;
+        lighting.fogColor = Vector3(1.0f, 0.0f, 0.0f);
+        lighting.fogStart = 0.0f;
+        lighting.fogEnd = 1.0f;
+        Material glow = Unlit("glow", Vector3(1.0f, 1.0f, 1.0f));
+        auto draw = [&] {
+            RenderQueue queue;
+            queue.Submit(Item(glow, 0.0f));
+            return At(Draw(queue), Size / 2, Size / 2);
+        };
+        EXPECT_TRUE(Near(draw(), 255, 0, 0)) << "fogged";
+        glow.fog = false;
+        EXPECT_TRUE(Near(draw(), 255, 255, 255)) << "a glow keeps its color";
+    }
 }

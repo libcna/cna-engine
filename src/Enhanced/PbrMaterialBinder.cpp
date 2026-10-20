@@ -78,7 +78,7 @@ namespace CnaEngine::Enhanced
         template <typename Effect>
         void SetDraw(Effect& effect, GraphicsDevice& device, const Graphics::RenderItem& item,
                      const Graphics::RenderBucket bucket, const Graphics::Camera& camera, const Vector3& keyColor,
-                     const Graphics::FallbackSink& fallback)
+                     const bool fog, const Graphics::FallbackSink& fallback)
         {
             using Graphics::VertexAttribute;
             const Graphics::Material& material = *item.material;
@@ -139,6 +139,7 @@ namespace CnaEngine::Enhanced
             }
             effect.setAlphaCutoffEXTProperty(material.alphaCutoff);
             effect.setDoubleSidedEXTProperty(material.doubleSided);
+            effect.setFogEnabledProperty(fog && material.fog);
 
             TextureTransformEXT transform;
             transform.Scale = material.uvScale;
@@ -168,6 +169,7 @@ namespace CnaEngine::Enhanced
     {
         fallback_->BeginFrame(device, camera, lighting);
         keyColor_ = lighting.lightColor * settings_.exposure;
+        fogEnabled_ = lighting.fogEnabled;
         SetFrame(*effect_, lighting, settings_, keyColor_);
         SetFrame(*skinned_, lighting, settings_, keyColor_);
         boundEnvironment_ = nullptr;
@@ -194,7 +196,7 @@ namespace CnaEngine::Enhanced
             } else {
                 SkinnedPbrEffect& effect = *skinned_;
                 BindEnvironment(effect, environment, boundSkinnedEnvironment_, settings_);
-                SetDraw(effect, device, item, bucket, camera, keyColor_, fallback);
+                SetDraw(effect, device, item, bucket, camera, keyColor_, fogEnabled_, fallback);
                 effect.setWeightsPerVertexProperty(4);
                 effect.SetBoneTransforms(*item.bones);
                 effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
@@ -203,7 +205,7 @@ namespace CnaEngine::Enhanced
         }
         PbrEffect& effect = *effect_;
         BindEnvironment(effect, environment, boundEnvironment_, settings_);
-        SetDraw(effect, device, item, bucket, camera, keyColor_, fallback);
+        SetDraw(effect, device, item, bucket, camera, keyColor_, fogEnabled_, fallback);
         effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         return true;
     }

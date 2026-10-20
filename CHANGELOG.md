@@ -56,6 +56,10 @@ became pilot-validated (their changes of that day are listed below).
   screens and prompts, identical to car-simulator's own labels where it has
   them. Reason: rebinding screens need text for people, not identifiers.
 
+- `Material::fog` (default true), additive: glows and light pools opt out
+  of the scene's fog in both binders. Reason: car-simulator's street-lamp
+  light is unfogged.
+
 ### Other API additions (experimental headers)
 
 - `Graphics/GpuMemory.hpp`: `GpuMemoryEstimate` (meshes, textures, materials,

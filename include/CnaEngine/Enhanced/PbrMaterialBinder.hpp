@@ -106,6 +106,7 @@ namespace CnaEngine::Enhanced
         std::shared_ptr<Graphics::StockMaterialBinder> fallback_;
         PbrSettings settings_;
         EnvironmentSelector selector_;
+        bool fogEnabled_ = false;
         /// The environment each effect holds now (null: the frame's).
         const Microsoft::Xna::Framework::Graphics::ImageBasedLightEXT* boundEnvironment_ = nullptr;
         const Microsoft::Xna::Framework::Graphics::ImageBasedLightEXT* boundSkinnedEnvironment_ = nullptr;

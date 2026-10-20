@@ -72,6 +72,9 @@ namespace CnaEngine::Graphics
         /// Lit by the scene's key (directional) light. Interiors seen through
         /// windows turn it off and live on ambient, fill and emissive light.
         bool keyLight = true;
+        /// Receives the scene's fog (ForwardLighting). Glows, light pools and
+        /// sky-like surfaces turn it off.
+        bool fog = true;
 
         /// Base color texture (needs TexCoord0); null means untextured.
         Microsoft::Xna::Framework::Graphics::Texture2D* baseTexture = nullptr;

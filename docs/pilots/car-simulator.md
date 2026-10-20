@@ -170,6 +170,21 @@ wrap for terrain, roads and objects, linear clamp for the terrain's macro layer
 and the trees); the comparison leaves point sampling on the device before the
 engine draws, so nothing is inherited from car-simulator's pass.
 
+After dark. The program then sets car-simulator's lighting rig to 22:00
+(`LightingRig::SetTimeOfDay`, `ApplyLighting`) and compares again: lit windows
+(night emissive) and the street lamps' light, which car-simulator adds on top
+of the scene without fog. The engine draws the lamps as additive,
+double-sided, unfogged (`Material::fog = false`) items with the stock binder:
+
+| Measure (22:00) | car-simulator | Engine |
+| --- | --- | --- |
+| Terrain / roads / objects / trees / signs | 207 / 77 / 295 / 33 / 46 | **the same** |
+| Lamp lights | 15 (its rule) | **15** |
+| Draw calls | 674 | **674** |
+| Image difference | — | mean 0.00 / 255; 800 pixels differ, at most 20 / 255 |
+
+Images: `docs/pilots/images/carsim-night-*.png`.
+
 Frustum test. car-simulator culls with `BoundingFrustum::Intersects(sphere)`,
 the engine with the plane test (`Contains(sphere) != Disjoint`). At the pinned
 CNA the two agree. CNA work in progress on 2026-10-20 (uncommitted in the
@@ -185,8 +200,8 @@ differs.
 Generalizations made because of this comparison: fill lights and per-pixel
 lighting in `ForwardLighting` (car-simulator's sun / sky fill / ground bounce
 rig), `Material::secondaryTexture` (`DualTextureEffect` terrain),
-`Material::depthBias` for road markings, and `Material::sampler` /
-`secondarySampler`.
+`Material::depthBias` for road markings, `Material::sampler` /
+`secondarySampler`, and `Material::fog` for the lamp light.
 
 ## Still open for this pilot
 - The strict checker allowance (ADR-001) applied in an integration branch of

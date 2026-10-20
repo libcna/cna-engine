@@ -72,6 +72,8 @@ namespace
     CNA_ENGINE_EXPOSE(ObjectBatches, objectBatches_);
     CNA_ENGINE_EXPOSE(TreeBatches, treeBatches_);
     CNA_ENGINE_EXPOSE(SignBatches, signBatches_);
+    CNA_ENGINE_EXPOSE(LampLights, lampLights_);
+    CNA_ENGINE_EXPOSE(GlowTexture, glowTexture_);
     CNA_ENGINE_EXPOSE(TerrainChunks, terrainChunks_);
     CNA_ENGINE_EXPOSE(TerrainSkirt, terrainSkirt_);
     CNA_ENGINE_EXPOSE(TextureFor, TextureFor);
@@ -163,46 +165,52 @@ int main(int argc, char** argv)
         pose.target = pose.position + Vector3(std::sin(heading), -0.05f, -std::cos(heading)) * 10.0f;
         const float aspect = static_cast<float>(Width) / Height;
 
-        // --- car-simulator frame (world geometry only). ----------------------
-        device.SetRenderTarget(&target);
-        device.Clear(Color(0, 0, 0, 255));
-        const auto carStart = Clock::now();
-        renderer.Draw(device, pose.View(), pose.Projection(aspect), pose.Frustum(aspect));
-        const double carMs = Milliseconds(Clock::now() - carStart);
-        device.SetRenderTarget(nullptr);
-        const auto carPixels = Pixels(target);
-        const auto& carStats = renderer.Stats();
+        // One view drawn by car-simulator and by the engine at the rig's
+        // current time of day; false when the visibility rules disagree or an
+        // image cannot be written.
+        auto compare = [&](const std::string& name) -> bool {
+            // --- car-simulator frame (world geometry only). ----------------------
+            device.SetRenderTarget(&target);
+            device.Clear(Color(0, 0, 0, 255));
+            const auto carStart = Clock::now();
+            renderer.Draw(device, pose.View(), pose.Projection(aspect), pose.Frustum(aspect));
+            const double carMs = Milliseconds(Clock::now() - carStart);
+            device.SetRenderTarget(nullptr);
+            const auto carPixels = Pixels(target);
+            const auto& carStats = renderer.Stats();
 
-        // --- The same world through the engine. ------------------------------
-        Graphics::Camera camera;
-        camera.SetPosition(pose.position);
-        camera.LookAt(pose.target, pose.up);
-        camera.SetPerspective(Microsoft::Xna::Framework::MathHelper::ToRadians(pose.fieldOfViewDeg), aspect,
-                              pose.nearPlane, pose.farPlane);
+            // --- The same world through the engine. ------------------------------
+            Graphics::Camera camera;
+            camera.SetPosition(pose.position);
+            camera.LookAt(pose.target, pose.up);
+            camera.SetPerspective(Microsoft::Xna::Framework::MathHelper::ToRadians(pose.fieldOfViewDeg), aspect,
+                                  pose.nearPlane, pose.farPlane);
 
-        const auto& roads = renderer.*Get(RoadBatches{});
-        const auto& objects = renderer.*Get(ObjectBatches{});
-        const auto& trees = renderer.*Get(TreeBatches{});
-        const auto& signs = renderer.*Get(SignBatches{});
-        const auto& chunks = renderer.*Get(TerrainChunks{});
-        const auto& skirt = renderer.*Get(TerrainSkirt{});
-        const Vector3 baked = renderer.*Get(BakedScale{});
-        const float lampFactor = renderer.*Get(LampFactor{});
-        const float lod1 = renderer.*Get(Lod1Distance{});
-        const float lod2 = renderer.*Get(Lod2Distance{});
-        const float terrainCull = renderer.*Get(TerrainCull{});
-        auto textureFor = [&](auto surface) { return (renderer.*Get(TextureFor{}))(surface); };
+            const auto& roads = renderer.*Get(RoadBatches{});
+            const auto& objects = renderer.*Get(ObjectBatches{});
+            const auto& trees = renderer.*Get(TreeBatches{});
+            const auto& signs = renderer.*Get(SignBatches{});
+            const auto& lampLights = renderer.*Get(LampLights{});
+            auto* glowTexture = (renderer.*Get(GlowTexture{})).get();
+            const auto& chunks = renderer.*Get(TerrainChunks{});
+            const auto& skirt = renderer.*Get(TerrainSkirt{});
+            const Vector3 baked = renderer.*Get(BakedScale{});
+            const float lampFactor = renderer.*Get(LampFactor{});
+            const float lod1 = renderer.*Get(Lod1Distance{});
+            const float lod2 = renderer.*Get(Lod2Distance{});
+            const float terrainCull = renderer.*Get(TerrainCull{});
+            auto textureFor = [&](auto surface) { return (renderer.*Get(TextureFor{}))(surface); };
 
-        std::map<const CarSim::Render::GpuMesh*, Graphics::GpuMesh> meshes;
-        auto meshFor = [&](const CarSim::Render::GpuMesh& mesh) -> const Graphics::GpuMesh& {
-            auto it = meshes.find(&mesh);
-            if (it == meshes.end()) {
-                it = meshes.emplace(&mesh, Graphics::GpuMesh::Borrow(*mesh.VertexBufferPtr(), *mesh.IndexBufferPtr(),
-                                                                     mesh.VertexCount(), mesh.PrimitiveCount(),
-                                                                     mesh.Bounds(), AttributesOf(mesh.Layout())))
-                         .first;
-            }
-            return it->second;
+            std::map<const CarSim::Render::GpuMesh*, Graphics::GpuMesh> meshes;
+            auto meshFor = [&](const CarSim::Render::GpuMesh& mesh) -> const Graphics::GpuMesh& {
+                auto it = meshes.find(&mesh);
+                if (it == meshes.end()) {
+                    it = meshes.emplace(&mesh, Graphics::GpuMesh::Borrow(*mesh.VertexBufferPtr(), *mesh.IndexBufferPtr(),
+                                                                         mesh.VertexCount(), mesh.PrimitiveCount(),
+                                                                         mesh.Bounds(), AttributesOf(mesh.Layout())))
+                             .first;
+                }
+                return it->second;
         };
         std::vector<std::unique_ptr<Graphics::Material>> materials;
         auto material = [&](Graphics::Material m) -> const Graphics::Material* {
@@ -382,6 +390,35 @@ int main(int argc, char** argv)
             submit(*b.mesh, material(sign), 5, b.mesh->Sphere());
             ++signsDrawn;
         }
+
+        // Street lamps after dark: glow quads in the lamp colour, added on
+        // top of the scene without fog, frustum culling only.
+        int lampsDrawn = 0;
+        int xnaLamps = 0;
+        if (lampFactor > 0.01f && glowTexture != nullptr) {
+            Graphics::Material lamp;
+            lamp.name = "lamp";
+            lamp.shading = Graphics::ShadingModel::Unlit;
+            lamp.blend = Graphics::BlendMode::Additive;
+            lamp.vertexColors = true;
+            lamp.doubleSided = true;
+            lamp.fog = false;
+            lamp.baseTexture = glowTexture;
+            lamp.sampler = &SamplerState::LinearClamp;
+            lamp.diffuseColor = Vector3(0.95f, 0.84f, 0.60f) * lampFactor;
+            const Graphics::Material* lampMaterial = material(lamp);
+            for (const auto& mesh : lampLights) {
+                if (!mesh) {
+                    continue;
+                }
+                xnaLamps += xnaFrustum(mesh->Sphere());
+                if (!inFrustum(mesh->Sphere())) {
+                    continue;
+                }
+                submit(*mesh, lampMaterial, 6, mesh->Sphere());
+                ++lampsDrawn;
+            }
+        }
         queue.Sort(camera.Position());
 
         Graphics::ForwardRenderer engine(device);
@@ -422,9 +459,14 @@ int main(int argc, char** argv)
             differing += r + g + b > 0 ? 1u : 0u;
         }
         difference /= static_cast<double>(carPixels.size() * 3);
-        const auto carPng = Graphics::WritePng(device, carPixels, Width, Height, (output / "car-simulator.png").string());
-        const auto enginePng = Graphics::WritePng(device, enginePixels, Width, Height, (output / "engine.png").string());
+        const std::string prefix = name.empty() ? "" : name + "-";
+        const auto carPng =
+            Graphics::WritePng(device, carPixels, Width, Height, (output / (prefix + "car-simulator.png")).string());
+        const auto enginePng =
+            Graphics::WritePng(device, enginePixels, Width, Height, (output / (prefix + "engine.png")).string());
 
+        std::printf("--- view: %s (%.1f h, lamp factor %.2f)\n", name.empty() ? "day" : name.c_str(),
+                    rig.timeOfDayHours, lampFactor);
         std::printf("world: %zu terrain chunks, %zu road batches, %zu object batches, %zu tree batches; built in %.0f ms\n",
                     chunks.size(), roads.size(), objects.size(), trees.size(), buildMs);
         std::printf("drawn (car-simulator / engine rules with Intersects / engine):\n");
@@ -433,6 +475,7 @@ int main(int argc, char** argv)
         std::printf("  object batches %d / %d / %d\n", carStats.objectBatchesDrawn, xnaObjects, objectsDrawn);
         std::printf("  tree batches   %d / %d / %d\n", carStats.treeBatchesDrawn, xnaTrees, treesDrawn);
         std::printf("  sign batches   (not counted) / %d / %d\n", xnaSigns, signsDrawn);
+        std::printf("  lamp lights    (not counted) / %d / %d\n", xnaLamps, lampsDrawn);
         std::printf("draw calls: car-simulator %d (all world passes), engine %llu (compared geometry)\n",
                     carStats.drawCalls, static_cast<unsigned long long>(engineStats.drawCalls));
         std::printf("cpu frame: car-simulator %.1f ms, engine %.1f ms (software renderer, Debug)\n", carMs, engineMs);
@@ -450,10 +493,18 @@ int main(int argc, char** argv)
         const bool same = carStats.terrainChunksDrawn == xnaTerrain && carStats.roadBatchesDrawn == xnaRoads
                           && carStats.objectBatchesDrawn == xnaObjects && carStats.treeBatchesDrawn == xnaTrees;
         if (!same) {
-            std::fprintf(stderr, "visibility differs from car-simulator's\n");
-            return 1;
+            std::fprintf(stderr, "%s: visibility differs from car-simulator's\n", name.c_str());
+            return false;
         }
-        return carPng.success && enginePng.success ? 0 : 1;
+        return carPng.success && enginePng.success;
+        };
+
+        bool ok = compare("");
+        // After dark: lit windows and the street lamps' light.
+        rig.SetTimeOfDay(22.0f);
+        renderer.ApplyLighting();
+        ok = compare("night") && ok;
+        return ok ? 0 : 1;
     } catch (const std::exception& e) {
         std::fprintf(stderr, "car-simulator scene comparison: %s\n", e.what());
         return 1;
