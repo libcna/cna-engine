@@ -338,8 +338,13 @@ Engine handling: none needed.
    after Blender has scanned it. A second run, with `BLENDER_USER_EXTENSIONS`
    as an absolute path, builds all eight people.
 4. The sound set (`scripts/prepare-audio.py`) needs the NOX Sound Essentials
-   packs, a manual download that is not on this machine, so Street runs
-   silent here.
+   packs, a manual download. The manifest's source,
+   `https://www.asoundeffect.com/sound-library/essentials-series/`, now
+   returns "Page not found"; the same CC0 pack is published on itch.io as
+   `Essentials_Series_NOX_SOUND.zip` (https://nox-sound-design.itch.io/essentials-series-sfx-nox-sound).
+   Unpacked to `/rv/tmp/Essentials_Series_NOX_SOUND`, it gives all 22 derived
+   sounds, and Street reports "audio 22 of 22 sounds loaded". The manifest's
+   `source` and `acquisitionNote` should point at the new location.
 5. `docs/screenshots/` no longer matches what `develop` draws with the full
    content set (other paving, other parked-car placement): the references
    predate later changes, and `scripts/check-screenshots.sh` would compare
