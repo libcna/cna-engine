@@ -193,3 +193,26 @@ revision (ADR-002 "Moving the baseline": re-run the baseline evidence first).
 Engine handling: none needed locally (`~/deps/cna-baseline` is a clone of the
 local worktree at the pin). The weekly canary job checks out the remote
 `next` head and is unaffected.
+
+## UP-008 — street-simulator overstates its mesh memory by the vertex struct's vtable
+
+- Repository: `libcnalab/street-simulator`, `street/src/Render/GpuMesh.cpp`
+  (`gpuBytes_`), reported through `CityScene::BuildStats::meshBytes` and the
+  benchmark's `meshBytes`
+- Status: open (accounting only; rendering is unaffected)
+- Found: 2026-10-20, MILESTONE-2 GPU resource comparison
+
+`gpuBytes_ = vertices × sizeof(Geometry::Vertex) + indices × 4`, where
+`Geometry::Vertex` is CNA's `VertexPositionNormalTangentTexture`. CNA's
+vertex structs implement `IVertexType` and carry a vtable: `sizeof` is 56,
+while the vertex buffer's declared stride (what the GPU stores) is 48. Measured
+on the default city: Street reports 79,966,804 bytes for the meshes it uploads
+itself, the engine's `GpuMemoryEstimate` of the same buffers 69,668,412 —
+exactly 8 bytes for each of the 1,287,299 vertices; the index bytes agree.
+
+Suggestion: use `getVertexDeclarationStatic().getVertexStrideProperty()`
+instead of `sizeof` (the skinned mesh's accounting likely has the same
+pattern).
+
+Engine handling: none needed; the engine estimates from the declared stride.
+

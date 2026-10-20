@@ -18,7 +18,7 @@ namespace CnaEngine::Graphics
         }
 
         std::string Ms(const double seconds) { return Fixed(seconds * 1000.0, 2); }
-        std::string MiB(const std::int64_t bytes) { return Fixed(static_cast<double>(bytes) / (1024.0 * 1024.0), 1); }
+        std::string MiB(const double bytes) { return Fixed(bytes / (1024.0 * 1024.0), 1); }
     }
 
     std::vector<std::string> FormatDiagnostics(const DiagnosticsSources& sources)
@@ -63,6 +63,17 @@ namespace CnaEngine::Graphics
             const auto memory = CurrentGpuMemory();
             lines.push_back("gpu meshes " + std::to_string(memory.meshes) + ", vertex " + MiB(memory.vertexBytes)
                             + " MiB, index " + MiB(memory.indexBytes) + " MiB");
+        }
+        if (sources.memoryEstimate != nullptr) {
+            const auto& m = *sources.memoryEstimate;
+            std::string line = "gpu estimate " + MiB(m.TotalBytes()) + " MiB: vertex " + MiB(m.VertexBytes()) + " MiB ("
+                               + std::to_string(m.VertexBuffers()) + " buffers), index " + MiB(m.IndexBytes()) + " MiB ("
+                               + std::to_string(m.IndexBuffers()) + "), textures " + MiB(m.TextureBytes()) + " MiB ("
+                               + std::to_string(m.Textures()) + ")";
+            if (m.ApproximatedTextures() > 0) {
+                line += ", " + std::to_string(m.ApproximatedTextures()) + " approximated";
+            }
+            lines.push_back(std::move(line));
         }
         return lines;
     }

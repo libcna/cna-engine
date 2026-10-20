@@ -41,6 +41,7 @@ add_executable(cna_engine_tests
     Graphics/QualitySchemaTests.cpp
     Graphics/InstancingTests.cpp
     Graphics/DiagnosticsReportTests.cpp
+    Graphics/GpuMemoryTests.cpp
     Assets/AssetRegistryTests.cpp
 )
 target_link_libraries(cna_engine_tests PRIVATE cna_engine_core cna_engine_graphics GTest::gtest_main)

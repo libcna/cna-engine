@@ -74,6 +74,7 @@ cna_engine_add_library(cna_engine_graphics Graphics
     src/Graphics/QualitySchema.cpp
     src/Graphics/Instancing.cpp
     src/Graphics/DiagnosticsReport.cpp
+    src/Graphics/GpuMemory.cpp
     src/Graphics/MaterialBinder.cpp
     src/Assets/AssetRegistry.cpp
 )

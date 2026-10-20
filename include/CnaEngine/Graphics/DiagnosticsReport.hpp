@@ -4,6 +4,7 @@
 #include "CnaEngine/Diagnostics/FrameStatistics.hpp"
 #include "CnaEngine/Diagnostics/ScopedTimer.hpp"
 #include "CnaEngine/Graphics/RenderStatistics.hpp"
+#include "CnaEngine/Graphics/GpuMemory.hpp"
 #include "CnaEngine/Graphics/Visibility.hpp"
 
 #include <string>
@@ -19,6 +20,8 @@ namespace CnaEngine::Graphics
         const RenderStatistics* render = nullptr;
         const CullStatistics* culling = nullptr;
         const LodStatistics* lod = nullptr;
+        /// An estimate of the resident GPU memory of a scene or frame.
+        const GpuMemoryEstimate* memoryEstimate = nullptr;
         const Diagnostics::CpuProfiler* profiler = nullptr;
         bool includeGpuMemory = true;
     };
@@ -31,5 +34,6 @@ namespace CnaEngine::Graphics
     ///   "lod 0: 41, 1: 10, 2: 3"
     ///   "cpu Update 1.20 ms, Draw 3.40 ms"
     ///   "gpu meshes 18, vertex 1.2 MiB, index 0.3 MiB"
+    ///   "gpu estimate 41.0 MiB: vertex 12.5 MiB (310 buffers), index 4.1 MiB (310), textures 24.4 MiB (96)"
     [[nodiscard]] std::vector<std::string> FormatDiagnostics(const DiagnosticsSources& sources);
 }

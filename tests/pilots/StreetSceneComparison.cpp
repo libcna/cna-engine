@@ -25,6 +25,7 @@
 #include "CnaEngine/Graphics/Camera.hpp"
 #include "CnaEngine/Graphics/DiagnosticsReport.hpp"
 #include "CnaEngine/Graphics/ForwardRenderer.hpp"
+#include "CnaEngine/Graphics/GpuMemory.hpp"
 #include "CnaEngine/Graphics/GpuMesh.hpp"
 #include "CnaEngine/Graphics/Instancing.hpp"
 #include "CnaEngine/Graphics/RenderQueue.hpp"
@@ -48,6 +49,7 @@
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
+#include "Microsoft/Xna/Framework/Graphics/VertexPositionNormalTangentTexture.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -57,6 +59,7 @@
 #include <exception>
 #include <filesystem>
 #include <map>
+#include <set>
 #include <memory>
 #include <string>
 #include <vector>
@@ -616,6 +619,69 @@ int main(int argc, char** argv)
             std::fprintf(stderr, "no pedestrian could be framed for the close-up\n");
             return 1;
         }
+
+        // GPU resource estimates (MILESTONE-2): the engine's, measured on the
+        // resources the scene registers, next to Street's own accounting
+        // (Street counts the meshes it uploads itself and nothing it borrows
+        // from models, and its texture library's loads).
+        Graphics::GpuMemoryEstimate registered;
+        Graphics::GpuMemoryEstimate streetOwned;
+        std::uint64_t streetOwnedBytes = 0;
+        std::set<const CnaStreet::GpuMesh*> counted;
+        auto addMesh = [&](const CnaStreet::GpuMesh* mesh) {
+            if (mesh == nullptr) {
+                return;
+            }
+            registered.Add(meshFor(mesh));
+            if (mesh->gpuBytes() > 0 && counted.insert(mesh).second) {
+                streetOwned.Add(meshFor(mesh));
+                streetOwnedBytes += mesh->gpuBytes();
+            }
+        };
+        for (const auto* list : {&items, &dynamic}) {
+            for (const auto& item : *list) {
+                addMesh(item.mesh);
+                registered.Add(materialFor(item.material));
+            }
+        }
+        for (const auto& group : groups) {
+            addMesh(group.mesh);
+            addMesh(group.lodMesh);
+            registered.Add(materialFor(group.material));
+        }
+        for (const auto& figure : skinnedItems) {
+            registered.Add(skinnedMeshFor(figure.mesh));
+            registered.Add(materialFor(figure.material));
+        }
+        Graphics::DiagnosticsSources memorySources;
+        memorySources.memoryEstimate = &registered;
+        memorySources.includeGpuMemory = false;
+        std::printf("--- GPU resources\n");
+        for (const auto& line : Graphics::FormatDiagnostics(memorySources)) {
+            std::printf("engine diagnostics: %s (everything the scene registers)\n", line.c_str());
+        }
+        // Street sizes vertices with sizeof() of CNA's vertex struct, the GPU
+        // with the declaration's stride; the difference per vertex shows it.
+        const std::uint64_t ownedVertices = streetOwned.VertexBytes() / sizeof(float) / 12; // 48-byte stride
+        std::printf("meshes Street uploads itself: street %llu bytes, engine estimate %llu bytes "
+                    "(vertex %llu, index %llu; %llu vertices, %.2f bytes per vertex apart; "
+                    "sizeof(VertexPositionNormalTangentTexture) = %zu, declared stride %d)\n",
+                    static_cast<unsigned long long>(streetOwnedBytes),
+                    static_cast<unsigned long long>(streetOwned.VertexBytes() + streetOwned.IndexBytes()),
+                    static_cast<unsigned long long>(streetOwned.VertexBytes()),
+                    static_cast<unsigned long long>(streetOwned.IndexBytes()),
+                    static_cast<unsigned long long>(ownedVertices),
+                    ownedVertices == 0 ? 0.0
+                                       : static_cast<double>(streetOwnedBytes - streetOwned.VertexBytes()
+                                                             - streetOwned.IndexBytes())
+                                             / static_cast<double>(ownedVertices),
+                    sizeof(Microsoft::Xna::Framework::Graphics::VertexPositionNormalTangentTexture),
+                    Microsoft::Xna::Framework::Graphics::VertexPositionNormalTangentTexture::getVertexDeclarationStatic()
+                        .getVertexStrideProperty());
+        std::printf("street's own totals: meshes %llu bytes, textures %llu bytes (library)\n",
+                    static_cast<unsigned long long>(scene.buildStats().meshBytes),
+                    static_cast<unsigned long long>(materials.textureBytes()));
+        std::fflush(stdout);
         return ok ? 0 : 1;
     } catch (const std::exception& e) {
         std::fprintf(stderr, "street scene comparison: %s\n", e.what());

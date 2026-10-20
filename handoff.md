@@ -17,7 +17,7 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
 
 - **Modify only this repository.** Do not edit `cna`, `sharp-runtime`,
   `cna-extended`, the simulators or any other app. Defects found elsewhere are
-  written to `upstream-issues.md` (UP-001 … UP-006 so far). Pilot code may be
+  written to `upstream-issues.md` (UP-001 … UP-008 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
 - Commit regularly on branch `develop`; do not push unless asked.
 - At most 3 parallel compile/test jobs. Shared ccache only:

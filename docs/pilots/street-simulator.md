@@ -168,6 +168,23 @@ blend-index and blend-weight streams, skinned layouts, `SkinnedPbrEffect` in
 the PBR binder) and `GpuMesh::Borrow` with offsets for Street's imported
 skinned meshes.
 
+### GPU resources
+
+After the two views the program estimates the GPU memory of everything the
+scene registers with the engine's `GpuMemoryEstimate` (vertex count × declared
+stride, index count × element size, every texture level at its format; shared
+buffers once) and sets it beside Street's own accounting:
+
+| Measure | Street | Engine estimate |
+| --- | --- | --- |
+| Meshes Street uploads itself | 79,966,804 bytes | 69,668,412 bytes (vertex 61,790,352, index 7,878,060) |
+| Everything the scene registers (incl. borrowed model parts, skinned figures) | — | 416.6 MiB: vertex 61.6 MiB (1,538 buffers), index 7.7 MiB, textures 347.2 MiB (355) |
+| Texture library | 367,877,828 bytes | — (Street counts every loaded texture at its top level only and generated ones with their mips; the engine counts the textures materials reference, every level) |
+
+The mesh difference is Street's: it sizes vertices with `sizeof` of CNA's
+vertex struct (56 bytes, it has a vtable) instead of the declared stride (48);
+exactly 8 bytes per vertex over 1,287,299 vertices (upstream-issues.md UP-008).
+
 ### With reflection probes (ENG-035 step 5)
 
 Street's Medium and High presets light each item from its nearest reflection

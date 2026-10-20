@@ -58,6 +58,9 @@ became pilot-validated (their changes of that day are listed below).
 
 ### Other API additions (experimental headers)
 
+- `Graphics/GpuMemory.hpp`: `GpuMemoryEstimate` (meshes, textures, materials,
+  queues; shared resources once) and `TextureBytes`; `DiagnosticsSources::memoryEstimate`.
+
 - `RenderItem::box`, `cullDistance`, `instances`; `VisibilitySettings::minDistance`;
   `Classify(const RenderItem&, ...)`, `DistanceToBox`.
 - `Material::keyLight`; `InstanceSet::VisibleWorlds()`.
