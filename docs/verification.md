@@ -4,6 +4,12 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 — mirrored cameras
+
+car-simulator comparison: rear-view mirror (mirrored, 320 m cap) 145/145 draw
+calls, every batch count equal to car-simulator's own; 3 visibly different
+pixels. `build/` **192 of 192**; consumer probes 2/2.
+
 ## 2026-10-21 — car-simulator headlights, alpha-tested blending
 
 car-simulator comparison (`build-probe/`): day 867/867, night 674/674,

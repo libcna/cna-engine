@@ -44,7 +44,7 @@ shared worktree is still clean at its pin); move them with
 ## State
 
 All work is committed on `develop`. Latest evidence (`docs/verification.md`):
-191 tests pass in `build/`, 205 in the baseline build (`build-probe/`, which
+192 tests pass in `build/`, 205 in the baseline build (`build-probe/`, which
 also runs the Street scene comparison and both pilots' own suites; the
 car-simulator suite alone takes ~15 min and excludes UP-009's test by name);
 2 consumer probes pass.
@@ -56,8 +56,9 @@ pass, traffic and pedestrians included (vehicles as dynamic items, people
 as skinned render items; visible items, instances, figures and all 1,284
 draw calls identical; mean image difference 0.01/255) and car-simulator's `lipova` map with the strict stock binder
 (every visibility count and all draw calls identical by day, at night and
-with the headlights on — additive lamp light and the headlight fill as nested
-renderers included; 0.05/255 by day). See
+with the headlights on and in a rear-view mirror — additive lamp light, the
+headlight fill as nested renderers and the mirrored camera included;
+0.05/255 by day). See
 `docs/pilots/`.
 
 The shared `../cna` worktree is changed by other agents all the time (on
