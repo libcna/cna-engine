@@ -4,6 +4,13 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 — car-simulator headlights, alpha-tested blending
+
+car-simulator comparison (`build-probe/`): day 867/867, night 674/674,
+headlights 798/798 draw calls (124 headlight-fill draws through nested
+renderers), all within the proposed tolerance. `build/` **191 of 191**;
+sanitizers **168 of 168**.
+
 ## 2026-10-21 — tolerances enforced, clean Sharp Runtime clone
 
 The shared Sharp Runtime worktree gained uncommitted edits (another agent),
