@@ -93,8 +93,9 @@ Done (see `plan.md` for per-task results):
    known differences and reversal: `docs/pilots/migration.md`.
 2. MILESTONE-2 remainder: the owner's agreement to the proposed screenshot
    tolerances (`docs/pilots/screenshot-tolerances.md`, already enforced by the
-   scene comparisons) and to performance budgets (the scaling checks guard
-   the algorithms meanwhile).
+   scene comparisons) and to performance budgets
+   (`docs/pilots/performance-budgets.md`: needs a reference machine; the
+   scaling checks guard the algorithms meanwhile).
 3. CI: the pinned CNA revision must be pushed (UP-007) before the CI jobs,
    the upstream lane and the canary can run; ADR-002's consumer checks are
    otherwise complete.
