@@ -87,15 +87,22 @@ Done (see `plan.md` for per-task results):
 1. Pilot adoption (PILOT-001/002) — needs the owner's permission to modify the
    pilots; until then, probes are the evidence. The plan, step by step with
    known differences and reversal: `docs/pilots/migration.md`.
-2. MILESTONE-2 remainder: screenshot tolerances must be agreed with the owner
-   (the scene comparisons give the measured differences to start from).
-3. ENG-035: shadows and post-processing only when a pilot needs them (Street
+2. MILESTONE-2 remainder: screenshot tolerances and performance budgets must
+   be agreed with the owner (the scene comparisons give the measured
+   differences to start from; the scaling checks guard the algorithms).
+3. CI: the pinned CNA revision must be pushed (UP-007) before the CI jobs,
+   the upstream lane and the canary can run; ADR-002's consumer checks are
+   otherwise complete.
+4. ENG-035: shadows and post-processing only when a pilot needs them (Street
    currently draws neither; see `docs/pilots/street-simulator.md`).
    Reflection probes are supported through the PBR binder's selector.
-4. Upstream: UP-001 (no CNA package), UP-004 (BoundingFrustum point
-   containment), UP-005 (cna-extended skinned test), UP-006 (CNA umbrella vs
-   module targets), UP-007 (the pinned CNA revision is not pushed, so CI
-   cannot run), UP-008 (Street's mesh-memory accounting) — for their owners.
+5. Pin move (ADR-002 procedure) once a published CNA revision contains
+   `5ab1c7729` (UP-004's fix); then cna-extended's owner can lift its two
+   skipped tests (EXT-002).
+6. Upstream, for their owners: UP-001 (no CNA package), UP-005 (cna-extended
+   skinned test), UP-006 (CNA umbrella vs module targets), UP-007 (unpushed
+   pin), UP-008 (Street's mesh-memory accounting), UP-009 (car-simulator's
+   load budget in Debug builds); UP-004 is resolved upstream.
 
 ## Pointers
 
