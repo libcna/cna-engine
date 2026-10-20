@@ -19,7 +19,11 @@ First development line. Highlights:
   `PbrEffect`) and `CnaEngine::ExtendedIntegration` (cna-extended World3D
   screen, camera sync, debug overlay).
 - Pilot-validated against car-simulator and street-simulator through
-  read-only equivalence probes (`docs/pilots/`).
+  read-only equivalence probes (`docs/pilots/`), then adopted by both on
+  their `engine-adoption` branches: car-simulator's input, physics clock,
+  screenshots, caches, quality tiers and world renderer, street-simulator's
+  scene renderer, presets and material cache run on the engine
+  (`docs/pilots/migration.md`).
 
 API snapshot baseline taken 2026-10-19 (12 headers); extended 2026-10-20 to 20
 headers as the render facilities, the fixed-step clock and the PBR binder
