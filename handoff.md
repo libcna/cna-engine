@@ -63,7 +63,7 @@ draw calls identical; mean image difference 0.01/255) and car-simulator's
 draw calls identical by day, at night, with the headlights on and in a
 rear-view mirror — additive lamp light, the headlight fill as nested
 renderers and the mirrored camera included; 0.05/255 by day). Both
-comparisons enforce the proposed screenshot tolerance. See `docs/pilots/`.
+comparisons enforce the agreed screenshot tolerance. See `docs/pilots/`.
 
 The shared `../cna` worktree is changed by other agents all the time (on
 2026-10-20 e.g. XNA-exact `BoundingFrustum` containment and GJK

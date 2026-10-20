@@ -16,7 +16,7 @@
 // difference, the engine's diagnostics) and both images as PNG files; then
 // GPU resource estimates. The program fails when the engine's visibility
 // decisions differ from Street's (the rules are the same and must give the
-// same sets) or when an image leaves the proposed screenshot tolerance
+// same sets) or when an image leaves the agreed screenshot tolerance
 // (ImageTolerance.hpp, docs/pilots/screenshot-tolerances.md).
 //
 // Usage: cna_engine_street_scene_comparison <output-directory> [seed] [probes]
@@ -539,7 +539,7 @@ int main(int argc, char** argv)
             std::printf("cpu frame:         street %.1f ms, engine %.1f ms (software renderer, Debug)\n", streetMs,
                         engineMs);
             std::printf("image difference:  %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ,"
-                        " %zu visibly (> %d / 255) — %s the proposed tolerance\n",
+                        " %zu visibly (> %d / 255) — %s the agreed tolerance\n",
                         image.mean, image.largest, image.differing, image.pixels, image.visible, Pilot::VisibleStep,
                         withinTolerance ? "within" : "OUTSIDE");
             // Culling and LOD counts through the engine's diagnostics (ENG-033).
@@ -577,7 +577,7 @@ int main(int argc, char** argv)
                 std::fprintf(stderr, "%s: visibility differs from Street's\n", name.c_str());
             }
             if (!withinTolerance) {
-                std::fprintf(stderr, "%s: image outside the proposed tolerance\n", name.c_str());
+                std::fprintf(stderr, "%s: image outside the agreed tolerance\n", name.c_str());
             }
             return sameVisibility && withinTolerance && streetPng.success && enginePng.success;
         };

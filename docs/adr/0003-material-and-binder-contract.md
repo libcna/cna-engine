@@ -73,4 +73,4 @@ the surface.
   effect writes.
 - The pilots' scene comparisons (`docs/pilots/`) are the regression check for
   this contract: they fail on visibility differences and on images outside
-  the proposed screenshot tolerance.
+  the agreed screenshot tolerance.

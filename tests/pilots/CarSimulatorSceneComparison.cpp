@@ -602,7 +602,7 @@ int main(int argc, char** argv)
                         carStats.drawCalls, static_cast<unsigned long long>(engineStats.drawCalls));
             std::printf("cpu frame: car-simulator %.1f ms, engine %.1f ms (software renderer, Debug)\n", carMs, engineMs);
             std::printf("image difference: %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ,"
-                        " %zu visibly (> %d / 255) — %s the proposed tolerance\n",
+                        " %zu visibly (> %d / 255) — %s the agreed tolerance\n",
                         image.mean, image.largest, image.differing, image.pixels, image.visible, Pilot::VisibleStep,
                         withinTolerance ? "within" : "OUTSIDE");
             for (const auto& fallback : engine.LastFallbacks()) {
@@ -621,7 +621,7 @@ int main(int argc, char** argv)
                 return false;
             }
             if (!withinTolerance) {
-                std::fprintf(stderr, "%s: image outside the proposed tolerance\n", name.c_str());
+                std::fprintf(stderr, "%s: image outside the agreed tolerance\n", name.c_str());
             }
             return withinTolerance && carPng.success && enginePng.success;
         };
