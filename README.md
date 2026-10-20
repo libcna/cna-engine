@@ -9,7 +9,8 @@ Status: **0.1.0, experimental**. Every API may change until the pilot games
 have adopted it (see `plan.md` and `docs/api-status.md`); facilities already
 checked against both pilots' own code are marked `pilot-validated`, and both
 pilots' real scenes render through the engine practically identically
-(`docs/pilots/`).
+(`docs/pilots/`). Both pilots run on the engine on their `engine-adoption`
+branches (not merged yet).
 
 ## Modules
 
@@ -116,7 +117,7 @@ then calls `find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics)`.
 - `docs/guide-strict.md`, `docs/guide-enhanced.md` — how to use each profile
 - `docs/conventions.md` — API, error, ownership and stability rules
 - `docs/verification-matrix.md` — what is checked where
-- `docs/pilots/` — equivalence probes against the two pilot games; `docs/pilots/migration.md` — how each pilot would adopt the engine
+- `docs/pilots/` — equivalence probes against the two pilot games; `docs/pilots/migration.md` — how each pilot adopts the engine, step by step, with the adoption branches' evidence
 - `CHANGELOG.md`, `NOTICE.md`, `LICENSE`
 - `docs/api-status.md` — status of every public facility
 - `docs/verification.md` — what was built and tested, with which revisions
