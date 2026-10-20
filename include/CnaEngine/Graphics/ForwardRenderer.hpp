@@ -42,7 +42,8 @@ namespace CnaEngine::Graphics
     /// Default depth, counter-clockwise culling; transparent and overlay: the
     /// blend state the binder chooses per item (BlendStateFor), DepthRead for
     /// transparent, no depth for overlay); double-sided materials disable
-    /// culling and biased materials get a biased rasterizer state. Binders set
+    /// culling, a mirrored camera (Camera::SetMirrored) culls clockwise
+    /// instead, and biased materials get a biased rasterizer state. Binders set
     /// the sampler states of the texture slots they use from the material.
     /// Custom passes receive the device in the state of the preceding bucket.
     /// After Render() the blend, depth-stencil and rasterizer states and
@@ -105,11 +106,13 @@ namespace CnaEngine::Graphics
         struct BiasedState
         {
             bool doubleSided;
+            bool mirrored;
             float depthBias;
             float slopeScale;
             std::unique_ptr<Microsoft::Xna::Framework::Graphics::RasterizerState> state;
         };
         std::vector<BiasedState> biasedStates_;
-        const Microsoft::Xna::Framework::Graphics::RasterizerState& RasterizerFor(const Material& material);
+        const Microsoft::Xna::Framework::Graphics::RasterizerState& RasterizerFor(const Material& material,
+                                                                                 bool mirrored);
     };
 }

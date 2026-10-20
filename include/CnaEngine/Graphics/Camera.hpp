@@ -77,6 +77,14 @@ namespace CnaEngine::Graphics
         [[nodiscard]] float NearPlane() const noexcept { return nearPlane_; }
         [[nodiscard]] float FarPlane() const noexcept { return farPlane_; }
 
+        /// Mirrors the image horizontally (rear-view mirrors, reflections):
+        /// Projection() and ViewProjection() flip clip-space X, which makes
+        /// front faces counter-clockwise on screen, so renderers swap their
+        /// culling (ForwardRenderer does). Frustum() is unaffected: a mirrored
+        /// view sees the same volume.
+        void SetMirrored(bool mirrored);
+        [[nodiscard]] bool Mirrored() const noexcept { return mirrored_; }
+
         // --- Derived values (lazy) -------------------------------------------
         [[nodiscard]] const Microsoft::Xna::Framework::Matrix& View() const;
         [[nodiscard]] const Microsoft::Xna::Framework::Matrix& Projection() const;
@@ -100,6 +108,7 @@ namespace CnaEngine::Graphics
         float orthoHeight_ = 0.0f;
         float nearPlane_ = 0.0f;
         float farPlane_ = 0.0f;
+        bool mirrored_ = false;
         std::uint64_t revision_ = 0;
 
         mutable bool dirty_ = true;

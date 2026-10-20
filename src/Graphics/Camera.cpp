@@ -150,6 +150,12 @@ namespace CnaEngine::Graphics
         Invalidate();
     }
 
+    void Camera::SetMirrored(const bool mirrored)
+    {
+        mirrored_ = mirrored;
+        Invalidate();
+    }
+
     void Camera::UpdateDerived() const
     {
         if (!dirty_) {
@@ -159,8 +165,12 @@ namespace CnaEngine::Graphics
         projection_ = kind_ == ProjectionKind::Perspective
                           ? Matrix::CreatePerspectiveFieldOfView(fieldOfView_, aspectRatio_, nearPlane_, farPlane_)
                           : Matrix::CreateOrthographic(orthoWidth_, orthoHeight_, nearPlane_, farPlane_);
+        // The volume is the unmirrored one; the mirror only flips the image.
+        frustum_ = BoundingFrustum(view_ * projection_);
+        if (mirrored_) {
+            projection_ = projection_ * Matrix::CreateScale(-1.0f, 1.0f, 1.0f);
+        }
         viewProjection_ = view_ * projection_;
-        frustum_ = BoundingFrustum(viewProjection_);
         dirty_ = false;
     }
 

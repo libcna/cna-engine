@@ -9,12 +9,13 @@
 // lists are read with the explicit-instantiation access idiom (the batch types
 // are private too, so the exposing templates take `auto` member pointers).
 //
-// Compared, by day, at night and at night with the headlights on: terrain
+// Compared, by day, at night, at night with the headlights on and in a
+// rear-view mirror (mirrored, distances capped): terrain
 // chunks, road and marking batches, static object batches, tree and sign
 // batches, the street lamps' light and the headlight fill (a second lighting
 // pass, as nested renderers in a custom pass) — every pass WorldRenderer draws
-// at these views. Not compared: vehicles, pedestrians, rain, snow and mirrors,
-// which are other renderers or other conditions. The program fails when the engine's visibility
+// at these views. Not compared: vehicles, pedestrians, rain and snow, which
+// are other renderers or other conditions. The program fails when the engine's visibility
 // decisions differ from car-simulator's or an image leaves the proposed
 // screenshot tolerance (ImageTolerance.hpp).
 //
@@ -184,12 +185,17 @@ int main(int argc, char** argv)
         // One view drawn by car-simulator and by the engine at the rig's
         // current time of day; false when the visibility rules disagree or an
         // image cannot be written.
-        auto compare = [&](const std::string& name) -> bool {
+        // `mirrored` and `cap` are car-simulator's mirror pass: the image
+        // flipped horizontally and every distance capped (0: no cap).
+        auto compare = [&](const std::string& name, const CarSim::Render::CameraPose& view, const bool mirrored,
+                           const float cap) -> bool {
             // --- car-simulator frame (world geometry only). ----------------------
             device.SetRenderTarget(&target);
             device.Clear(Color(0, 0, 0, 255));
             const auto carStart = Clock::now();
-            renderer.Draw(device, pose.View(), pose.Projection(aspect), pose.Frustum(aspect));
+            const Matrix carProjection = mirrored ? view.Projection(aspect) * Matrix::CreateScale(-1.0f, 1.0f, 1.0f)
+                                                  : view.Projection(aspect);
+            renderer.Draw(device, view.View(), carProjection, view.Frustum(aspect), mirrored, cap);
             const double carMs = Milliseconds(Clock::now() - carStart);
             device.SetRenderTarget(nullptr);
             const auto carPixels = Pixels(target);
@@ -197,10 +203,11 @@ int main(int argc, char** argv)
 
             // --- The same world through the engine. ------------------------------
             Graphics::Camera camera;
-            camera.SetPosition(pose.position);
-            camera.LookAt(pose.target, pose.up);
-            camera.SetPerspective(Microsoft::Xna::Framework::MathHelper::ToRadians(pose.fieldOfViewDeg), aspect,
-                                  pose.nearPlane, pose.farPlane);
+            camera.SetPosition(view.position);
+            camera.LookAt(view.target, view.up);
+            camera.SetPerspective(Microsoft::Xna::Framework::MathHelper::ToRadians(view.fieldOfViewDeg), aspect,
+                                  view.nearPlane, view.farPlane);
+            camera.SetMirrored(mirrored);
 
             const auto& roads = renderer.*Get(RoadBatches{});
             const auto& objects = renderer.*Get(ObjectBatches{});
@@ -214,7 +221,8 @@ int main(int argc, char** argv)
             const float lampFactor = renderer.*Get(LampFactor{});
             const float lod1 = renderer.*Get(Lod1Distance{});
             const float lod2 = renderer.*Get(Lod2Distance{});
-            const float terrainCull = renderer.*Get(TerrainCull{});
+            const float terrainCull = cap > 0.0f ? std::min(cap, renderer.*Get(TerrainCull{}))
+                                                 : renderer.*Get(TerrainCull{});
             auto textureFor = [&](auto surface) { return (renderer.*Get(TextureFor{}))(surface); };
 
             std::map<const CarSim::Render::GpuMesh*, Graphics::GpuMesh> meshes;
@@ -333,7 +341,7 @@ int main(int argc, char** argv)
             }
 
             // Static objects: lit, textured; their own range capped by the fog horizon.
-            const float horizon = rig.fogEnd;
+            const float horizon = cap > 0.0f ? std::min(cap, rig.fogEnd) : rig.fogEnd;
             int objectsDrawn = 0;
             for (const auto& b : objects) {
                 if (!b.mesh) {
@@ -360,7 +368,7 @@ int main(int argc, char** argv)
             }
 
             // Trees: alpha-tested cards (Greater 110 == GreaterEqual 111).
-            const float treeRange = std::min(horizon, 1100.0f);
+            const float treeRange = std::min(horizon, cap > 0.0f ? std::min(cap, 1100.0f) : 1100.0f);
             Graphics::Material treeMaterial;
             treeMaterial.name = "tree";
             treeMaterial.shading = Graphics::ShadingModel::Unlit;
@@ -444,7 +452,8 @@ int main(int argc, char** argv)
             int beamDrawn = 0;
             float beamRange = 0.0f;
             Vector3 beamForward = Vector3::Forward;
-            if (headlights) {
+            // car-simulator's mirror pass draws no headlight fill.
+            if (headlights && !mirrored) {
                 const Headlights& h = *headlights;
                 beamForward = Vector3(h.forward.X, 0.0f, h.forward.Z);
                 beamForward.Normalize();
@@ -519,7 +528,7 @@ int main(int argc, char** argv)
             Graphics::ForwardRenderer engine(device);
             Graphics::ForwardRenderer beamObjectRenderer(device);
             Graphics::ForwardRenderer beamCardRenderer(device);
-            if (headlights) {
+            if (headlights && !mirrored) {
                 const Headlights& h = *headlights;
                 auto& objectLight = beamObjectRenderer.Lighting();
                 objectLight.defaultLighting = false;
@@ -586,7 +595,7 @@ int main(int argc, char** argv)
             std::printf("  tree batches   %d / %d / %d\n", carStats.treeBatchesDrawn, xnaTrees, treesDrawn);
             std::printf("  sign batches   (not counted) / %d / %d\n", xnaSigns, signsDrawn);
             std::printf("  lamp lights    (not counted) / %d / %d\n", xnaLamps, lampsDrawn);
-            if (headlights) {
+            if (headlights && !mirrored) {
                 std::printf("  headlight fill (not counted) / - / %d\n", beamDrawn);
             }
             std::printf("draw calls: car-simulator %d (all world passes), engine %llu (compared geometry)\n",
@@ -617,11 +626,11 @@ int main(int argc, char** argv)
             return withinTolerance && carPng.success && enginePng.success;
         };
 
-        bool ok = compare("");
+        bool ok = compare("", pose, false, 0.0f);
         // After dark: lit windows and the street lamps' light.
         rig.SetTimeOfDay(22.0f);
         renderer.ApplyLighting();
-        ok = compare("night") && ok;
+        ok = compare("night", pose, false, 0.0f) && ok;
         // At night with the low beams on, from just below the driver's eye.
         Vector3 ahead = pose.target - pose.position;
         ahead.Y = 0.0f;
@@ -629,7 +638,19 @@ int main(int argc, char** argv)
         headlights = Headlights{pose.position - Vector3(0.0f, 0.6f, 0.0f), ahead, 1.0f, false};
         renderer.SetHeadlights(headlights->position, headlights->forward, headlights->intensity,
                                headlights->highBeam);
-        ok = compare("headlights") && ok;
+        ok = compare("headlights", pose, false, 0.0f) && ok;
+        // A rear-view mirror by day: looking back from the driver's eye,
+        // mirrored, with the mirror's 320 m cap (car-simulator's MirrorView).
+        rig.SetTimeOfDay(10.5f);
+        renderer.ApplyLighting();
+        renderer.SetHeadlights(headlights->position, headlights->forward, 0.0f, false);
+        headlights.reset();
+        CarSim::Render::CameraPose mirror = pose;
+        mirror.target = pose.position - (pose.target - pose.position);
+        mirror.fieldOfViewDeg = 30.0f;
+        mirror.nearPlane = 0.5f;
+        mirror.farPlane = 320.0f;
+        ok = compare("mirror", mirror, true, 320.0f) && ok;
         return ok ? 0 : 1;
     } catch (const std::exception& e) {
         std::fprintf(stderr, "car-simulator scene comparison: %s\n", e.what());

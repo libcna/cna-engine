@@ -116,24 +116,30 @@ namespace CnaEngine::Graphics
         RunPasses(PassPoint::AfterOverlay, camera, stats);
     }
 
-    const RasterizerState& ForwardRenderer::RasterizerFor(const Material& material)
+    const RasterizerState& ForwardRenderer::RasterizerFor(const Material& material, const bool mirrored)
     {
+        // A mirrored view turns front faces around (Camera::SetMirrored).
         if (material.depthBias == 0.0f && material.slopeScaleDepthBias == 0.0f) {
-            return material.doubleSided ? RasterizerState::CullNone : RasterizerState::CullCounterClockwise;
+            if (material.doubleSided) {
+                return RasterizerState::CullNone;
+            }
+            return mirrored ? RasterizerState::CullClockwise : RasterizerState::CullCounterClockwise;
         }
         for (const auto& biased : biasedStates_) {
-            if (biased.doubleSided == material.doubleSided && biased.depthBias == material.depthBias
-                && biased.slopeScale == material.slopeScaleDepthBias) {
+            if (biased.doubleSided == material.doubleSided && biased.mirrored == mirrored
+                && biased.depthBias == material.depthBias && biased.slopeScale == material.slopeScaleDepthBias) {
                 return *biased.state;
             }
         }
+        using Microsoft::Xna::Framework::Graphics::CullMode;
         auto state = std::make_unique<RasterizerState>();
-        state->setCullModeProperty(material.doubleSided ? Microsoft::Xna::Framework::Graphics::CullMode::None
-                                                        : Microsoft::Xna::Framework::Graphics::CullMode::CullCounterClockwiseFace);
+        state->setCullModeProperty(material.doubleSided ? CullMode::None
+                                   : mirrored           ? CullMode::CullClockwiseFace
+                                                        : CullMode::CullCounterClockwiseFace);
         state->setDepthBiasProperty(material.depthBias);
         state->setSlopeScaleDepthBiasProperty(material.slopeScaleDepthBias);
-        biasedStates_.push_back(BiasedState{material.doubleSided, material.depthBias, material.slopeScaleDepthBias,
-                                            std::move(state)});
+        biasedStates_.push_back(BiasedState{material.doubleSided, mirrored, material.depthBias,
+                                            material.slopeScaleDepthBias, std::move(state)});
         return *biasedStates_.back().state;
     }
 
@@ -159,7 +165,7 @@ namespace CnaEngine::Graphics
         device_.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
         for (const auto& item : items) {
             const Material& material = *item.material;
-            device_.setRasterizerStateProperty(RasterizerFor(material));
+            device_.setRasterizerStateProperty(RasterizerFor(material, camera.Mirrored()));
             if (bucket == RenderBucket::Transparent || bucket == RenderBucket::Overlay) {
                 // What the binder's effect writes decides the blend (premultiplied or straight).
                 device_.setBlendStateProperty(binder_->BlendStateFor(item));

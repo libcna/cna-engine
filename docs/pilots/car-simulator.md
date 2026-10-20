@@ -202,6 +202,21 @@ additive at once).
 
 Images: `docs/pilots/images/carsim-headlights-*.png`.
 
+A rear-view mirror. The fourth view looks back from the driver's eye by day
+and is drawn the way car-simulator's `MirrorView` draws its mirrors: the
+projection flipped horizontally (so front faces turn around) and every
+distance capped at 320 m. The engine draws it with `Camera::SetMirrored(true)`
+(the renderer culls clockwise, the frustum stays the unmirrored volume) and
+the same caps applied to its visibility settings:
+
+| Measure (mirror, day) | car-simulator | Engine |
+| --- | --- | --- |
+| Terrain / roads / objects / trees | 6 / 21 / 89 / 12 | **6 / 21 / 89 / 12** |
+| Draw calls | 145 | **145** |
+| Image difference | — | mean 0.02 / 255; 5,141 pixels differ, 3 visibly |
+
+Images: `docs/pilots/images/carsim-mirror-*.png`.
+
 Frustum test. car-simulator culls with `BoundingFrustum::Intersects(sphere)`,
 the engine with the plane test (`Contains(sphere) != Disjoint`). At the pinned
 CNA the two agree. CNA `5ab1c7729` (2026-10-20, after the pin) implements
@@ -219,7 +234,8 @@ lighting in `ForwardLighting` (car-simulator's sun / sky fill / ground bounce
 rig), `Material::secondaryTexture` (`DualTextureEffect` terrain),
 `Material::depthBias` for road markings, `Material::sampler` /
 `secondarySampler`, `Material::fog` for the lamp light, and
-`Material::discardBelowCutoff` for the headlit cards.
+`Material::discardBelowCutoff` for the headlit cards, and
+`Camera::SetMirrored` for the mirrors.
 
 ## Still open for this pilot
 - The strict checker allowance (ADR-001) applied in an integration branch of

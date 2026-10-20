@@ -557,4 +557,35 @@ namespace CnaEngine::Graphics
         EXPECT_TRUE(Near(At(cut, Size - 4, Size / 2), 64, 64, 64)) << "below the cutoff: discarded";
         EXPECT_TRUE(renderer.LastFallbacks().empty()) << "unlit: nothing lost";
     }
+
+    TEST_F(Fixture, MirroredCamerasFlipTheImageAndKeepFrontFaces)
+    {
+        // Red left half, blue right half; one-sided.
+        Texture2D texture(device, 2, 1);
+        const Color texels[2] = {Color(255, 0, 0, 255), Color(0, 0, 255, 255)};
+        texture.SetData(texels, 2);
+        Material halves = Unlit("halves", Vector3(1.0f, 1.0f, 1.0f));
+        halves.baseTexture = &texture;
+        halves.sampler = &Microsoft::Xna::Framework::Graphics::SamplerState::PointClamp;
+        Material marking = Unlit("marking", Vector3(1.0f, 1.0f, 1.0f));
+        marking.depthBias = -0.00002f;
+        RenderQueue queue;
+        queue.Submit(Item(halves, 0.0f));
+        RenderItem small = Item(marking, 0.01f, 0.25f);
+        queue.Submit(small);
+
+        const auto plain = Draw(queue);
+        EXPECT_TRUE(Near(At(plain, 2, Size / 2), 255, 0, 0));
+        EXPECT_TRUE(Near(At(plain, Size - 3, Size / 2), 0, 0, 255));
+
+        camera.SetMirrored(true);
+        EXPECT_TRUE(camera.Mirrored());
+        const auto mirrored = Draw(queue);
+        EXPECT_TRUE(Near(At(mirrored, 2, Size / 2), 0, 0, 255)) << "left and right swap";
+        EXPECT_TRUE(Near(At(mirrored, Size - 3, Size / 2), 255, 0, 0));
+        EXPECT_TRUE(Near(At(mirrored, Size / 2, Size / 2), 255, 255, 255)) << "biased, one-sided items still draw";
+        EXPECT_EQ(camera.Frustum().Contains(Vector3(0.9f, 0.0f, 0.0f)),
+                  Microsoft::Xna::Framework::ContainmentType::Contains)
+            << "the volume is unchanged";
+    }
 }

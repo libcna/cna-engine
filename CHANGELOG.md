@@ -28,6 +28,10 @@ became pilot-validated (their changes of that day are listed below);
 
 ### Pilot-validated API changes
 
+- `Graphics/Camera.hpp`, additive: `SetMirrored`/`Mirrored` — the projection
+  flips clip-space X (the frustum does not), and `ForwardRenderer` culls
+  clockwise for mirrored cameras. Reason: car-simulator's rear-view mirrors.
+
 - `Graphics/GpuMesh.hpp`: added `Borrow(const ModelMeshPart&, ...)`,
   `BaseVertex()` and `StartIndex()`; borrowed meshes now draw from a vertex
   offset and start index. Reason: Street's meshes share buffers through model
