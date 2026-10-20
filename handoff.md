@@ -48,7 +48,7 @@ shared worktree is still clean at its pin); move them with
 ## State
 
 All work is committed on `develop`. Latest evidence (`docs/verification.md`):
-193 tests pass in `build/`, 208 in the baseline build (`build-probe/`, which
+198 tests pass in `build/`, 213 in the baseline build (`build-probe/`, which
 also runs the Street scene comparison and both pilots' own suites; the
 car-simulator suite alone takes ~15 min and excludes UP-009's test by name);
 2 consumer probes pass.

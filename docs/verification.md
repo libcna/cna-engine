@@ -4,6 +4,14 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20, 10:45 — sanitizers and full baseline after the adoption APIs
+
+With `Camera::SetMatrices` and `QualitySchema::PresetValues`:
+`build-asan/` (`CNA_ENGINE_SANITIZE=address,undefined`) **175 of 175 tests
+passed**; the pinned baseline tree `build-probe/` (CNA `688f3f23`, Sharp
+Runtime `f2aecfef`, baseline enforced, both pilots' own suites) **213 of 213
+passed** in 15 min with 3 jobs; `build/` 198 of 198.
+
 ## 2026-10-20, 09:10 — street-simulator adopts the engine (branch `engine-adoption`)
 
 Engine `build/` with `QualitySchema::PresetValues` (`7947b6e`): **198 of 198
