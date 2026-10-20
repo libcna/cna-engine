@@ -16,17 +16,18 @@ Plan item: `REL-003`. What is checked, where, and how a failure shows.
 | Sanitizers | `build-asan/` with `CNA_ENGINE_SANITIZE=address,undefined`, all non-pilot tests (UBSan fatal, LeakSanitizer on) | no memory error, undefined behaviour or leak in engine code under the tests | local |
 | Upstream compatibility | CI job `cna-extended` (cna-extended's suite and examples at the pins), weekly `upstream-canary` (engine against upstream heads) | the enhanced dependency still works on the pin; upstream API breaks show before a pin move | CI (blocked by UP-007), local on pin updates |
 | Visual | examples' PNG output, pixel-equality pilot probes, scene comparisons with the agreed screenshot tolerance (`docs/pilots/screenshot-tolerances.md`) | rendering matches the pilots exactly where both draw the same thing, and within mean 0.5/255 and 1 % visibly different pixels on whole scenes | local |
+| Pilot adoption | the pilots' own suites and before/after captures of each adoption step on their `engine-adoption` branches (`docs/pilots/migration.md`) | the pilots, running on the engine, keep their tests green and their pictures inside the agreed tolerance, on every renderer below | local (pilot worktrees) |
 | Performance | `performance`: scaling checks (`cna_engine_performance_tests`) | culling, sorting, instance culling and action updates grow linearly or as n log n (16x the items within 64x the time; measured 16-21x); frame-time budgets proposed in `docs/pilots/performance-budgets.md`, pending a reference machine | local, CI (serial step) |
 
 ## Supported combinations
 
 | Axis | Verified | Expected to work, not verified here |
 | --- | --- | --- |
-| Renderer | `SOFTWARE` | `OPENGL33`, `OPENGLES3`, `VULKAN`, … (engine code uses only the XNA graphics API and `PbrEffect`) |
-| Platform | `HEADLESS` | `SDL3`, `SDL2` |
+| Renderer | `SOFTWARE` (engine suite, examples, scene comparisons, pilot adoption); `OPENGL33` and `OPENGLES3` (pilot adoption captures, on Mesa llvmpipe and on an AMD Radeon 780M through radeonsi) | `VULKAN`, … (engine code uses only the XNA graphics API and `PbrEffect`) |
+| Platform | `HEADLESS`; `SDL3` (pilot adoption: under Xvfb, and with SDL's offscreen video driver, which reaches the GPU without a display) | `SDL2` |
 | Audio | `NULL` | engine has no audio code |
 | Profile | Reach and HiDef (both tested; Reach limits reported) | — |
-| Compiler | GCC 14.2, C++23, Debug | Clang 19 (CNA's other supported compiler), Release |
+| Compiler | GCC 14.2, C++23, Debug (engine trees) and Release (pilot adoption builds) | Clang 19 (CNA's other supported compiler) |
 | OS | Linux x86-64 | others supported by CNA |
 
 ## No silent success

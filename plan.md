@@ -762,8 +762,12 @@ Progress: `README.md` quick look, `docs/guide-strict.md`,
 that run as tests, among them `examples/quick_start` — a small complete game
 as an XNA `Game` (input actions, fixed-step simulation, materials and
 samplers, culling, instancing, the forward renderer, diagnostics,
-screenshot), scripted so the test is deterministic. Open: revisit the
-template once a pilot has adopted the engine.
+screenshot), scripted so the test is deterministic. Revisited after both
+pilots adopted the engine (2026-10-20): the quick start keeps the
+engine-owned camera as the pattern for new games; what existing games
+needed — their own camera matrices (`Camera::SetMatrices`), borrowed meshes,
+game passes between engine renders, overlay presets — is in the strict and
+enhanced guides.
 
 ### REL-003 — Establish the verification matrix `[~]`
 
@@ -781,8 +785,11 @@ Progress: `docs/verification-matrix.md` separates unit, boundary, example,
 installed-consumer, pilot, baseline, upstream and visual checks and lists the
 verified combinations; CI caps jobs at three and fails on skipped tests.
 Performance scaling checks run under their own label since 2026-10-20 (no
-budgets: they fail on super-linear growth). Open: absolute budgets agreed with
-the owner (MILESTONE-2).
+budgets: they fail on super-linear growth). The pilots' adoption is verified
+on the software renderer, OpenGL on Mesa llvmpipe and the machine's AMD GPU
+(`docs/verification-matrix.md`). Open: enforcing the agreed frame-time
+budget, which waits for its idle-machine measurement
+(`docs/pilots/performance-budgets.md`).
 
 ## Deferred work and non-goals for 1.0
 
