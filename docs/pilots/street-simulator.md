@@ -110,17 +110,21 @@ traffic or pedestrians), and draws the first viewpoint twice into the same
    engine's frame.
 
 Result (software renderer, Debug, CNA baseline `5a44d2c5`), with Street's
-pedestrians on (traffic off):
+traffic and pedestrians on (since 2026-10-21; the whole program takes about
+3 minutes and 2.7 GB):
 
 | Measure | Street | Engine |
 | --- | --- | --- |
-| Scene | 1,361 static items, 93 instance groups (661 instances), 181 skinned figures | same objects |
-| Visible items | 652 | **652** (the same set) |
+| Scene | 1,361 static items, 201 instance groups (1,390 instances), moving vehicles, 193 skinned figures (pedestrians and drivers) | same objects |
+| Visible items (static and vehicles) | 1,110 | **1,110** (the same rules) |
 | Visible instances | 192 | **192** |
-| Visible figures | 117 | **117** |
-| Draw calls | 820 (51 instanced, 117 skinned) | **820** |
-| CPU frame time | 6.7–9.5 s | 6.2–10.5 s (equal within run-to-run noise) |
-| Image difference | — | mean **0.01 / 255** per channel; 53 of 129,600 pixels differ (largest 103 / 255) |
+| Visible figures | 123 | **123** |
+| Draw calls | 1,284 (51 instanced, 123 skinned) | **1,284** |
+| CPU frame time | 10.2–11.8 s | 10.7–11.4 s (equal within run-to-run noise) |
+| Image difference | — | mean **0.01 / 255** per channel; 68 of 129,600 pixels differ (largest 103 / 255) |
+
+Without traffic (pedestrians only, 2026-10-20) the same view gave 652 / 192 /
+117 visible, 820 / 820 draw calls and 53 differing pixels.
 
 The program fails if the visibility sets differ. The images
 (`docs/pilots/images/street-scene-street.png`, `…-engine.png`) are practically
@@ -130,11 +134,12 @@ on for the engine's transparent items (a throwaway binder wrapper) leaves 4
 differing pixels, so 49 of the 53 come from that difference. The remaining 4
 were not investigated.
 
-From this viewpoint the figures are far away and mostly hidden (486 pixels),
-so the program draws a second view: a close-up 3.5 m in front of a
-pedestrian (`docs/pilots/images/street-figure-*.png`). There 57 figures cover
-10,412 pixels, and **2** of those differ from Street's frame. The frame as a
-whole differs in 772 pixels (mean 0.39 / 255): the engine draws exactly
+From this viewpoint the figures are far away and mostly hidden (539 pixels),
+so the program draws a further view: a close-up 3.5 m in front of a
+pedestrian (`docs/pilots/images/street-figure-*.png`). With traffic, 42
+figures cover 4,112 pixels there and **none** of them differs from Street's
+frame (without traffic: 57 figures, 10,412 pixels, 2 differ). The frame as a
+whole differs in 781 pixels (mean 0.13 / 255): the engine draws exactly
 Street's visible set, but this camera's view matrix differs from Street's by
 1.7e-6 (its orientation goes through two implementations' yaw handling; for
 the first viewpoint the matrices are identical), and the differing pixels lie
@@ -178,9 +183,9 @@ engine then both render that pose:
 
 | Measure | Street | Engine |
 | --- | --- | --- |
-| Visible items / instances / figures | 621 / 157 / 72 | **621 / 157 / 72** |
-| Draw calls | 748 (55 instanced) | **748** |
-| Image difference | — | mean 0.20 / 255; 821 of 129,600 pixels (9 of the 335 figure pixels) |
+| Visible items / instances / figures | 954 / 157 / 78 | **954 / 157 / 78** |
+| Draw calls | 1,087 (55 instanced) | **1,087** |
+| Image difference | — | mean 0.21 / 255; 884 of 129,600 pixels (14 of the 528 figure pixels) |
 
 As in the close-up, the camera's orientation passes through both
 implementations' yaw handling and the remaining pixels sit on coplanar
@@ -195,18 +200,19 @@ buffers once) and sets it beside Street's own accounting:
 
 | Measure | Street | Engine estimate |
 | --- | --- | --- |
-| Meshes Street uploads itself | 79,966,804 bytes | 69,668,412 bytes (vertex 61,790,352, index 7,878,060) |
-| Everything the scene registers (incl. borrowed model parts, skinned figures) | — | 416.6 MiB: vertex 61.6 MiB (1,538 buffers), index 7.7 MiB, textures 347.2 MiB (355) |
+| Meshes Street uploads itself | 88,007,780 bytes | 76,677,228 bytes (vertex 67,983,312, index 8,693,916) |
+| Everything the scene registers (incl. borrowed model parts, vehicles, skinned figures) | — | 424.7 MiB: vertex 66.7 MiB (1,758 buffers), index 8.4 MiB, textures 349.5 MiB (379) |
 | Texture library | 367,877,828 bytes | — (Street counts every loaded texture at its top level only and generated ones with their mips; the engine counts the textures materials reference, every level) |
 
 The mesh difference is Street's: it sizes vertices with `sizeof` of CNA's
 vertex struct (56 bytes, it has a vtable) instead of the declared stride (48);
-exactly 8 bytes per vertex over 1,287,299 vertices (upstream-issues.md UP-008).
+exactly 8 bytes per vertex over 1,416,319 vertices (upstream-issues.md UP-008;
+1,287,299 vertices without traffic).
 
 ### With reflection probes (ENG-035 step 5)
 
 Street's Medium and High presets light each item from its nearest reflection
-probe. `cna_engine_street_scene_comparison <dir> 0 probes` bakes Street's
+probe. (Measured before traffic was switched on in the comparison.) `cna_engine_street_scene_comparison <dir> 0 probes` bakes Street's
 probes (32-pixel faces every 32 m, as Medium does; about 5 minutes in all, so
 the CTest run leaves it out) and gives the engine a
 `PbrMaterialBinder::EnvironmentSelector` that maps each item's

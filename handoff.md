@@ -48,9 +48,9 @@ also runs the Street scene comparison), 2 consumer probes pass.
 Both pilots' real scenes render through the engine's `ForwardRenderer`
 practically identically to the pilots' own renderers: Street's procedural
 city with the PBR binder carrying Street's lighting and its sky as a custom
-pass, pedestrians included as skinned render items (visible items,
-instances, figures and draw calls identical; mean image difference
-0.01/255) and car-simulator's `lipova` map with the strict stock binder
+pass, traffic and pedestrians included (vehicles as dynamic items, people
+as skinned render items; visible items, instances, figures and all 1,284
+draw calls identical; mean image difference 0.01/255) and car-simulator's `lipova` map with the strict stock binder
 (every visibility count and all draw calls identical by day and at night,
 additive lamp light included; 0.05/255 by day). See
 `docs/pilots/`.
@@ -76,7 +76,7 @@ Done (see `plan.md` for per-task results):
   instancing, skinned render items.
 - Enhanced integration: `EngineWorldScreen`, debug overlay, quality schema
   (ENG-036), `street_slice` example.
-- Release readiness: LICENSE, NOTICE, CHANGELOG, API snapshot of the 20
+- Release readiness: LICENSE, NOTICE, CHANGELOG, API snapshot of the 21
   pilot-validated headers, profile guides, `quick_start` game example,
   verification matrix, CI workflow with the EXT-003 upstream lane and canary
   (blocked by UP-007 until the CNA pin is pushed).

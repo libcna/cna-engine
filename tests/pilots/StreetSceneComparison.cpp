@@ -219,7 +219,7 @@ int main(int argc, char** argv)
             settings.probeFaceSize = 32;
             settings.probeSpacing = 32.0f;
         }
-        settings.traffic = false;          // parked city: moving traffic is submitted per frame
+        settings.traffic = true;           // moving vehicles: dynamic items, drivers as skinned figures
         settings.pedestrians = true;       // skinned figures (ENG-032)
         if (seed != 0) {
             settings.seed = seed;

@@ -4,6 +4,13 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 — Street with traffic
+
+Street comparison with traffic and pedestrians (`build-probe/`, pinned):
+first view 1,110 / 192 / 123 visible, 1,284 / 1,284 draw calls, 68 pixels
+differ; walk 954 / 157 / 78, 1,087 draws, 884 pixels; close-up 787 / 104 /
+42, 869 draws, 781 pixels, none on the 4,112 figure pixels. 176 s, 2.7 GB.
+
 ## 2026-10-21 — car-simulator at night, material fog
 
 Sanitizer tree `build-asan/` rebuilt with every change of 2026-10-20/21:
