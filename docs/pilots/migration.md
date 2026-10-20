@@ -67,7 +67,10 @@ The same seven captures on OpenGL ES 3 (Mesa llvmpipe under Xvfb, build
 `build-probe/` in the worktree, through car-simulator's
 `scripts/run_headless.sh`), world-renderer files of `6a927fb` against
 `dc83bb4`: largest difference 16/255, at most one pixel per image differs
-by more than 3/255 — inside the tolerance.
+by more than 3/255 — inside the tolerance. On the machine's hardware GPU (AMD
+Radeon 780M, radeonsi, reached headless through SDL's offscreen video driver
+and EGL): largest difference 12/255, at most one pixel per image visibly
+different.
 
 CPU time of the world pass (car-simulator's `--benchmark`, Release, software
 renderer, 320 × 180, day, best of three alternating runs at load average ~8):
@@ -115,7 +118,9 @@ The same comparison on OpenGL 3.3 (Street's default renderer; Mesa
 llvmpipe under Xvfb, build `build-probe/` in the worktree), where the
 atmospheric sky draws through the engine's custom pass: all 19 images inside
 the tolerance as well (mean ≤ 0.138/255, at most 0.47 % of pixels visibly
-different).
+different), and on the machine's hardware GPU (AMD Radeon 780M, radeonsi,
+SDL's offscreen video driver): mean ≤ 0.133/255, at most 0.48 % of pixels
+visibly different.
 
 Benchmarks (Street's `--benchmark`, 320 × 180, no probes, Release, best of
 two alternating runs at load average ~22): draw calls identical (baseline

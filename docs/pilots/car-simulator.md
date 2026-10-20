@@ -258,7 +258,4 @@ evidence: `docs/pilots/migration.md`, "car-simulator adoption".
 
 ## Still open for this pilot
 
-- Captures on a hardware GPU. So far: CNA's software renderer (where its
-  display smoke tests also run) and OpenGL ES 3 on Mesa's llvmpipe, both
-  inside the tolerance.
 - Merging the branch is the owner's decision.

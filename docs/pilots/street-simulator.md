@@ -259,7 +259,4 @@ through the engine on its branch `engine-adoption` (worktree
 `libcnalab/street-simulator-engine`; commits and evidence in
 `docs/pilots/migration.md`, "street-simulator adoption"). What remains:
 
-- Captures on a hardware GPU (so far: CNA's software renderer, and OpenGL 3.3
-  on Mesa's llvmpipe, where the atmospheric sky draws and all named
-  viewpoints stay inside the tolerance).
 - Merging the branch is the owner's decision.

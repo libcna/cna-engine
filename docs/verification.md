@@ -31,7 +31,9 @@ jobs): the 18 viewpoints and the night view, renderer files of `64d1c07`
 against `b137025`, all 19 inside the tolerance — mean 0.000–0.138/255,
 visibly different pixels 0–1,091 of 230,400. The atmospheric sky (custom
 effects, absent on the software renderer) draws through the engine's
-`BeforeOpaque` pass.
+`BeforeOpaque` pass. On the hardware GPU (AMD Radeon 780M, radeonsi,
+`SDL_VIDEODRIVER=offscreen`): all 19 inside the tolerance, mean
+0.000–0.133/255, visibly different pixels 1–1,114 of 230,400.
 
 ## 2026-10-20, 08:20 — cna-extended suite against CNA `688f3f23` (ADR-002)
 
@@ -81,7 +83,10 @@ The plate-cache and quality-tier steps were pixel-identical. On OpenGL ES 3
 (`build-probe/` in the worktree, Release, SDL3 under Xvfb, Mesa 25.0.7
 llvmpipe, OpenGL ES 3.2) the same seven captures, world-renderer files of
 `6a927fb` against `dc83bb4`: mean 0.002–0.064/255, largest 16/255, at most
-one pixel per image visibly different. World pass CPU
+one pixel per image visibly different. The same on the hardware GPU (AMD
+Radeon 780M, radeonsi; `SDL_VIDEODRIVER=offscreen`, which EGL resolves to
+the GPU): mean 0.002–0.065/255, largest 12/255, at most one pixel visibly
+different. World pass CPU
 time (best of three alternating Release runs, 320 × 180, load ~8): 1,313 ms
 before, 1,358 ms after (+3.4 %).
 
