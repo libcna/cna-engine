@@ -116,6 +116,13 @@ depth and rasterizer states and samplers 0–4 are what they were before.
   binder sets the effect and answers `BlendStateFor` (XNA's stock effects
   write premultiplied color; an effect that writes straight alpha wants
   `NonPremultiplied`).
+- **A second lighting pass:** a pass with its own lights or fog (car
+  headlights relighting what they hit) is another `ForwardRenderer` with its
+  own `ForwardLighting`, run from a custom pass of the main one over a queue
+  of additive materials.
+- **Mirrors and reflections:** render a camera with `SetMirrored(true)` into
+  a render target; the renderer flips its culling, and the target can be
+  drawn afterwards with `SpriteBatch` (`examples/quick_start`).
 - **Your own camera behaviour:** implement `ICameraController` (chase,
   cockpit, cinematic stay in the game).
 - **Direct access:** every engine object exposes the CNA objects it wraps
