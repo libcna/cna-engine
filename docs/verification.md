@@ -4,6 +4,20 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-20, 12:55 — CI green on GitHub
+
+After `develop` and the pilots' branches were pushed (owner's request), the
+workflow ran on GitHub for the first time. Four workflow defects surfaced and
+were fixed: Sharp Runtime was checked out without its GoogleTest submodule;
+the "no test may be skipped" step matched test names containing "Disabled"
+instead of CTest's markers; the consumer probes passed a relative
+`CMAKE_PREFIX_PATH` (and so found the installed package only from a warm
+cache) and exported this machine's `/rv/cnaccache`; and the lane needed
+UP-011's four tests as named known failures. Run 39409759296
+(`workflow_dispatch`, `develop` at `711557a`): engine build and tests
+(boundary 5, unit 164, examples 3, performance 3, all 175, consumer probes
+2) green, cna-extended lane green, canary against the upstream heads green.
+
 ## 2026-10-20, 10:22 — sanitizers and full baseline after the adoption APIs
 
 With `Camera::SetMatrices` and `QualitySchema::PresetValues`:

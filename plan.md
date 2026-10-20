@@ -192,7 +192,7 @@ from this repository): both skipped cases are an implementation defect in CNA's
 the engine's pin). Remaining: move the pin past it (ADR-002) and the
 cna-extended owner re-enables the two tests.
 
-### EXT-003 — Establish an upstream compatibility lane `[~]`
+### EXT-003 — Establish an upstream compatibility lane `[x]`
 
 Acceptance:
 
@@ -212,7 +212,13 @@ tests the engine and its installed-package consumers against CNA `next`,
 cna-extended `develop` and Sharp Runtime `next`. Open: neither has run yet —
 the pinned CNA revision is not on the remote (UP-007); the skip filter was
 checked locally against a synthetic ctest log, the lane's build commands
-mirror the 2026-10-19 local cna-extended run.
+mirror the 2026-10-19 local cna-extended run. Update (2026-10-20): after the
+pin moved to the published CNA and the engine was pushed, all three jobs ran
+green on GitHub (run 39409759296: engine, cna-extended lane with UP-005 and
+UP-011 as named known failures and UP-004's skips, canary against the
+upstream heads). The first runs found four workflow defects, all fixed:
+Sharp Runtime's GoogleTest submodule, the skip check matching test names,
+the consumer probes' relative prefix and their hard-coded shared cache.
 
 ## Phase 2 — repository and boundary skeleton
 

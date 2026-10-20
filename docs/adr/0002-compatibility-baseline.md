@@ -3,7 +3,7 @@
 Date: 2026-10-19
 
 Status: accepted (policy and pin); all consumer reruns done (2026-10-20); CI
-reproduction blocked until the pinned CNA revision is pushed (UP-007) — see
+reproduces the baseline on GitHub (first green run 2026-10-20) — see
 "Verification status"
 
 Plan item: `ADR-002` in `plan.md`

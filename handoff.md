@@ -102,7 +102,7 @@ Done (see `plan.md` for per-task results):
 - Release readiness: LICENSE, NOTICE, CHANGELOG, API snapshot of the 21
   pilot-validated headers, profile guides, `quick_start` game example,
   verification matrix, CI workflow with the EXT-003 upstream lane and canary
-  (blocked by UP-007 until the CNA pin is pushed).
+  (all green on GitHub since 2026-10-20).
 
 ## Open, in priority order
 
@@ -120,10 +120,9 @@ Done (see `plan.md` for per-task results):
 2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)
    is recorded but not enforced until it is measured on this machine in a
    Release build when the machine is idle (`docs/pilots/performance-budgets.md`).
-3. CI: all three pins are published heads since the move to CNA `688f3f23`
-   (2026-10-20); the CI jobs have yet to run on GitHub. The cna-extended
-   suite was rerun locally against the new pin (same result as before;
-   UP-011 is a test-fixture path artefact of ccache's base directory).
+3. CI: green on GitHub (engine job, cna-extended lane, canary; run
+   39409759296). The known cna-extended failures are named in the lane
+   (UP-005, UP-011) and its UP-004 skips are reported when they disappear.
 4. ENG-035: shadows and post-processing only when a pilot needs them (Street
    currently draws neither; see `docs/pilots/street-simulator.md`).
    Reflection probes are supported through the PBR binder's selector.
