@@ -74,6 +74,7 @@ cna_engine_add_library(cna_engine_graphics Graphics
     src/Graphics/GpuMesh.cpp
     src/Graphics/RenderStatistics.cpp
     src/Graphics/ScreenCapture.cpp
+    src/Graphics/AutomatedRun.cpp
     src/Graphics/RenderQueue.cpp
     src/Graphics/Visibility.cpp
     src/Graphics/ForwardRenderer.cpp

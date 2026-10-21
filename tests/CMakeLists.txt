@@ -40,6 +40,7 @@ add_executable(cna_engine_tests
     Graphics/VertexLayoutsTests.cpp
     Graphics/GpuMeshTests.cpp
     Graphics/ScreenCaptureTests.cpp
+    Graphics/AutomatedRunTests.cpp
     Graphics/RenderQueueTests.cpp
     Graphics/VisibilityTests.cpp
     Graphics/ForwardRendererTests.cpp

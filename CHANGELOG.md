@@ -196,6 +196,14 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   settings probe reads its files as the same values and writes the same
   bytes. It also reads the texts `ActionMap::SaveBindings` and
   `QualitySchema::SaveSelection` write.
+- `Graphics/AutomatedRun.hpp`: `AutomatedRunOptions` (`--frames`,
+  `--run-seconds`, `--screenshot`, `--lockstep`), `ParseAutomatedRunOption`,
+  `AutomatedRunUsage` and `AutomatedRun` (one fixed step per drawn frame in
+  lockstep, the simulation frozen at the limit, frames drawn on until the
+  game is ready, the screenshot read after the last frame was presented) —
+  the smoke, capture and benchmark runs nine games each wrote; lockstep as
+  car-simulator skips catch-up updates, the capture as train-simulator takes
+  it.
 
 - `Graphics/GpuMemory.hpp`: `GpuMemoryEstimate` (meshes, textures, materials,
   queues; shared resources once) and `TextureBytes`; `DiagnosticsSources::memoryEstimate`.
