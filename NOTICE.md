@@ -21,9 +21,11 @@ portions; the engine adds no further obligations beyond MIT.
 | --- | --- | --- |
 | `tools/xna4_types.txt` | car-simulator `scripts/xna4_types.txt` at `cd6d948e` (generated from `libcna/xna4-spec`) | MIT |
 | Rules of `tools/check_strict_boundary.py` | car-simulator `scripts/check_xna_only.py` (reimplemented, same rules) | MIT |
+| `include/CnaEngine/Core/Noise.hpp` (the functions' arithmetic) | street-simulator `street/include/CnaStreet/Assets/Noise.hpp` at `fe0de621b9a51e9b02279778498cd729c9259551`; copyright Robert Vokáč | MIT |
+| sRGB tables in `src/Graphics/Image.cpp` | room-simulator `src/Assets/Image.cpp` at `56e349c32c1d68522bbf082f588a1ca89726e714` (the transfer tables of `Image::halved`); copyright Robert Vokáč | MIT |
 | `tests/fixtures/easy3d_legacy/` | Minimal equivalence oracle extracted from `openeggbert/easy-3d` at `ad63bf9c176af5a798ad05e75c21e8802dda0f2f`; copyright Robert Vokáč | MIT (license retained beside the fixture) |
 
-No other code was copied from the pilots or from CNA's retired engine layer.
+No other code was copied from the games or from CNA's retired engine layer.
 Engine APIs were designed from the pilots' implementations as evidence
 (`docs/api-status.md`) and written for this repository.
 

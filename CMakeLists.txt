@@ -66,6 +66,7 @@ cna_engine_add_library(cna_engine_graphics Graphics
     src/Graphics/MeshData.cpp
     src/Graphics/MeshBuilder.cpp
     src/Graphics/TextureAtlas.cpp
+    src/Graphics/Image.cpp
     src/Graphics/DebugDraw.cpp
     src/Graphics/VertexLayouts.cpp
     src/Graphics/GpuMesh.cpp

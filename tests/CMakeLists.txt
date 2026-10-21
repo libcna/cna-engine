@@ -22,6 +22,7 @@ include(GoogleTest)
 add_executable(cna_engine_tests
     Core/VersionTests.cpp
     Core/FixedStepClockTests.cpp
+    Core/NoiseTests.cpp
     Input/InputNamesTests.cpp
     Input/ActionMapTests.cpp
     Input/BindingCaptureTests.cpp
@@ -32,6 +33,7 @@ add_executable(cna_engine_tests
     Graphics/MeshDataTests.cpp
     Graphics/MeshBuilderTests.cpp
     Graphics/TextureAtlasTests.cpp
+    Graphics/ImageTests.cpp
     Graphics/DebugDrawTests.cpp
     Graphics/VertexLayoutsTests.cpp
     Graphics/GpuMeshTests.cpp

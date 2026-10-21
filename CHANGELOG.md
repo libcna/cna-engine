@@ -173,6 +173,17 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 - `Graphics/DebugDraw.hpp`: `DebugDraw` (lines and box outlines drawn with
   a vertex-colored `BasicEffect`, device state restored) — easy-3d's
   `DebugDraw` queue, which had no renderer of its own.
+- `Graphics/Image.hpp`: `Image` (CPU RGBA8, four bytes per texel),
+  `Downsample` with `MipOptions` (`MipRounding::Truncate` or `Nearest`,
+  sRGB averaging in linear light, alpha-test coverage), `AlphaTestCoverage`,
+  `DownsampleForAlphaTest`, `BuildMipChain`, `UploadTexture` and
+  `UpdateTexture` — the CPU images and mip chains car-, train-, school-,
+  museum-, room-, backrooms- and island-simulator each wrote; the pilot probe
+  matches car's, train's, school's and room's bit for bit.
+- `Core/Noise.hpp`: header-only, hash-based, tileable noise (`Hash`,
+  `Hash2/3`, `Random2/3`, `Value2`, `Gradient2`, `Fbm`, `Ridged`, `Worley2`
+  with F2, `SmoothStep` in either direction) — street-simulator's
+  `CnaStreet::Noise`, matched bit for bit by the pilot probe.
 
 - `Graphics/GpuMemory.hpp`: `GpuMemoryEstimate` (meshes, textures, materials,
   queues; shared resources once) and `TextureBytes`; `DiagnosticsSources::memoryEstimate`.

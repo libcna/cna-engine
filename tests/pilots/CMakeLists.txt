@@ -204,3 +204,53 @@ gtest_discover_tests(cna_engine_easy3d_equivalence_tests
     TEST_PREFIX "cna_engine.pilot."
     DISCOVERY_MODE PRE_TEST
     PROPERTIES LABELS "pilot")
+
+# Procedural images and noise (Graphics/Image.hpp, Core/Noise.hpp): the mip
+# filters, alpha-test coverage, uploads and noise must match the games they
+# were taken from. Each game checked out beside this repository is compiled
+# read-only; a missing one leaves out its tests.
+set(CNA_ENGINE_TRAIN_SIMULATOR_DIR "${PROJECT_SOURCE_DIR}/../../libcnalab/train-simulator"
+    CACHE PATH "train-simulator checkout used by the image probe (read-only)")
+set(CNA_ENGINE_SCHOOL_SIMULATOR_DIR "${PROJECT_SOURCE_DIR}/../../libcnalab/school-simulator"
+    CACHE PATH "school-simulator checkout used by the image probe (read-only)")
+set(CNA_ENGINE_ROOM_SIMULATOR_DIR "${PROJECT_SOURCE_DIR}/../../libcnalab/room-simulator"
+    CACHE PATH "room-simulator checkout used by the image probe (read-only)")
+
+add_executable(cna_engine_image_equivalence_tests ImageEquivalenceTests.cpp)
+target_link_libraries(cna_engine_image_equivalence_tests PRIVATE
+    cna_engine_core cna_engine_graphics GTest::gtest_main)
+if(TARGET cna_engine_pilot_carsim_render)
+    target_link_libraries(cna_engine_image_equivalence_tests PRIVATE cna_engine_pilot_carsim_render)
+    target_compile_definitions(cna_engine_image_equivalence_tests PRIVATE CNA_ENGINE_PROBE_CAR_SIMULATOR=1)
+endif()
+if(EXISTS "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/include/CnaStreet/Assets/Noise.hpp")
+    target_include_directories(cna_engine_image_equivalence_tests PRIVATE
+        "${CNA_ENGINE_STREET_SIMULATOR_DIR}/street/include")
+    target_compile_definitions(cna_engine_image_equivalence_tests PRIVATE CNA_ENGINE_PROBE_STREET_SIMULATOR=1)
+endif()
+if(EXISTS "${CNA_ENGINE_TRAIN_SIMULATOR_DIR}/src/render/ProceduralMaterials.cpp")
+    add_library(cna_engine_pilot_train_images STATIC
+        "${CNA_ENGINE_TRAIN_SIMULATOR_DIR}/src/render/ProceduralMaterials.cpp")
+    target_include_directories(cna_engine_pilot_train_images PUBLIC "${CNA_ENGINE_TRAIN_SIMULATOR_DIR}/include")
+    target_link_libraries(cna_engine_pilot_train_images PUBLIC CNA::Math CNA::GraphicsCore)
+    target_link_libraries(cna_engine_image_equivalence_tests PRIVATE cna_engine_pilot_train_images)
+    target_compile_definitions(cna_engine_image_equivalence_tests PRIVATE CNA_ENGINE_PROBE_TRAIN_SIMULATOR=1)
+endif()
+if(EXISTS "${CNA_ENGINE_SCHOOL_SIMULATOR_DIR}/src/Rendering/ImageUtil.cpp")
+    add_library(cna_engine_pilot_school_images STATIC
+        "${CNA_ENGINE_SCHOOL_SIMULATOR_DIR}/src/Rendering/ImageUtil.cpp")
+    target_include_directories(cna_engine_pilot_school_images PUBLIC "${CNA_ENGINE_SCHOOL_SIMULATOR_DIR}/src")
+    target_link_libraries(cna_engine_pilot_school_images PUBLIC CNA::Math CNA::GraphicsCore)
+    target_link_libraries(cna_engine_image_equivalence_tests PRIVATE cna_engine_pilot_school_images)
+    target_compile_definitions(cna_engine_image_equivalence_tests PRIVATE CNA_ENGINE_PROBE_SCHOOL_SIMULATOR=1)
+endif()
+if(EXISTS "${CNA_ENGINE_ROOM_SIMULATOR_DIR}/src/Assets/Image.cpp")
+    add_library(cna_engine_pilot_room_images STATIC "${CNA_ENGINE_ROOM_SIMULATOR_DIR}/src/Assets/Image.cpp")
+    target_include_directories(cna_engine_pilot_room_images PUBLIC "${CNA_ENGINE_ROOM_SIMULATOR_DIR}/include")
+    target_link_libraries(cna_engine_image_equivalence_tests PRIVATE cna_engine_pilot_room_images)
+    target_compile_definitions(cna_engine_image_equivalence_tests PRIVATE CNA_ENGINE_PROBE_ROOM_SIMULATOR=1)
+endif()
+gtest_discover_tests(cna_engine_image_equivalence_tests
+    TEST_PREFIX "cna_engine.pilot."
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES LABELS "pilot")
