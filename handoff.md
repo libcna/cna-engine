@@ -132,7 +132,9 @@ Done (see `plan.md` for per-task results):
    branch `engine-adoption` (worktree `openeggbert/galaxy-eggbert-engine`,
    builds `build/` = `OPENGLES3`, `build-probe/` = `OPENGL33`; eight
    commits; merged and pushed by the owner). Every step left its suite green
-   and its captures byte-identical. Open: archiving easy-3d.
+   and its captures byte-identical. Its minimal equivalence oracle is frozen
+   and MIT-attributed under `tests/fixtures/easy3d_legacy`; no easy-3d checkout
+   is needed. PILOT-004 is complete and easy-3d may be archived or removed.
    PILOT-005: backrooms-simulator runs on the engine on its branch
    `engine-adoption` (worktree `libcnalab/backrooms-simulator-engine`, build
    `build/` = Release `OPENGLES3` against the baseline clones and easy-gl

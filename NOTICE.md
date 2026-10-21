@@ -21,6 +21,7 @@ portions; the engine adds no further obligations beyond MIT.
 | --- | --- | --- |
 | `tools/xna4_types.txt` | car-simulator `scripts/xna4_types.txt` at `cd6d948e` (generated from `libcna/xna4-spec`) | MIT |
 | Rules of `tools/check_strict_boundary.py` | car-simulator `scripts/check_xna_only.py` (reimplemented, same rules) | MIT |
+| `tests/fixtures/easy3d_legacy/` | Minimal equivalence oracle extracted from `openeggbert/easy-3d` at `ad63bf9c176af5a798ad05e75c21e8802dda0f2f`; copyright Robert Vokáč | MIT (license retained beside the fixture) |
 
 No other code was copied from the pilots or from CNA's retired engine layer.
 Engine APIs were designed from the pilots' implementations as evidence
@@ -31,3 +32,7 @@ Engine APIs were designed from the pilots' implementations as evidence
 `tests/pilots/` compiles selected sources of car-simulator (MIT) and
 street-simulator (MIT) from their own checkouts into test executables to
 compare behaviour. Those sources are neither copied nor installed.
+
+The retired easy-3d repository is not a build dependency. Its small frozen
+oracle is compiled only into `Easy3DEquivalenceTests`, is never installed and
+is retained solely to verify the completed migration.

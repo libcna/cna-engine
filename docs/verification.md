@@ -4,6 +4,24 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-21 — easy-3d oracle made self-contained (PILOT-004 closure)
+
+The test-only portions of easy-3d used by `Easy3DEquivalenceTests` were frozen
+under `tests/fixtures/easy3d_legacy` from easy-3d `ad63bf9`, with its MIT
+license and provenance. `tests/pilots/CMakeLists.txt` no longer names or checks
+for an easy-3d checkout: with `CNA_ENGINE_PILOT_PROBES=ON`, the five tests are
+unconditional and cannot silently disappear when the sibling repository is
+absent.
+
+- `build/` (GCC, Debug, software/headless/null, SDL and video disabled): the
+  oracle and equivalence executable rebuilt successfully with `-Werror`;
+  **5 of 5 Easy3DEquivalenceTests passed**.
+- The build used moving development worktrees (CNA 54 commits and Sharp
+  Runtime 12 commits after their recorded baselines), so this is closure
+  evidence for the self-contained oracle, not new baseline evidence.
+- Source/configuration search found no remaining `CNA_ENGINE_EASY3D_DIR`,
+  easy-3d source path, include or link dependency. PILOT-004 is complete.
+
 ## 2026-10-20, 21:40 — easy-3d taken over; galaxy-eggbert on the engine (PILOT-004)
 
 Engine `develop` at `e56fa0f` (easy-3d facilities) and `d86c62d` (build

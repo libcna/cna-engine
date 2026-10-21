@@ -1,21 +1,15 @@
 // SPDX-License-Identifier: MIT
 //
-// Read-only equivalence probe: what cna-engine took over from easy-3d
-// (openeggbert/easy-3d, compiled read-only) produces exactly what easy-3d
-// produces -- the same vertices, texture coordinates, indices and matrices,
-// bit for bit -- so galaxy-eggbert can move from easy-3d to the engine
-// without its picture moving.
+// Equivalence probe: what cna-engine took over from easy-3d produces the same
+// vertices, texture coordinates, indices and matrices, bit for bit. The old
+// implementation is frozen in tests/fixtures/easy3d_legacy, so this migration
+// baseline remains available after the retired repository is removed.
 #include "CnaEngine/Graphics/Camera.hpp"
 #include "CnaEngine/Graphics/CameraControllers.hpp"
 #include "CnaEngine/Graphics/MeshBuilder.hpp"
 #include "CnaEngine/Graphics/TextureAtlas.hpp"
 
-#include "Easy3D/BillboardMesh.hpp"
-#include "Easy3D/Camera3D.hpp"
-#include "Easy3D/CubeMesh.hpp"
-#include "Easy3D/FollowCamera.hpp"
-#include "Easy3D/OrbitCamera.hpp"
-#include "Easy3D/TextureAtlas.hpp"
+#include "Easy3DLegacy.hpp"
 
 #include <gtest/gtest.h>
 
@@ -39,15 +33,15 @@ namespace CnaEngine::Pilot
             std::mt19937 engine{20261020u};
             float operator()(float lo, float hi) { return std::uniform_real_distribution<float>(lo, hi)(engine); }
             Vector3 Point(float range) { return Vector3((*this)(-range, range), (*this)(-range, range), (*this)(-range, range)); }
-            Easy3D::UvRect Uv()
+            Easy3DLegacy::UvRect Uv()
             {
                 const float u = (*this)(0.0f, 0.5f);
                 const float v = (*this)(0.0f, 0.5f);
-                return Easy3D::UvRect{u, v, u + (*this)(0.01f, 0.5f), v + (*this)(0.01f, 0.5f)};
+                return Easy3DLegacy::UvRect{u, v, u + (*this)(0.01f, 0.5f), v + (*this)(0.01f, 0.5f)};
             }
         };
 
-        Graphics::UvRect ToEngine(const Easy3D::UvRect& uv) { return Graphics::UvRect{uv.U0, uv.V0, uv.U1, uv.V1}; }
+        Graphics::UvRect ToEngine(const Easy3DLegacy::UvRect& uv) { return Graphics::UvRect{uv.U0, uv.V0, uv.U1, uv.V1}; }
 
         bool Same(const Vector3& a, const Vector3& b) { return a.X == b.X && a.Y == b.Y && a.Z == b.Z; }
         bool Same(const Vector2& a, const Vector2& b) { return a.X == b.X && a.Y == b.Y; }
@@ -84,9 +78,9 @@ namespace CnaEngine::Pilot
 
     TEST(Easy3DEquivalenceTests, TextureAtlasRegionsAndGrids)
     {
-        Easy3D::TextureAtlas theirs(512, 256);
+        Easy3DLegacy::TextureAtlas theirs(512, 256);
         Graphics::TextureAtlas ours(512, 256);
-        theirs.Add("sky", Easy3D::AtlasRect{3, 5, 100, 70});
+        theirs.Add("sky", Easy3DLegacy::AtlasRect{3, 5, 100, 70});
         ours.Add("sky", Graphics::AtlasRect{3, 5, 100, 70});
         theirs.AddGrid("tile", 32, 16, 7, 5, 1, 2, 3, 4);
         ours.AddGrid("tile", 32, 16, 7, 5, 1, 2, 3, 4);
@@ -97,7 +91,7 @@ namespace CnaEngine::Pilot
             const auto b = ours.Uv(name);
             EXPECT_TRUE(a.U0 == b.u0 && a.V0 == b.v0 && a.U1 == b.u1 && a.V1 == b.v1) << name;
         }
-        const auto sky = theirs.GetUvOrDefault("missing", Easy3D::UvRect{0.1f, 0.2f, 0.3f, 0.4f});
+        const auto sky = theirs.GetUvOrDefault("missing", Easy3DLegacy::UvRect{0.1f, 0.2f, 0.3f, 0.4f});
         const auto skyOurs = ours.UvOrDefault("missing", Graphics::UvRect{0.1f, 0.2f, 0.3f, 0.4f});
         EXPECT_TRUE(sky.U0 == skyOurs.u0 && sky.V1 == skyOurs.v1);
     }
@@ -108,7 +102,7 @@ namespace CnaEngine::Pilot
         for (int n = 0; n < 200; ++n) {
             const Vector3 center = random.Point(500.0f);
             const Vector3 size(random(0.1f, 4.0f), random(0.1f, 4.0f), random(0.1f, 4.0f));
-            Easy3D::DirectionalCubeItem item;
+            Easy3DLegacy::DirectionalCubeItem item;
             item.Center = center;
             item.Size = size;
             Graphics::BoxFaces faces;
@@ -118,19 +112,19 @@ namespace CnaEngine::Pilot
                 faces[static_cast<std::size_t>(f)].visible = item.Faces[f].Visible;
                 faces[static_cast<std::size_t>(f)].uv = ToEngine(item.Faces[f].Uv);
             }
-            std::vector<Easy3D::CubeVertex> vertices;
+            std::vector<Easy3DLegacy::CubeVertex> vertices;
             std::vector<std::uint32_t> indices;
-            Easy3D::AppendDirectionalCubeMesh(item, vertices, indices);
+            Easy3DLegacy::AppendDirectionalCubeMesh(item, vertices, indices);
             // easy-3d's own bounds arithmetic, so the engine sees the same corners.
             const Vector3 half = item.Size * 0.5f;
             MeshBuilder builder = TexturedBuilder();
             builder.AddBox(item.Center - half, item.Center + half, faces);
             ExpectIdentical(vertices, indices, builder);
 
-            Easy3D::CubeItem plain{center, size, random.Uv()};
+            Easy3DLegacy::CubeItem plain{center, size, random.Uv()};
             vertices.clear();
             indices.clear();
-            Easy3D::AppendCubeMesh(plain, vertices, indices);
+            Easy3DLegacy::AppendCubeMesh(plain, vertices, indices);
             Graphics::BoxFaces same;
             same.fill(Graphics::BoxFaceStyle{true, ToEngine(plain.Uv)});
             MeshBuilder cube = TexturedBuilder();
@@ -143,28 +137,28 @@ namespace CnaEngine::Pilot
     {
         Random random;
         for (int n = 0; n < 200; ++n) {
-            Easy3D::PlateItem plate;
+            Easy3DLegacy::PlateItem plate;
             plate.Center = random.Point(300.0f);
             plate.Width = random(0.1f, 5.0f);
             plate.Height = random(0.1f, 5.0f);
             plate.Uv = random.Uv();
-            plate.Axis = static_cast<Easy3D::PlateAxis>(n % 3);
-            std::vector<Easy3D::CubeVertex> vertices;
+            plate.Axis = static_cast<Easy3DLegacy::PlateAxis>(n % 3);
+            std::vector<Easy3DLegacy::CubeVertex> vertices;
             std::vector<std::uint32_t> indices;
-            Easy3D::AppendPlateMesh(plate, vertices, indices);
+            Easy3DLegacy::AppendPlateMesh(plate, vertices, indices);
             MeshBuilder builder = TexturedBuilder();
             builder.AddPlate(plate.Center, plate.Width, plate.Height, static_cast<Graphics::PlateAxis>(n % 3),
                              ToEngine(plate.Uv));
             ExpectIdentical(vertices, indices, builder);
 
-            Easy3D::TripleCrossItem cross;
+            Easy3DLegacy::TripleCrossItem cross;
             cross.Center = plate.Center;
             cross.Width = plate.Width;
             cross.Height = plate.Height;
             cross.Uv = plate.Uv;
             vertices.clear();
             indices.clear();
-            Easy3D::AppendTripleCrossMesh(cross, vertices, indices);
+            Easy3DLegacy::AppendTripleCrossMesh(cross, vertices, indices);
             MeshBuilder crossed = TexturedBuilder();
             crossed.AddCrossedPlates(cross.Center, cross.Width, cross.Height, 3, ToEngine(cross.Uv));
             ExpectIdentical(vertices, indices, crossed);
@@ -179,15 +173,15 @@ namespace CnaEngine::Pilot
             const Matrix world = Matrix::Invert(view);
             const Vector3 right(world.M11, world.M12, world.M13);
             const Vector3 up(world.M21, world.M22, world.M23);
-            Easy3D::BillboardItem item;
+            Easy3DLegacy::BillboardItem item;
             item.Position = random.Point(100.0f);
             item.Size = Vector2(random(0.1f, 8.0f), random(0.1f, 8.0f));
             item.Uv = random.Uv();
             item.Origin = Vector2(random(0.0f, 1.0f), random(0.0f, 1.0f));
             item.RotationRadians = random(-3.0f, 3.0f);
-            std::vector<Easy3D::BillboardVertex> vertices;
+            std::vector<Easy3DLegacy::BillboardVertex> vertices;
             std::vector<std::uint32_t> indices;
-            Easy3D::AppendBillboardMesh(item, right, up, vertices, indices);
+            Easy3DLegacy::AppendBillboardMesh(item, right, up, vertices, indices);
             MeshBuilder builder = TexturedBuilder();
             builder.AddBillboard(item.Position, item.Size, right, up, ToEngine(item.Uv), item.Origin,
                                  item.RotationRadians);
@@ -199,7 +193,7 @@ namespace CnaEngine::Pilot
     {
         Random random;
         for (int n = 0; n < 200; ++n) {
-            Easy3D::Camera3D theirs;
+            Easy3DLegacy::Camera3D theirs;
             theirs.SetPosition(random.Point(200.0f));
             theirs.SetTarget(random.Point(200.0f));
             theirs.SetFieldOfView(random(0.3f, 2.0f));
@@ -214,7 +208,7 @@ namespace CnaEngine::Pilot
             ASSERT_TRUE(Same(ours.Projection(), theirs.GetProjectionMatrix())) << n;
         }
 
-        Easy3D::OrbitCamera orbit;
+        Easy3DLegacy::OrbitCamera orbit;
         Graphics::OrbitCameraController orbitOurs;
         for (int n = 0; n < 100; ++n) {
             const Vector3 target = random.Point(50.0f);
@@ -232,7 +226,7 @@ namespace CnaEngine::Pilot
             ASSERT_TRUE(Same(orbit.ComputePosition(), orbitOurs.Position())) << n;
         }
 
-        Easy3D::FollowCamera follow;
+        Easy3DLegacy::FollowCamera follow;
         Graphics::FollowCameraController followOurs(follow.GetOffset(), follow.GetSmoothing());
         Graphics::Camera camera;
         for (int n = 0; n < 300; ++n) {
@@ -249,7 +243,7 @@ namespace CnaEngine::Pilot
             const Vector3 position = random.Point(30.0f);
             const Vector3 target = random.Point(30.0f);
             follow.SetPosition(position);
-            Easy3D::Camera3D theirs;
+            Easy3DLegacy::Camera3D theirs;
             follow.ApplyTo(theirs, target);
             followOurs.SetPosition(position);
             followOurs.SetTargetPosition(target);

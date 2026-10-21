@@ -731,7 +731,7 @@ branches; the nine facilities both pilots use are `stable`
 (`docs/api-status.md`), single-consumer facilities keep their
 `pilot-validated`/`experimental` status.
 
-### PILOT-004 — Replace easy-3d in galaxy-eggbert `[~]`
+### PILOT-004 — Replace easy-3d in galaxy-eggbert `[x]`
 
 easy-3d (`openeggbert/easy-3d`, namespace `Easy3D`) is a small helper library
 over CNA — position/target camera, orbit and follow cameras, texture atlas,
@@ -779,6 +779,13 @@ hanging teleporter spike with its own texture mapping, built in the game),
 draws them) and easy-3d's version constants. One gap was found and closed:
 `FollowCamera::SetPosition`/`ApplyTo` became
 `FollowCameraController::SetPosition`/`Apply` (equivalence probe extended).
+
+Closure (2026-10-21): the equivalence oracle was reduced to a test-only,
+MIT-attributed fixture under `tests/fixtures/easy3d_legacy` pinned to easy-3d
+`ad63bf9`; the engine no longer reads an easy-3d checkout and the five tests
+can no longer disappear conditionally. `NOTICE.md` records the origin. The
+repository has no remaining product, build, CI or test dependency and may be
+archived or removed.
 
 ### PILOT-005 — Adopt the engine in backrooms-simulator and school-simulator `[x]`
 
