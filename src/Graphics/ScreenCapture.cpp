@@ -32,6 +32,11 @@ namespace CnaEngine::Graphics
         CaptureResult Finish(GraphicsDevice& device, std::vector<Color> pixels, const int width, const int height,
                              const CaptureOptions& options)
         {
+            if (options.opaque) {
+                for (Color& pixel : pixels) {
+                    pixel.setAProperty(255);
+                }
+            }
             CaptureResult result;
             if (!options.path.empty()) {
                 result = WritePng(device, pixels, width, height, options.path);

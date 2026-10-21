@@ -123,6 +123,11 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   `ForwardRenderer` draws one instanced on HiDef once per instance. Reason:
   backrooms-simulator streams plain vertex lists into pooled buffers.
 
+- `Graphics/ScreenCapture.hpp`, additive: `CaptureOptions::opaque` — alpha
+  255 in every captured pixel and in the file. Reason: school-simulator's
+  screenshots were opaque, while its glass blending leaves the back
+  buffer's alpha below 255 (room-simulator does the same by hand).
+
 - `Graphics/RenderQueue.hpp`: an unused private member removed (no API
   change; the header's fingerprint changes). Reason: Clang reports it
   (`-Wunused-private-field`), which failed the engine's `-Werror` build with

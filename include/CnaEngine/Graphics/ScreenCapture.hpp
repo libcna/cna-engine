@@ -32,6 +32,10 @@ namespace CnaEngine::Graphics
         /// PNG file to write; empty captures to memory only.
         std::string path;
         bool keepPixels = false;
+        /// Store alpha 255 in every pixel (file and kept pixels). A back
+        /// buffer's alpha is whatever blending left behind, rarely meant as
+        /// transparency of the screenshot.
+        bool opaque = false;
     };
 
     /// Reads the back buffer (call after drawing, before Present()). XNA's

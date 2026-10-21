@@ -91,6 +91,34 @@ namespace CnaEngine::Graphics
         EXPECT_TRUE(result.path.empty());
     }
 
+    TEST(ScreenCaptureTests, OpaqueCapturesStoreFullAlpha)
+    {
+        GraphicsDevice device;
+        RenderTarget2D target(device, 4, 4);
+        device.SetRenderTarget(&target);
+        device.Clear(Color(40, 80, 120, 100)); // what blending can leave in a back buffer's alpha
+        device.SetRenderTarget(nullptr);
+
+        ScratchDirectory scratch("cna_engine_capture_opaque");
+        CaptureOptions options;
+        options.path = scratch.File("opaque.png");
+        options.keepPixels = true;
+        options.opaque = true;
+        const CaptureResult result = CaptureRenderTarget(device, target, options);
+        ASSERT_TRUE(result.success) << result.error;
+        ASSERT_EQ(result.pixels.size(), 16u);
+        EXPECT_EQ(result.pixels[0], Color(40, 80, 120, 255));
+        Texture2D decoded = LoadPng(device, result.path);
+        std::vector<Color> roundTrip(16);
+        decoded.GetData(roundTrip.data(), 16);
+        EXPECT_EQ(roundTrip, result.pixels) << "the file is opaque too";
+
+        options.opaque = false;
+        options.path.clear();
+        EXPECT_EQ(CaptureRenderTarget(device, target, options).pixels[0], Color(40, 80, 120, 100))
+            << "alpha is kept unless asked";
+    }
+
     TEST(ScreenCaptureTests, ReachBackBufferCaptureFailsExplicitly)
     {
         GraphicsDevice device;
