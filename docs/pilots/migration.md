@@ -307,6 +307,57 @@ after it two runs on each renderer were identical.
 Not checked: the browser build (`tools/build_web.sh`), which now also
 compiles the engine.
 
+## train-simulator (strict; PILOT-006)
+
+train-simulator (`libcnalab/train-simulator`, GitHub `libcna/train-simulator`) is a first-person
+passenger simulator on CNA's OpenGL 3.3 renderer: a 286 km streamed route, a six-car train with
+seats, doors, toilets and displays, CNA avatars, time of day and weather. Its renderer is one
+hand-ordered sequence of about 90 draws on four stock effects and two GLSL shaders (water,
+facades), with shadows, lettering, glows and glass blended between opaque layers. The owner
+allowed the migration on 2026-10-21.
+
+| Step | Game code replaced | Engine facility | Known differences |
+| --- | --- | --- | --- |
+| lockstep | — (`--lockstep`: one fixed step per drawn frame) | — | none in normal runs |
+| build | shared CNA possible | `CnaEngine::Graphics`; CNA static (UP-006) | the install verifier rejects a shared `libcna` |
+| screenshots | byte back-buffer read, `CreateFromPixels`, `SaveAsPng` | `CaptureBackBuffer` (now byte-based) | none; the files are byte-identical |
+| camera | `CreateLookAt`, `CreatePerspectiveFieldOfView` | `Camera::SetLookAt`, `SetPerspective` | none |
+| meshes | the segments' draw calls | `GpuMesh::Borrow` per segment, `GpuMesh::Draw` | none |
+| system keys | `pressed()` edge detection for 15 controls | `ActionMap` | a press counts per action (Enter and Space start once) |
+| scene | the passes' effect and device-state juggling | `RenderBucket::Sequenced`, `ForwardRenderer` (two runs around the people), `Material`, a game `IMaterialBinder` over its own effects and shaders | none; every report counter unchanged |
+
+Stays in the game: the sky pass, the avatars and platform people (CNA `AvatarRenderer`), the HUD,
+all effects and both shaders (configured by the game's binder), streaming, and `FrameTiming`
+(its report needs a lifetime maximum and exact window means, which `FrameStatistics` lacks).
+
+### train-simulator adoption (branch `engine-adoption`)
+
+Worktree `libcnalab/train-simulator-engine`, branched from `develop` at `099a0b0`; not merged
+or pushed. Release build (three jobs) against `~/deps/cna-baseline` (`900d0db3b`),
+`~/deps/sharp-runtime-baseline` and easy-gl `v0.1.1`, with the system SDL of the CNA checkout.
+The check after every step: 56 lockstep captures (the game's 37 visual-audit views; night,
+dusk, rain, fog, overcast; quality 0 and 1; both facade shaders; avatars; the HUD overlays)
+under Xvfb (llvmpipe), compared pixel for pixel with the first step, and the final step also on
+the GPU (Radeon 780M) against the first. Without `--lockstep` two runs of the unchanged game
+differed in 30 of the 56; with it in the two onboard avatar views only (avatars load
+asynchronously and animate per drawn frame), which are inspected instead.
+
+| Commit | Step | Result |
+| --- | --- | --- |
+| `5122610` | lockstep | 54 of 56 identical between two runs (the two onboard avatar views differ) |
+| `5b19258` | build | 54/54 identical; unit tests 134/134 and 200/200 |
+| `122249d` | screenshots | 54/54 identical, the PNG files byte-identical (the debug HUD's FPS digit masked) |
+| `c7b9415` | camera | 54/54 identical |
+| `bd76f3b` | meshes | 54/54 identical |
+| `ef5bee9` | system keys | X11 input (start menu, M, F1, Esc, the pause-menu arrows, E, F12) does what it did; 54/54 identical |
+| `cbf786b` | scene | 54/54 identical on llvmpipe and on the GPU; every `--report-state` counter unchanged; uncapped GPU frame time within the noise (about 5 ms); CTest 73/75 |
+| `01a6e2d` | records | — |
+
+The two CTest failures are not the migration's: `trainsim_world_prefetch_-1` fails the same way
+before the first step (two synchronous world builds where one is expected), and
+`trainsim_install_layout` copies the project-local SDL build, which this configuration (system
+SDL) does not have. Not checked: the WebGL 2 build, which now also compiles the engine.
+
 ## Order of work
 
 Each pilot: input and fixed-step first (no rendering change), then camera,

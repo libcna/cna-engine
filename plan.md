@@ -780,7 +780,7 @@ draws them) and easy-3d's version constants. One gap was found and closed:
 `FollowCamera::SetPosition`/`ApplyTo` became
 `FollowCameraController::SetPosition`/`Apply` (equivalence probe extended).
 
-### PILOT-005 — Adopt the engine in backrooms-simulator and school-simulator `[~]`
+### PILOT-005 — Adopt the engine in backrooms-simulator and school-simulator `[x]`
 
 A read-only survey of the seven other simulators (2026-10-21) found two
 good candidates: backrooms-simulator (one unlit BasicEffect pass over
@@ -818,8 +818,33 @@ the texture cache as an `AssetRegistry` — 19 views identical after every
 step on llvmpipe and on the GPU, its whole check battery green. The engine
 gained `CaptureOptions::opaque`, `Material::frontFace` and
 `Material::straightAlpha` for it. Both branches were fast-forwarded into
-the games' `main` and pushed at the owner's request the same day. Open:
-pushing this repository's `develop`, which they need.
+the games' `main` and pushed at the owner's request the same day, and this
+repository's `develop` with them.
+
+### PILOT-006 — Adopt the engine in train-simulator `[~]`
+
+The owner allowed it on 2026-10-21 after a second read-only survey of the
+remaining simulators: train-simulator is dormant, uses only XNA 4.0 types
+and has repeatable audit views; island and museum are under active work,
+house's ADR-0001 admits XNA types only, and room's renderer is built on CNA
+extensions (shader packages, render targets) throughout.
+
+Acceptance: as PILOT-005 — a branch `engine-adoption` with one revertible
+commit per step, each checked against deterministic captures of the step
+before and the game's own suites; engine additions only where a step needs
+them, with tests, in `CHANGELOG.md`.
+
+Result (2026-10-21): train-simulator runs on the engine on its branch
+`engine-adoption` (worktree `libcnalab/train-simulator-engine`, not merged or
+pushed): repeatable `--lockstep` captures, build, screenshots, camera, mesh
+segments, system keys as actions, and the world and train through
+`ForwardRenderer` with the game's own binder over its effects and shaders —
+54 views pixel-identical after every step (llvmpipe; the last step also on
+the GPU), report counters unchanged, CTest 73/75 with both failures predating
+the migration or due to the build's system SDL (`docs/pilots/migration.md`,
+"train-simulator"). The engine gained `RenderBucket::Sequenced` (hand-ordered
+scenes) and byte-based screen captures for it. Open: the owner's decision to
+merge and push the branch.
 
 ## Phase 6 — release readiness
 

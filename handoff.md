@@ -26,8 +26,9 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
   pushed at the owner's request). On 2026-10-21 the owner allowed the same
   for backrooms-simulator and school-simulator (PILOT-005; branches
   `engine-adoption`, merged into both games' `main` and pushed at the
-  owner's request); island, museum, house, room and train were
-  only surveyed and stay untouched. Defects found elsewhere are
+  owner's request), and later for train-simulator (PILOT-006; branch
+  `engine-adoption`, not merged or pushed); island, museum, house and room
+  were only surveyed and stay untouched. Defects found elsewhere are
   written to `upstream-issues.md` (UP-001 … UP-015 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
 - Commit regularly on branch `develop`; do not push unless asked.
@@ -139,13 +140,19 @@ Done (see `plan.md` for per-task results):
    (worktree `libcnalab/school-simulator-engine`, build `build/` = Release
    `OPENGLES3`, two jobs; nine commits; 19 captures identical
    after every step). Both branches were fast-forwarded into the games'
-   `main` on 2026-10-21 and pushed at the owner's request. Open: pushing
-   this repository's `develop`; until then the games' `origin/main` does
-   not build from GitHub alone (they use `GpuMesh::Borrow` of plain lists,
-   `CaptureOptions::opaque`, `Material::frontFace` and
-   `Material::straightAlpha`). There is no
-   `libcnalab/cna-engine` sibling, so builds in the games' main worktrees
-   pass `-DCNA_ENGINE_ROOT=/rv/data/development/github.com/libcna/cna-engine`.
+   `main` on 2026-10-21 and pushed at the owner's request, with this
+   repository's `develop`. There is no `libcnalab/cna-engine` sibling, so
+   builds in the games' main worktrees pass
+   `-DCNA_ENGINE_ROOT=/rv/data/development/github.com/libcna/cna-engine`.
+   PILOT-006: train-simulator runs on the engine on its branch
+   `engine-adoption` (worktree `libcnalab/train-simulator-engine`, build
+   `build/` = Release `OPENGL33` against the baseline clones, easy-gl
+   `v0.1.1` and the CNA checkout's system SDL, three jobs; eight commits,
+   not merged or pushed; 54 `--lockstep` captures pixel-identical after every
+   step, the last also on the GPU). It needs this repository's commits
+   `52ccbf6` (byte captures) and `ece1943` (`RenderBucket::Sequenced`).
+   Open: the owner's merge and push of the branch; `develop` must reach
+   GitHub with or before it.
 2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)
    is recorded but not enforced until it is measured on this machine in a
    Release build when the machine is idle (`docs/pilots/performance-budgets.md`).
