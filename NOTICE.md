@@ -21,9 +21,10 @@ portions; the engine adds no further obligations beyond MIT.
 | --- | --- | --- |
 | `tools/xna4_types.txt` | car-simulator `scripts/xna4_types.txt` at `cd6d948e` (generated from `libcna/xna4-spec`) | MIT |
 | Rules of `tools/check_strict_boundary.py` | car-simulator `scripts/check_xna_only.py` (reimplemented, same rules) | MIT |
-| `include/CnaEngine/Core/Noise.hpp` (the functions' arithmetic) | street-simulator `street/include/CnaStreet/Assets/Noise.hpp` at `fe0de621b9a51e9b02279778498cd729c9259551`; copyright Robert Vokáč | MIT |
-| sRGB tables in `src/Graphics/Image.cpp` | room-simulator `src/Assets/Image.cpp` at `56e349c32c1d68522bbf082f588a1ca89726e714` (the transfer tables of `Image::halved`); copyright Robert Vokáč | MIT |
+| `include/CnaEngine/Core/Noise.hpp` (the functions' arithmetic) | street-simulator `street/include/CnaStreet/Assets/Noise.hpp` at `fe0de621b9a51e9b02279778498cd729c9259551`; copyright the cna-street contributors | MIT |
+| sRGB tables in `src/Graphics/Image.cpp` | room-simulator `src/Assets/Image.cpp` at `56e349c32c1d68522bbf082f588a1ca89726e714` (the transfer tables of `Image::halved`); copyright the room-simulator contributors | MIT |
 | `tests/fixtures/easy3d_legacy/` | Minimal equivalence oracle extracted from `openeggbert/easy-3d` at `ad63bf9c176af5a798ad05e75c21e8802dda0f2f`; copyright Robert Vokáč | MIT (license retained beside the fixture) |
+| `tests/fixtures/simulator_oracles/` | Equivalence oracles frozen from car-simulator `64711d575ffcfb71b359a8f1ea0ea5f25c2f75d8`, school-simulator `21ab2f01df04b514bce3b7c2aa6bff16ebb97525`, train-simulator `ea8941c7fcf3d943edd01377c2bb8acf85482806` and street-simulator `36113486d433d4c04c640560cbefe8b8bcbe4972` (README.md beside the fixture lists the files); copyright their contributors | MIT (license retained beside the fixture) |
 
 No other code was copied from the games or from CNA's retired engine layer.
 Engine APIs were designed from the pilots' implementations as evidence
@@ -31,10 +32,12 @@ Engine APIs were designed from the pilots' implementations as evidence
 
 ## Read-only use of pilot sources
 
-`tests/pilots/` compiles selected sources of car-simulator (MIT) and
-street-simulator (MIT) from their own checkouts into test executables to
-compare behaviour. Those sources are neither copied nor installed.
+`tests/pilots/` compiles selected sources of car-, street- and room-simulator
+(MIT) and house-simulator (Ms-PL) from their own checkouts into test
+executables to compare behaviour. Those sources are neither copied nor installed.
 
 The retired easy-3d repository is not a build dependency. Its small frozen
 oracle is compiled only into `Easy3DEquivalenceTests`, is never installed and
-is retained solely to verify the completed migration.
+is retained solely to verify the completed migration. The same holds for the
+simulator oracles, compiled only into the image and settings equivalence
+probes.

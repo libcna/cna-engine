@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 //
 // Graphics/Image.hpp and Core/Noise.hpp against the games they were taken
-// from, compiled read-only: every mip level, alpha-test level, uploaded texel
-// and noise value must be identical. A game not checked out beside this
-// repository leaves out its tests.
+// from: every mip level, alpha-test level, uploaded texel and noise value must
+// be identical. car-, school-, train- and street-simulator are the frozen
+// oracles in tests/fixtures/simulator_oracles (those games now call the
+// engine); room-simulator is compiled read-only from its checkout and left
+// out when it is missing.
 #include "CnaEngine/Core/Noise.hpp"
 #include "CnaEngine/Graphics/Image.hpp"
 
@@ -11,25 +13,18 @@
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 
-#if defined(CNA_ENGINE_PROBE_CAR_SIMULATOR)
-#include "CarSim/Render/Image.hpp"
-#endif
-#if defined(CNA_ENGINE_PROBE_SCHOOL_SIMULATOR)
-#include "Rendering/ImageUtil.hpp"
-#endif
-#if defined(CNA_ENGINE_PROBE_TRAIN_SIMULATOR)
-#include "trainsim/render/ProceduralMaterials.hpp"
-#endif
+#include "MipOracles.hpp"
+#include "StreetNoise.hpp"
+
 #if defined(CNA_ENGINE_PROBE_ROOM_SIMULATOR)
 #include "CnaRoom/Assets/Image.hpp"
-#endif
-#if defined(CNA_ENGINE_PROBE_STREET_SIMULATOR)
-#include "CnaStreet/Assets/Noise.hpp"
 #endif
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <random>
 #include <utility>
@@ -66,6 +61,11 @@ namespace
         GraphicsDevice device;
     };
 
+    simulator_oracles::Pixels Pixels(const Image& image)
+    {
+        return {image.Width(), image.Height(), image.ToColors()};
+    }
+
     std::vector<std::vector<std::uint8_t>> Levels(const Texture2D& texture)
     {
         std::vector<std::vector<std::uint8_t>> levels;
@@ -82,7 +82,6 @@ namespace
     }
 }
 
-#if defined(CNA_ENGINE_PROBE_CAR_SIMULATOR)
 TEST(ImageEquivalenceTests, CarSimulatorLevelsAndUploads)
 {
     HiDefDevice hiDef;
@@ -90,18 +89,15 @@ TEST(ImageEquivalenceTests, CarSimulatorLevelsAndUploads)
     std::uint32_t seed = 1;
     for (const auto& [width, height] : Sizes) {
         const Image image = Random(width, height, seed++);
-        CarSim::Render::Image car(width, height);
-        car.Pixels() = image.ToColors();
-        EXPECT_EQ(CnaEngine::Graphics::Downsample(image).ToColors(), car.Downsampled().Pixels())
+        EXPECT_EQ(CnaEngine::Graphics::Downsample(image).ToColors(),
+                  simulator_oracles::CarDownsampled(Pixels(image)).colors)
             << width << "x" << height;
         const auto engine = CnaEngine::Graphics::UploadTexture(device, image);
-        const auto theirs = CarSim::Render::UploadTexture(device, car);
+        const auto theirs = simulator_oracles::CarUploadTexture(device, Pixels(image));
         EXPECT_EQ(Levels(*engine), Levels(*theirs)) << width << "x" << height;
     }
 }
-#endif
 
-#if defined(CNA_ENGINE_PROBE_SCHOOL_SIMULATOR)
 TEST(ImageEquivalenceTests, SchoolSimulatorChainsAndUploads)
 {
     HiDefDevice hiDef;
@@ -109,20 +105,18 @@ TEST(ImageEquivalenceTests, SchoolSimulatorChainsAndUploads)
     std::uint32_t seed = 100;
     for (const auto& [width, height] : Sizes) {
         const Image image = Random(width, height, seed++);
-        const auto theirs = ImageUtil::BuildMipChain(image.ToColors(), width, height);
+        const auto theirs = simulator_oracles::SchoolBuildMipChain(image.ToColors(), width, height);
         const auto engine = CnaEngine::Graphics::BuildMipChain(image);
         ASSERT_EQ(engine.size(), theirs.size()) << width << "x" << height;
         for (std::size_t level = 0; level < engine.size(); ++level) {
             EXPECT_EQ(engine[level].ToColors(), theirs[level]) << width << "x" << height << " level " << level;
         }
         EXPECT_EQ(Levels(*CnaEngine::Graphics::UploadTexture(device, image)),
-                  Levels(*ImageUtil::CreateMipmapped(device, image.ToColors(), width, height)))
+                  Levels(*simulator_oracles::SchoolCreateMipmapped(device, image.ToColors(), width, height)))
             << width << "x" << height;
     }
 }
-#endif
 
-#if defined(CNA_ENGINE_PROBE_TRAIN_SIMULATOR)
 TEST(ImageEquivalenceTests, TrainSimulatorLevelsAlphaTestAndUploads)
 {
     HiDefDevice hiDef;
@@ -130,31 +124,46 @@ TEST(ImageEquivalenceTests, TrainSimulatorLevelsAlphaTestAndUploads)
     std::uint32_t seed = 200;
     for (const auto& [width, height] : Sizes) {
         const Image image = Random(width, height, seed++);
-        TrainSim::Render::ProceduralImage train{width, height, image.ToColors()};
-        EXPECT_EQ(CnaEngine::Graphics::Downsample(image).ToColors(), train.downsampled().pixels)
+        const simulator_oracles::Pixels train = Pixels(image);
+        EXPECT_EQ(CnaEngine::Graphics::Downsample(image).ToColors(), simulator_oracles::TrainDownsampled(train).colors)
             << width << "x" << height;
         for (const int reference : {1, 96, 128, 254}) {
             for (const double coverage : {0.0, 0.3, 0.62, 1.0}) {
                 EXPECT_EQ(CnaEngine::Graphics::DownsampleForAlphaTest(image, reference, coverage).ToColors(),
-                          train.downsampledForAlphaTest(reference, coverage).pixels)
+                          simulator_oracles::TrainDownsampledForAlphaTest(train, reference, coverage).colors)
                     << width << "x" << height << " reference " << reference << " coverage " << coverage;
             }
             const MipOptions alphaTest{.alphaTestReference = reference};
             EXPECT_EQ(Levels(*CnaEngine::Graphics::UploadTexture(device, image, alphaTest)),
-                      Levels(*TrainSim::Render::uploadMipmappedTexture(device, train, reference)))
+                      Levels(*simulator_oracles::TrainUploadMipmappedTexture(device, train, reference)))
                 << width << "x" << height << " reference " << reference;
         }
         EXPECT_EQ(Levels(*CnaEngine::Graphics::UploadTexture(device, image)),
-                  Levels(*TrainSim::Render::uploadMipmappedTexture(device, train)))
+                  Levels(*simulator_oracles::TrainUploadMipmappedTexture(device, train)))
             << width << "x" << height;
     }
-    // The game's own foliage card, uploaded as it uploads it.
-    const TrainSim::Render::ProceduralImage leaves = TrainSim::Render::makeLeafSprayImage();
-    const Image engineLeaves = Image::FromColors(leaves.width, leaves.height, leaves.pixels);
-    EXPECT_EQ(Levels(*CnaEngine::Graphics::UploadTexture(device, engineLeaves, {.alphaTestReference = 96})),
-              Levels(*TrainSim::Render::uploadMipmappedTexture(device, leaves, 96)));
+    // A foliage card like the game's: soft-edged leaves on a clear background,
+    // the case alpha-test coverage exists for.
+    std::mt19937 random(250);
+    std::uniform_real_distribution<float> unit(0.0f, 1.0f);
+    std::vector<std::array<float, 3>> blobs(40);
+    for (auto& blob : blobs) {
+        blob = {unit(random) * 256.0f, unit(random) * 256.0f, 6.0f + unit(random) * 14.0f};
+    }
+    Image leaves(256, 256, Color(0, 0, 0, 0));
+    for (int y = 0; y < 256; ++y) {
+        for (int x = 0; x < 256; ++x) {
+            float alpha = 0.0f;
+            for (const auto& [cx, cy, radius] : blobs) {
+                const float distance = std::hypot(static_cast<float>(x) - cx, static_cast<float>(y) - cy);
+                alpha = std::max(alpha, std::clamp((radius - distance) / 4.0f, 0.0f, 1.0f));
+            }
+            leaves.Set(x, y, Color(40 + x % 60, 90 + y % 80, 30, static_cast<int>(alpha * 255.0f)));
+        }
+    }
+    EXPECT_EQ(Levels(*CnaEngine::Graphics::UploadTexture(device, leaves, {.alphaTestReference = 96})),
+              Levels(*simulator_oracles::TrainUploadMipmappedTexture(device, Pixels(leaves), 96)));
 }
-#endif
 
 #if defined(CNA_ENGINE_PROBE_ROOM_SIMULATOR)
 TEST(ImageEquivalenceTests, RoomSimulatorRoundedAndSrgbLevels)
@@ -174,11 +183,10 @@ TEST(ImageEquivalenceTests, RoomSimulatorRoundedAndSrgbLevels)
 }
 #endif
 
-#if defined(CNA_ENGINE_PROBE_STREET_SIMULATOR)
 TEST(ImageEquivalenceTests, StreetSimulatorNoise)
 {
     namespace Engine = CnaEngine::Noise;
-    namespace Street = CnaStreet::Noise;
+    namespace Street = simulator_oracles::street_noise;
     std::mt19937 random(400);
     std::uniform_real_distribution<float> coordinate(-300.0f, 300.0f);
     std::uniform_int_distribution<int> lattice(-100000, 100000);
@@ -214,4 +222,3 @@ TEST(ImageEquivalenceTests, StreetSimulatorNoise)
     }
     ASSERT_EQ(Engine::SmoothStep(0.5f, 0.5f, 0.4f), Street::smoothstep(0.5f, 0.5f, 0.4f));
 }
-#endif

@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 //
-// Core/SettingsFile.hpp against train-simulator's Config::Settings, compiled
-// read-only: the same files must read as the same values, and the same values
-// must be written as the same bytes. Left out when train-simulator is not
-// checked out beside this repository.
+// Core/SettingsFile.hpp against train-simulator's Config::Settings, frozen in
+// tests/fixtures/simulator_oracles: the same files must read as the same
+// values, and the same values must be written as the same bytes.
 #include "CnaEngine/Core/SettingsFile.hpp"
 
-#include "trainsim/config/Settings.hpp"
+#include "TrainSettings.hpp"
 
 #include <gtest/gtest.h>
 
@@ -19,7 +18,7 @@
 namespace
 {
     using CnaEngine::SettingsFile;
-    using TrainSim::Config::Settings;
+    using simulator_oracles::train_config::Settings;
 
     // train-simulator's keys, ranges and defaults (Settings.hpp/.cpp), read through the engine.
     Settings Read(const SettingsFile& file)
