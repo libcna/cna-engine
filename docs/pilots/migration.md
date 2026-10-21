@@ -201,6 +201,58 @@ independent of the migration: galaxy-eggbert's committed golden references
 are stale against its `develop` with this CNA, and its editor terminates on
 OpenGL ES contexts without polygon mode (UP-014).
 
+## backrooms-simulator (strict; PILOT-005)
+
+backrooms-simulator (`libcnalab/backrooms-simulator`) streams a 5 by 5
+neighborhood of 40-metre chunks into a pool of plain vertex buffers (one
+per chunk and material, no indices) and draws them with one unlit,
+vertex-colored, textured, fogged BasicEffect; creatures follow with a
+depth-only pre-pass and alpha blending. The owner allowed the migration on
+2026-10-21.
+
+| Step | Game code replaced | Engine facility | Known differences |
+| --- | --- | --- | --- |
+| capture mode | — (new: `--capture`, `--view`, `--time`) | — | captures run under the HiDef profile, which can read the back buffer |
+| build | shared CNA | `CnaEngine::Core`, `CnaEngine::Graphics`; CNA static (UP-006) | a copied package no longer needs `libcna.so` |
+| capture writing | back-buffer read and PNG write | `CaptureBackBuffer` | a failed capture ends the run with the engine's error |
+| chunk drawing | the chunk loop over the game's BasicEffect | `GpuMesh::Borrow` (non-indexed), `RenderItem`, `RenderQueue`, `ForwardRenderer`, stock binder | none; the game's order is kept as `RenderItem::order` (the engine's own sorting moved one or two edge pixels in 4 of 30 views) |
+| keys and buttons | `KeyboardState` edges | `ActionMap` (two key-pair axes, four actions) | none; focus is not passed, as the game ignored it |
+| title statistics | ring of draw intervals, triangle sum | `FrameStatistics`, `RenderStatistics` | none |
+| camera | `CreateLookAt`, `CreatePerspectiveFieldOfView`, frustum | `Camera::SetLookAt`, `SetPerspective`, `Frustum` | none |
+
+Stays in the game: creatures and contact spots (a depth-only pre-pass is
+not a render item), streaming and the buffer pool, collision, the lighting
+bake, audio, and mouse look (the engine's mouse axes difference positions,
+while CNA's relative mode reports motion).
+
+### backrooms-simulator adoption (branch `engine-adoption`)
+
+Worktree `libcnalab/backrooms-simulator-engine`, branched from `main` at
+`71d9e9e`; not pushed. Release build against `~/deps/cna-baseline`
+(`900d0db3b`), `~/deps/sharp-runtime-baseline` and easy-gl `v0.1.1`. The
+check after every step: the three CTest suites and 30 captures (12 standard
+views and the same views looking back and down, five creature views at
+three distances, one inside the creature fade) under Xvfb (llvmpipe) and on
+the GPU (`SDL_VIDEODRIVER=offscreen`, Radeon 780M), compared byte for byte
+with the step before. Two runs of the first commit gave identical bytes on
+both renderers.
+
+| Commit | Step | Result |
+| --- | --- | --- |
+| `7c6c909` | capture mode | 30 views twice, identical |
+| `ea04b6d` | build | 3/3; 30/30 identical on both renderers |
+| `c915022` | capture writing | 30/30 identical on both renderers |
+| `3a4e342` | chunk drawing | 30/30 identical on both renderers; 1.6 km streaming sweep |
+| `e098720` | keys and buttons | `tools/validate_controls.py` passes; 30/30 identical |
+| `cc5850c` | title statistics | 30/30 identical; streaming sweep |
+| `3b0a517` | camera | 30/30 identical on both renderers, same chunks drawn |
+| `b1d1a64` | records | — |
+
+Found on the way: the game's workaround for EasyGL buffer writes without a
+current context (its `bugs.md`) is fixed in CNA `00b9c9898`, contained in
+the baseline; the workaround stays until the game's pooled-buffer
+regression walk is repeated without it.
+
 ## Order of work
 
 Each pilot: input and fixed-step first (no rendering change), then camera,

@@ -780,6 +780,36 @@ draws them) and easy-3d's version constants. One gap was found and closed:
 `FollowCamera::SetPosition`/`ApplyTo` became
 `FollowCameraController::SetPosition`/`Apply` (equivalence probe extended).
 
+### PILOT-005 — Adopt the engine in backrooms-simulator and school-simulator `[~]`
+
+A read-only survey of the seven other simulators (2026-10-21) found two
+good candidates: backrooms-simulator (one unlit BasicEffect pass over
+streamed chunks, small) and school-simulator (a streamed interior world,
+dormant since 2026-10-15); island, museum, house, room and train were not
+recommended (museum is CNA's coverage instrument, island and house are
+active or bound to XNA-only rules, room's renderer needs CNA extensions
+throughout, train's renderer is hand-ordered custom passes). The owner
+allowed both migrations on 2026-10-21.
+
+Acceptance:
+
+- each game builds against the engine's strict modules and a static CNA on
+  a branch `engine-adoption`, one revertible commit per step;
+- every step is checked against deterministic captures of the step before
+  it (a capture mode is added first where the game has none) and the
+  game's own suites;
+- what the engine lacks for them is added to the engine only when a step
+  needs it, with tests, and listed in `CHANGELOG.md`.
+
+Progress (2026-10-21): backrooms-simulator runs on the engine on its branch
+`engine-adoption` (worktree `libcnalab/backrooms-simulator-engine`, not
+pushed): deterministic captures, build, capture writing, chunk drawing
+through `ForwardRenderer`, keys as actions, title statistics, camera — 30
+views byte-identical after every step on llvmpipe and on the GPU, its
+controls tool passes (`docs/pilots/migration.md`, "backrooms-simulator").
+The engine gained borrowed non-indexed meshes (`GpuMesh::Borrow` of a plain
+vertex list) for it.
+
 ## Phase 6 — release readiness
 
 Progress: facilities validated by both pilots are marked `pilot-validated`

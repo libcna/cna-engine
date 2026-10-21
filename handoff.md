@@ -22,8 +22,11 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
   branches** to adopt the engine (one revertible commit per step of
   `docs/pilots/migration.md`; the branches were pushed at the owner's
   request on 2026-10-20). A second exception the same day: galaxy-eggbert
-  moves from easy-3d to the engine on a new branch (PILOT-004; branch
-  `engine-adoption`, not pushed). Defects found elsewhere are
+  moves from easy-3d to the engine on a new branch (PILOT-004; merged and
+  pushed at the owner's request). On 2026-10-21 the owner allowed the same
+  for backrooms-simulator and school-simulator (PILOT-005; branches
+  `engine-adoption`, not pushed); island, museum, house, room and train were
+  only surveyed and stay untouched. Defects found elsewhere are
   written to `upstream-issues.md` (UP-001 … UP-015 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
 - Commit regularly on branch `develop`; do not push unless asked.
@@ -125,8 +128,13 @@ Done (see `plan.md` for per-task results):
    PILOT-004: galaxy-eggbert runs on the engine instead of easy-3d on its
    branch `engine-adoption` (worktree `openeggbert/galaxy-eggbert-engine`,
    builds `build/` = `OPENGLES3`, `build-probe/` = `OPENGL33`; eight
-   commits, not pushed). Every step left its suite green and its captures
-   byte-identical. Open: the owner's merge and push, and archiving easy-3d.
+   commits; merged and pushed by the owner). Every step left its suite green
+   and its captures byte-identical. Open: archiving easy-3d.
+   PILOT-005: backrooms-simulator runs on the engine on its branch
+   `engine-adoption` (worktree `libcnalab/backrooms-simulator-engine`, build
+   `build/` = Release `OPENGLES3` against the baseline clones and easy-gl
+   `v0.1.1`; eight commits, not pushed; 30 captures byte-identical after
+   every step, see `docs/pilots/migration.md`). school-simulator is next.
 2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)
    is recorded but not enforced until it is measured on this machine in a
    Release build when the machine is idle (`docs/pilots/performance-budgets.md`).
