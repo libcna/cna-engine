@@ -145,6 +145,12 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   (`-Wunused-private-field`), which failed the engine's `-Werror` build with
   Clang (Emscripten, Android NDK, macOS).
 
+- `Graphics/ScreenCapture.hpp` (no API change): Color-format back buffers
+  and render targets are read and written as bytes, and turned into `Color`s
+  only for `keepPixels`. Reason: CNA's `Color` is four times the size of its
+  four bytes; train-simulator keeps screenshot memory bounded for its
+  automated captures.
+
 ### Other API additions (experimental headers)
 
 - `Graphics/TextureAtlas.hpp`: `TextureAtlas`, `AtlasRect`, `UvRect` (named
