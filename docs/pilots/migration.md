@@ -253,6 +253,60 @@ current context (its `bugs.md`) is fixed in CNA `00b9c9898`, contained in
 the baseline; the workaround stays until the game's pooled-buffer
 regression walk is repeated without it.
 
+## school-simulator (strict; PILOT-005)
+
+school-simulator (`libcnalab/school-simulator`) streams the rooms of a
+six-level school around the player (portal culling, corridor groups) as
+static vertex-coloured batches drawn through one unlit BasicEffect, with a
+facade built once, glass blended with straight alpha, CCTV views rendered to
+targets, and people, sky, weather and screens as further passes. Its
+geometry is wound counter-clockwise (it culls clockwise). The owner allowed
+the migration on 2026-10-21.
+
+| Step | Game code replaced | Engine facility | Known differences |
+| --- | --- | --- | --- |
+| deterministic pictures | — (fixed-step runs: room builds by count, light fades by the step) | — | none in normal runs; `tools/determinism.sh` now fails on different pictures |
+| build | shared CNA | `CnaEngine::Core`, `CnaEngine::Graphics`; CNA static (UP-006) | none |
+| screenshots | back-buffer read and the game's uncompressed PNG writer | `CaptureBackBuffer` with `CaptureOptions::opaque` | the files are compressed (a third of the size); same pixels |
+| camera | `CreateLookAt`, `CreatePerspectiveFieldOfView` in `FirstPersonCamera` and the CCTV views | `Camera::SetLookAt`, `SetPerspective` | none |
+| meshes | — (the draw call) | `GpuMesh::Borrow` of `StaticMesh`/`LitMesh` buffers | none |
+| world geometry | `WorldRenderer::DrawBatches` and its state changes | `RenderItem`, `RenderQueue`, `ForwardRenderer`, stock binder, `Material::frontFace`, `Material::straightAlpha`; doors, cabs and lamps in the `AfterOpaque` pass | none; the game's culling and order are kept (`RenderItem::order`) |
+| system keys | `InputState::Pressed` for 30 controls and "use" | `ActionMap` | a press counts per action (holding H and pressing F1 toggles help once) |
+| texture cache | name-to-texture map with a failure marker | `AssetRegistry` (loader, fallback, `GetOrCreate` for run-time textures) | none |
+
+Stays in the game: walking and looking (`PlayerController` reads analog
+sticks and CNA's relative mouse motion), people, sky, weather, particles,
+screens and room demonstrations, audio, and the F3 frame rate (a
+half-second block average also shown on in-game monitors).
+
+### school-simulator adoption (branch `engine-adoption`)
+
+Worktree `libcnalab/school-simulator-engine`, branched from `main` at
+`bfb5613`; not pushed. Release build (two jobs, the project's limit)
+against `~/deps/cna-baseline` (`900d0db3b`), `~/deps/sharp-runtime-baseline`
+and easy-gl `v0.1.1`. The check after every step: the five CTest entries
+and 19 fixed-step captures (the game's 17 tour places without the HUD, the
+entrance with it, the lobby at night in rain) under Xvfb (llvmpipe) and on
+the GPU (Radeon 780M), compared with the step before — byte for byte, or
+pixel for pixel across the change of PNG writer. Before the first step one
+of the 19 differed between two runs (a night view with lights fading in);
+after it two runs on each renderer were identical.
+
+| Commit | Step | Result |
+| --- | --- | --- |
+| `52ca272` | deterministic pictures | 19 views twice, identical, on both renderers |
+| `e85071c` | build | 5/5; 19/19 identical on both renderers |
+| `405a90e` | screenshots | 19/19 pixel-identical (RGBA) on both renderers |
+| `78b6d96` | camera | 19/19 identical on both renderers |
+| `bb9e30c` | meshes | 19/19 identical on both renderers |
+| `cf588c6` | world geometry | 19/19 identical on both renderers; every statistics line unchanged but memory |
+| `a48bd82` | system keys | X11 input (F3, M, F12, Tab, F1, Escape, Q) does what it did; 19/19 identical |
+| `3a1beef` | texture cache | 19/19 identical on both renderers; a removed texture shows the checker, reported once |
+| `21ab2f0` | records | `tools/check_all.sh` (unit and simulation tests, validation, simulated days, the 21-stop tour): all pass |
+
+Not checked: the browser build (`tools/build_web.sh`), which now also
+compiles the engine.
+
 ## Order of work
 
 Each pilot: input and fixed-step first (no rendering change), then camera,

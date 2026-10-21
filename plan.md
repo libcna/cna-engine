@@ -810,6 +810,16 @@ controls tool passes (`docs/pilots/migration.md`, "backrooms-simulator").
 The engine gained borrowed non-indexed meshes (`GpuMesh::Borrow` of a plain
 vertex list) for it.
 
+Result (2026-10-21): school-simulator runs on the engine on its branch
+`engine-adoption` (worktree `libcnalab/school-simulator-engine`, not
+pushed): deterministic fixed-step pictures, build, screenshots, camera, mesh
+views, the world geometry through `ForwardRenderer`, system keys as actions,
+the texture cache as an `AssetRegistry` — 19 views identical after every
+step on llvmpipe and on the GPU, its whole check battery green. The engine
+gained `CaptureOptions::opaque`, `Material::frontFace` and
+`Material::straightAlpha` for it. Open for both: the owner's decision to
+merge and push the branches.
+
 ## Phase 6 — release readiness
 
 Progress: facilities validated by both pilots are marked `pilot-validated`

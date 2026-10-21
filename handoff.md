@@ -134,7 +134,10 @@ Done (see `plan.md` for per-task results):
    `engine-adoption` (worktree `libcnalab/backrooms-simulator-engine`, build
    `build/` = Release `OPENGLES3` against the baseline clones and easy-gl
    `v0.1.1`; eight commits, not pushed; 30 captures byte-identical after
-   every step, see `docs/pilots/migration.md`). school-simulator is next.
+   every step, see `docs/pilots/migration.md`). school-simulator likewise
+   (worktree `libcnalab/school-simulator-engine`, build `build/` = Release
+   `OPENGLES3`, two jobs; nine commits, not pushed; 19 captures identical
+   after every step). Open: the owner's merge and push of both.
 2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)
    is recorded but not enforced until it is measured on this machine in a
    Release build when the machine is idle (`docs/pilots/performance-budgets.md`).
