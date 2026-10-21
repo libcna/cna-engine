@@ -11,7 +11,8 @@ Both pilots use the engine in their own code since 2026-10-20: their
 street-simulator's `develop` (`docs/pilots/migration.md`). "car-simulator
 branch" and "Street branch" in the Consumers column mark that use. "backrooms
 branch" and "school branch" mark backrooms-simulator's and
-school-simulator's `engine-adoption` branches (PILOT-005, not merged). The nine
+school-simulator's `engine-adoption` branches (PILOT-005, merged into both
+games' `main` on 2026-10-21, not pushed). The nine
 facilities both pilots use — camera (`SetMatrices`), GPU mesh (`Borrow`),
 render statistics, materials, render queue, visibility and LOD, forward
 renderer, quality schema and asset registry — are `stable`; their headers are
