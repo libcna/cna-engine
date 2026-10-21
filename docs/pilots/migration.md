@@ -228,7 +228,7 @@ while CNA's relative mode reports motion).
 ### backrooms-simulator adoption (branch `engine-adoption`)
 
 Worktree `libcnalab/backrooms-simulator-engine`, branched from `main` at
-`71d9e9e`; fast-forwarded into `main` on 2026-10-21, not pushed. Release build against `~/deps/cna-baseline`
+`71d9e9e`; fast-forwarded into `main` and pushed on 2026-10-21. Release build against `~/deps/cna-baseline`
 (`900d0db3b`), `~/deps/sharp-runtime-baseline` and easy-gl `v0.1.1`. The
 check after every step: the three CTest suites and 30 captures (12 standard
 views and the same views looking back and down, five creature views at
@@ -282,7 +282,7 @@ half-second block average also shown on in-game monitors).
 ### school-simulator adoption (branch `engine-adoption`)
 
 Worktree `libcnalab/school-simulator-engine`, branched from `main` at
-`bfb5613`; fast-forwarded into `main` on 2026-10-21, not pushed. Release build (two jobs, the project's limit)
+`bfb5613`; fast-forwarded into `main` and pushed on 2026-10-21. Release build (two jobs, the project's limit)
 against `~/deps/cna-baseline` (`900d0db3b`), `~/deps/sharp-runtime-baseline`
 and easy-gl `v0.1.1`. The check after every step: the five CTest entries
 and 19 fixed-step captures (the game's 17 tour places without the HUD, the

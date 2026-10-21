@@ -25,8 +25,8 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
   moves from easy-3d to the engine on a new branch (PILOT-004; merged and
   pushed at the owner's request). On 2026-10-21 the owner allowed the same
   for backrooms-simulator and school-simulator (PILOT-005; branches
-  `engine-adoption`, merged into both games' `main` at the owner's request,
-  not pushed); island, museum, house, room and train were
+  `engine-adoption`, merged into both games' `main` and pushed at the
+  owner's request); island, museum, house, room and train were
   only surveyed and stay untouched. Defects found elsewhere are
   written to `upstream-issues.md` (UP-001 … UP-015 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
@@ -134,15 +134,16 @@ Done (see `plan.md` for per-task results):
    PILOT-005: backrooms-simulator runs on the engine on its branch
    `engine-adoption` (worktree `libcnalab/backrooms-simulator-engine`, build
    `build/` = Release `OPENGLES3` against the baseline clones and easy-gl
-   `v0.1.1`; eight commits, not pushed; 30 captures byte-identical after
+   `v0.1.1`; eight commits; 30 captures byte-identical after
    every step, see `docs/pilots/migration.md`). school-simulator likewise
    (worktree `libcnalab/school-simulator-engine`, build `build/` = Release
-   `OPENGLES3`, two jobs; nine commits, not pushed; 19 captures identical
+   `OPENGLES3`, two jobs; nine commits; 19 captures identical
    after every step). Both branches were fast-forwarded into the games'
-   `main` on 2026-10-21 at the owner's request; nothing is pushed. Open: the
-   push, which needs this repository's `develop` pushed first (the games
-   use `GpuMesh::Borrow` of plain lists, `CaptureOptions::opaque`,
-   `Material::frontFace` and `Material::straightAlpha`). There is no
+   `main` on 2026-10-21 and pushed at the owner's request. Open: pushing
+   this repository's `develop`; until then the games' `origin/main` does
+   not build from GitHub alone (they use `GpuMesh::Borrow` of plain lists,
+   `CaptureOptions::opaque`, `Material::frontFace` and
+   `Material::straightAlpha`). There is no
    `libcnalab/cna-engine` sibling, so builds in the games' main worktrees
    pass `-DCNA_ENGINE_ROOT=/rv/data/development/github.com/libcna/cna-engine`.
 2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)

@@ -818,8 +818,8 @@ the texture cache as an `AssetRegistry` — 19 views identical after every
 step on llvmpipe and on the GPU, its whole check battery green. The engine
 gained `CaptureOptions::opaque`, `Material::frontFace` and
 `Material::straightAlpha` for it. Both branches were fast-forwarded into
-the games' `main` at the owner's request the same day. Open: pushing them,
-after this repository's `develop`, which they need.
+the games' `main` and pushed at the owner's request the same day. Open:
+pushing this repository's `develop`, which they need.
 
 ## Phase 6 — release readiness
 
