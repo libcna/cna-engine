@@ -254,3 +254,39 @@ gtest_discover_tests(cna_engine_image_equivalence_tests
     TEST_PREFIX "cna_engine.pilot."
     DISCOVERY_MODE PRE_TEST
     PROPERTIES LABELS "pilot")
+
+# Solar geometry (Core/SunPosition.hpp) against car-, room- and house-simulator,
+# compiled read-only; within a tolerance (single precision, an ephemeris).
+set(CNA_ENGINE_HOUSE_SIMULATOR_DIR "${PROJECT_SOURCE_DIR}/../../libcnalab/house-simulator"
+    CACHE PATH "house-simulator checkout used by the sun probe (read-only)")
+add_executable(cna_engine_sun_equivalence_tests SunEquivalenceTests.cpp)
+target_link_libraries(cna_engine_sun_equivalence_tests PRIVATE cna_engine_core GTest::gtest_main)
+if(EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/LightingRig.cpp")
+    add_library(cna_engine_pilot_carsim_lighting STATIC
+        "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/src/Render/LightingRig.cpp")
+    target_include_directories(cna_engine_pilot_carsim_lighting PUBLIC "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/include")
+    target_link_libraries(cna_engine_pilot_carsim_lighting PUBLIC CNA::Math CNA::GraphicsCore)
+    target_link_libraries(cna_engine_sun_equivalence_tests PRIVATE cna_engine_pilot_carsim_lighting)
+    target_compile_definitions(cna_engine_sun_equivalence_tests PRIVATE CNA_ENGINE_PROBE_CAR_SIMULATOR=1)
+endif()
+if(EXISTS "${CNA_ENGINE_ROOM_SIMULATOR_DIR}/src/Sim/TimeOfDay.cpp")
+    add_library(cna_engine_pilot_room_sun STATIC "${CNA_ENGINE_ROOM_SIMULATOR_DIR}/src/Sim/TimeOfDay.cpp")
+    target_include_directories(cna_engine_pilot_room_sun PUBLIC "${CNA_ENGINE_ROOM_SIMULATOR_DIR}/include")
+    target_link_libraries(cna_engine_pilot_room_sun PUBLIC CNA::Math)
+    target_link_libraries(cna_engine_sun_equivalence_tests PRIVATE cna_engine_pilot_room_sun)
+    target_compile_definitions(cna_engine_sun_equivalence_tests PRIVATE CNA_ENGINE_PROBE_ROOM_SIMULATOR=1)
+endif()
+if(EXISTS "${CNA_ENGINE_HOUSE_SIMULATOR_DIR}/src/environment/SunModel.cpp")
+    add_library(cna_engine_pilot_house_sun STATIC
+        "${CNA_ENGINE_HOUSE_SIMULATOR_DIR}/src/environment/SunModel.cpp"
+        "${CNA_ENGINE_HOUSE_SIMULATOR_DIR}/src/environment/SimClock.cpp"
+        "${CNA_ENGINE_HOUSE_SIMULATOR_DIR}/src/environment/Season.cpp"
+        "${CNA_ENGINE_HOUSE_SIMULATOR_DIR}/src/environment/Temperature.cpp")
+    target_include_directories(cna_engine_pilot_house_sun PUBLIC "${CNA_ENGINE_HOUSE_SIMULATOR_DIR}/include")
+    target_link_libraries(cna_engine_sun_equivalence_tests PRIVATE cna_engine_pilot_house_sun)
+    target_compile_definitions(cna_engine_sun_equivalence_tests PRIVATE CNA_ENGINE_PROBE_HOUSE_SIMULATOR=1)
+endif()
+gtest_discover_tests(cna_engine_sun_equivalence_tests
+    TEST_PREFIX "cna_engine.pilot."
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES LABELS "pilot")

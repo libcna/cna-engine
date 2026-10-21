@@ -399,3 +399,28 @@ Suggestion: forward-declare `struct SizeF;`.
 Engine handling: the engine treats CNA's and cna-extended's headers as
 system headers for its own targets (`cna_engine_link_external`), so their
 warnings no longer fail the engine's `-Werror` build.
+
+## UP-016 — car-simulator's sun azimuth is mirrored between 00:00 and 01:00
+
+- Repository: `libcnalab/car-simulator` (`main`, `9bbfefc`),
+  `simulator/src/Render/LightingRig.cpp` (`LightingRig::SetTimeOfDay`)
+- Status: open
+- Found: 2026-10-21, comparing `CnaEngine::SunAnglesFor` with the rig
+
+The hour angle is `(hours - 13) * 15` degrees and is not wrapped, so before
+01:00 it is below -180 degrees; the azimuth is `acos(...)` mirrored to the
+west only when the hour angle is positive, so for those hours it lands on the
+wrong side of north. At 49.8 degrees north and a declination of 20 the
+azimuth runs 338 degrees at 23:30, 345 at 23:59, then 15 at 00:01 and back
+to 0 at 01:00, instead of on through 352 to 360. The sun is below the
+horizon then, but the night key light (the moon) is derived from the same
+direction, so the scene's light turns by about 30 degrees at midnight and
+back over the following hour.
+
+Suggestion: wrap the hour angle into [-180, 180) before the azimuth, or use
+the two-argument form `atan2(-cos d sin H, cos l sin d - sin l cos d cos H)`,
+which needs no branch.
+
+Engine handling: `CnaEngine::SunAnglesFor` uses the two-argument form; the
+sun probe (`tests/pilots/SunEquivalenceTests.cpp`) checks the rig against it
+outside that hour and the mirror inside it.

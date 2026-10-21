@@ -184,6 +184,11 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   `Hash2/3`, `Random2/3`, `Value2`, `Gradient2`, `Fbm`, `Ridged`, `Worley2`
   with F2, `SmoothStep` in either direction) — street-simulator's
   `CnaStreet::Noise`, matched bit for bit by the pilot probe.
+- `Core/SunPosition.hpp`: `SunAngles`, `SolarDeclinationDegrees` (Cooper),
+  `HourAngleDegrees`, `SunAnglesFor`, `SunAnglesAt` and `DirectionToSun`
+  (north along -Z) — the solar geometry car-, room- and house-simulator each
+  compute; the sun probe agrees with all three (house within 1e-9 degrees
+  given its ephemeris's declination and hour angle) and found UP-016.
 
 - `Graphics/GpuMemory.hpp`: `GpuMemoryEstimate` (meshes, textures, materials,
   queues; shared resources once) and `TextureBytes`; `DiagnosticsSources::memoryEstimate`.
