@@ -474,6 +474,62 @@ namespace CnaEngine::Graphics
         EXPECT_TRUE(Near(At(pixels, Size / 2 - 6, Size / 2), 255, 0, 255)) << "red + blue";
     }
 
+    TEST_F(Fixture, SequencedItemsDrawInSubmissionOrderWithTheirMaterialsStates)
+    {
+        // Red, then half-green glass in front of it, then blue between the two:
+        // the glass writes no depth, so blue drawn after it covers it.
+        class RecordingBinder final : public IMaterialBinder
+        {
+        public:
+            explicit RecordingBinder(std::shared_ptr<StockMaterialBinder> stock) : stock_(std::move(stock)) {}
+            void BeginFrame(GraphicsDevice& device, const Camera& camera, const ForwardLighting& lighting) override
+            {
+                stock_->BeginFrame(device, camera, lighting);
+            }
+            bool Apply(GraphicsDevice& device, const RenderItem& item, RenderBucket bucket, const Camera& camera,
+                       const FallbackSink& fallback) override
+            {
+                buckets.push_back(bucket);
+                return stock_->Apply(device, item, bucket, camera, fallback);
+            }
+            std::vector<RenderBucket> buckets;
+
+        private:
+            std::shared_ptr<StockMaterialBinder> stock_;
+        };
+
+        const Material red = Unlit("red", Vector3(1.0f, 0.0f, 0.0f));
+        Material glass = Unlit("glass", Vector3(0.0f, 1.0f, 0.0f));
+        glass.blend = BlendMode::AlphaBlend;
+        glass.alpha = 0.5f;
+        const Material blue = Unlit("blue", Vector3(0.0f, 0.0f, 1.0f));
+        auto binder = std::make_shared<RecordingBinder>(renderer.StockBinder());
+        renderer.SetMaterialBinder(binder);
+        const auto submit = [&](RenderQueue& queue, std::optional<RenderBucket> bucket) {
+            queue.Submit(Item(red, 0.0f), bucket);
+            queue.Submit(Item(glass, 1.0f, 0.5f), bucket);
+            queue.Submit(Item(blue, 0.5f, 0.25f), bucket);
+        };
+
+        RenderQueue sequenced;
+        submit(sequenced, RenderBucket::Sequenced);
+        device.setBlendStateProperty(BlendState::Additive);
+        const auto pixels = Draw(sequenced);
+        EXPECT_TRUE(Near(At(pixels, Size / 2, Size / 2), 0, 0, 255)) << "blue over the glass";
+        EXPECT_TRUE(Near(At(pixels, Size / 2 - 6, Size / 2), 128, 128, 0, 4)) << "glass over red";
+        EXPECT_EQ(binder->buckets, (std::vector<RenderBucket>{RenderBucket::Opaque, RenderBucket::Transparent,
+                                                              RenderBucket::Opaque}))
+            << "the binder sees each material's bucket";
+        EXPECT_EQ(device.getBlendStateProperty().getColorDestinationBlendProperty(),
+                  BlendState::Additive.getColorDestinationBlendProperty())
+            << "restored";
+
+        RenderQueue bucketed;
+        submit(bucketed, std::nullopt);
+        EXPECT_TRUE(Near(At(Draw(bucketed), Size / 2, Size / 2), 0, 128, 128, 4))
+            << "by buckets the glass comes last";
+    }
+
     TEST_F(Fixture, CounterClockwiseMaterialsCullTheOtherFaces)
     {
         // The fixture's quad faces the camera with XNA's clockwise winding.

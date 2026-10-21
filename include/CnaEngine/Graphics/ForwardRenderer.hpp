@@ -33,7 +33,7 @@ namespace CnaEngine::Graphics
     /// IMaterialBinder — by default the StockMaterialBinder over XNA's stock
     /// effects, so strict-XNA games can use it as is.
     ///
-    /// Pass order: [BeforeOpaque] Opaque, AlphaTested [AfterOpaque]
+    /// Pass order: [BeforeOpaque] Sequenced, Opaque, AlphaTested [AfterOpaque]
     /// Transparent [AfterTransparent] Overlay [AfterOverlay]. Custom passes run
     /// in insertion order at their point and may draw anything with CNA
     /// directly.
@@ -42,7 +42,9 @@ namespace CnaEngine::Graphics
     /// and rasterizer states it needs (opaque/alpha-tested: Opaque blend,
     /// Default depth, counter-clockwise culling; transparent and overlay: the
     /// blend state the binder chooses per item (BlendStateFor), DepthRead for
-    /// transparent, no depth for overlay); double-sided materials disable
+    /// transparent, no depth for overlay). A sequenced item gets the states of
+    /// its material's bucket, set item by item, and the binder is told that
+    /// bucket rather than Sequenced. Double-sided materials disable
     /// culling, a mirrored camera (Camera::SetMirrored) culls clockwise
     /// instead, and biased materials get a biased rasterizer state. Binders set
     /// the sampler states of the texture slots they use from the material.

@@ -21,6 +21,12 @@ namespace CnaEngine::Graphics
     /// Draw order groups, rendered in this order.
     enum class RenderBucket : std::uint8_t
     {
+        /// Hand-ordered drawing, for scenes whose look depends on their draw
+        /// order (shadows, lettering and glows laid between opaque layers
+        /// without writing depth): by `order`, then submission order, each
+        /// item with the states of its material's bucket (BucketFor). Items
+        /// enter it only when submitted to it.
+        Sequenced,
         Opaque,
         AlphaTested,
         Transparent,
@@ -79,6 +85,7 @@ namespace CnaEngine::Graphics
     /// Per-frame list of render items grouped into buckets.
     ///
     /// Sorting contract (Sort()):
+    ///  - Sequenced: by `order`, then submission order;
     ///  - Opaque and AlphaTested: by `order`, then by material (in the order
     ///    materials were first submitted, so state changes are grouped and the
     ///    result is identical between runs), then front to back;

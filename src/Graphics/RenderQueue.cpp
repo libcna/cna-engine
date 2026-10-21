@@ -95,6 +95,7 @@ namespace CnaEngine::Graphics
                         return a.sequence < c.sequence;
                     });
                     break;
+                case RenderBucket::Sequenced:
                 case RenderBucket::Overlay:
                 case RenderBucket::Count:
                     std::sort(bucket.begin(), bucket.end(), [](const Entry& a, const Entry& c) {

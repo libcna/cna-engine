@@ -133,7 +133,9 @@ namespace CnaEngine::Enhanced
             effect.setIorEXTProperty(material.ior);
             effect.setSpecularFactorEXTProperty(material.specularFactor);
 
-            switch (bucket) {
+            // The renderer passes a sequenced item's material bucket; a direct caller may not.
+            switch (bucket == Graphics::RenderBucket::Sequenced ? Graphics::BucketFor(material) : bucket) {
+                case Graphics::RenderBucket::Sequenced:
                 case Graphics::RenderBucket::Opaque: effect.setAlphaModeEXTProperty(AlphaModeEXT::Opaque); break;
                 case Graphics::RenderBucket::AlphaTested: effect.setAlphaModeEXTProperty(AlphaModeEXT::Mask); break;
                 case Graphics::RenderBucket::Transparent:

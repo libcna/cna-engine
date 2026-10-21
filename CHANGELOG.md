@@ -145,6 +145,16 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   (`-Wunused-private-field`), which failed the engine's `-Werror` build with
   Clang (Emscripten, Android NDK, macOS).
 
+- `Graphics/RenderQueue.hpp`, additive but renumbering: `RenderBucket::Sequenced`,
+  the first bucket — items submitted to it explicitly draw by `order`, then
+  submission order, each with the states of its material's bucket (opaque
+  and alpha-tested: Opaque blend, depth writes; blended: the binder's blend
+  state, DepthRead), and binders are told that bucket.
+  `Graphics/ForwardRenderer.hpp`: it draws after the BeforeOpaque passes.
+  The numeric values of the other buckets move up by one. Reason:
+  train-simulator's scene lays shadows, lettering and glows between opaque
+  layers; its look depends on that order, which the sorted buckets change.
+
 - `Graphics/ScreenCapture.hpp` (no API change): Color-format back buffers
   and render targets are read and written as bytes, and turned into `Color`s
   only for `keepPixels`. Reason: CNA's `Color` is four times the size of its

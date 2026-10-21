@@ -107,6 +107,7 @@ namespace CnaEngine::Graphics
         binder_->BeginFrame(device_, camera, lighting_);
 
         RunPasses(PassPoint::BeforeOpaque, camera, stats);
+        DrawBucket(queue.Items(RenderBucket::Sequenced), RenderBucket::Sequenced, camera, stats);
         DrawBucket(queue.Items(RenderBucket::Opaque), RenderBucket::Opaque, camera, stats);
         DrawBucket(queue.Items(RenderBucket::AlphaTested), RenderBucket::AlphaTested, camera, stats);
         RunPasses(PassPoint::AfterOpaque, camera, stats);
@@ -147,7 +148,14 @@ namespace CnaEngine::Graphics
     void ForwardRenderer::DrawBucket(const std::span<const RenderItem> items, const RenderBucket bucket,
                                      const Camera& camera, RenderStatistics& statistics)
     {
+        if (bucket == RenderBucket::Sequenced && items.empty()) {
+            // Leave the device as the BeforeOpaque passes left it.
+            return;
+        }
         switch (bucket) {
+            case RenderBucket::Sequenced:
+                // Set item by item below, from each material's bucket.
+                break;
             case RenderBucket::Opaque:
             case RenderBucket::AlphaTested:
                 device_.setBlendStateProperty(BlendState::Opaque);
@@ -166,13 +174,20 @@ namespace CnaEngine::Graphics
         device_.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
         for (const auto& item : items) {
             const Material& material = *item.material;
+            // A sequenced item draws as it would in its material's bucket.
+            const RenderBucket drawnAs = bucket == RenderBucket::Sequenced ? BucketFor(material) : bucket;
             device_.setRasterizerStateProperty(RasterizerFor(material, camera.Mirrored()));
-            if (bucket == RenderBucket::Transparent || bucket == RenderBucket::Overlay) {
+            if (bucket == RenderBucket::Sequenced) {
+                const bool blended = drawnAs == RenderBucket::Transparent;
+                device_.setBlendStateProperty(blended ? binder_->BlendStateFor(item) : BlendState::Opaque);
+                device_.setDepthStencilStateProperty(blended ? DepthStencilState::DepthRead
+                                                             : DepthStencilState::Default);
+            } else if (bucket == RenderBucket::Transparent || bucket == RenderBucket::Overlay) {
                 // What the binder's effect writes decides the blend (premultiplied or straight).
                 device_.setBlendStateProperty(binder_->BlendStateFor(item));
             }
             if (item.instances == nullptr) {
-                if (binder_->Apply(device_, item, bucket, camera, sink_)) {
+                if (binder_->Apply(device_, item, drawnAs, camera, sink_)) {
                     item.mesh->Draw(device_, &statistics);
                 }
                 continue;
@@ -190,7 +205,7 @@ namespace CnaEngine::Graphics
                 && item.mesh->Indexed()) {
                 // One draw: the effect's World is the shared base, the
                 // instance stream supplies each instance's own transform.
-                if (binder_->Apply(device_, item, bucket, camera, sink_)) {
+                if (binder_->Apply(device_, item, drawnAs, camera, sink_)) {
                     set.DrawHardware(device_, &statistics);
                 }
                 continue;
@@ -200,7 +215,7 @@ namespace CnaEngine::Graphics
             single.instances = nullptr;
             for (const Microsoft::Xna::Framework::Matrix& instance : set.VisibleWorlds()) {
                 single.world = instance * item.world;
-                if (binder_->Apply(device_, single, bucket, camera, sink_)) {
+                if (binder_->Apply(device_, single, drawnAs, camera, sink_)) {
                     item.mesh->Draw(device_, &statistics);
                 }
             }

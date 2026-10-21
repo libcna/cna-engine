@@ -109,4 +109,20 @@ namespace CnaEngine::Graphics
         queue.Sort(Vector3::Zero);
         EXPECT_EQ(Depths(queue.Items(RenderBucket::Overlay)), (std::vector<float>{-5.0f, -9.0f, -1.0f}));
     }
+
+    TEST(RenderQueueTests, SequencedKeepsSubmissionOrderAcrossMaterials)
+    {
+        Material opaque;
+        Material glass;
+        glass.blend = BlendMode::AlphaBlend;
+        RenderQueue queue;
+        queue.Submit(Item(opaque, -9.0f), RenderBucket::Sequenced);
+        queue.Submit(Item(glass, -1.0f), RenderBucket::Sequenced);
+        queue.Submit(Item(opaque, -5.0f), RenderBucket::Sequenced);
+        queue.Submit(Item(glass, -7.0f, -1), RenderBucket::Sequenced); // explicit order wins
+        queue.Submit(Item(opaque, -3.0f));
+        queue.Sort(Vector3::Zero);
+        EXPECT_EQ(Depths(queue.Items(RenderBucket::Sequenced)), (std::vector<float>{-7.0f, -9.0f, -1.0f, -5.0f}));
+        EXPECT_EQ(queue.Items(RenderBucket::Opaque).size(), 1u) << "only explicit submissions are sequenced";
+    }
 }
