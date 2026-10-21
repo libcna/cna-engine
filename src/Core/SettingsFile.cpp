@@ -68,7 +68,7 @@ namespace CnaEngine
                     {lineNumber, separator == std::string::npos ? "expected key = value" : "empty key"});
                 continue;
             }
-            settings.Set(key, Trim(std::string_view(line).substr(separator + 1)));
+            settings.Set(key, Trim(std::string_view(line).substr(separator + 1)), lineNumber);
         }
         return settings;
     }
@@ -105,18 +105,32 @@ namespace CnaEngine
         return std::nullopt;
     }
 
+    int SettingsFile::Line(const std::string_view key) const
+    {
+        for (std::size_t index = 0; index < entries_.size(); ++index) {
+            if (entries_[index].first == key) {
+                return lines_[index];
+            }
+        }
+        return 0;
+    }
+
     float SettingsFile::GetFloat(const std::string_view key, const float fallback, const float minimum,
                                  const float maximum) const
     {
-        const auto text = Get(key);
-        const auto value = text ? Number(*text) : std::nullopt;
+        const auto value = TryGetFloat(key);
         return value ? std::clamp(*value, minimum, maximum) : fallback;
+    }
+
+    std::optional<float> SettingsFile::TryGetFloat(const std::string_view key) const
+    {
+        const auto text = Get(key);
+        return text ? Number(*text) : std::nullopt;
     }
 
     int SettingsFile::GetInt(const std::string_view key, const int fallback, const int minimum, const int maximum) const
     {
-        const auto text = Get(key);
-        const auto value = text ? Number(*text) : std::nullopt;
+        const auto value = TryGetFloat(key);
         if (!value) {
             return fallback;
         }
@@ -151,13 +165,20 @@ namespace CnaEngine
 
     void SettingsFile::Set(const std::string_view key, std::string value)
     {
-        for (auto& [name, current] : entries_) {
-            if (name == key) {
-                current = std::move(value);
+        Set(key, std::move(value), 0);
+    }
+
+    void SettingsFile::Set(const std::string_view key, std::string value, const int line)
+    {
+        for (std::size_t index = 0; index < entries_.size(); ++index) {
+            if (entries_[index].first == key) {
+                entries_[index].second = std::move(value);
+                lines_[index] = line;
                 return;
             }
         }
         entries_.emplace_back(std::string(key), std::move(value));
+        lines_.push_back(line);
     }
 
     void SettingsFile::SetFloat(const std::string_view key, const float value, const int decimals)
@@ -179,7 +200,14 @@ namespace CnaEngine
 
     bool SettingsFile::Remove(const std::string_view key)
     {
-        return std::erase_if(entries_, [&](const auto& entry) { return entry.first == key; }) > 0;
+        for (std::size_t index = 0; index < entries_.size(); ++index) {
+            if (entries_[index].first == key) {
+                entries_.erase(entries_.begin() + static_cast<std::ptrdiff_t>(index));
+                lines_.erase(lines_.begin() + static_cast<std::ptrdiff_t>(index));
+                return true;
+            }
+        }
+        return false;
     }
 
     std::string SettingsFile::Serialize() const

@@ -44,9 +44,16 @@ namespace CnaEngine
         [[nodiscard]] const std::vector<std::pair<std::string, std::string>>& Entries() const noexcept { return entries_; }
         [[nodiscard]] bool Contains(std::string_view key) const;
         [[nodiscard]] std::optional<std::string> Get(std::string_view key) const;
+        /// The line the key's value was read from (the last one, for a key
+        /// given twice); 0 for a key set in code or missing. For diagnostics.
+        [[nodiscard]] int Line(std::string_view key) const;
 
         /// A decimal number (std::stof, the whole value), clamped.
         [[nodiscard]] float GetFloat(std::string_view key, float fallback, float minimum, float maximum) const;
+        /// The value as GetFloat reads it, unclamped; nothing when the key is
+        /// missing or its value is not a finite number -- for a file that
+        /// rejects what GetFloat would quietly replace with the fallback.
+        [[nodiscard]] std::optional<float> TryGetFloat(std::string_view key) const;
         /// A decimal number rounded to the nearest integer, clamped.
         [[nodiscard]] int GetInt(std::string_view key, int fallback, int minimum, int maximum) const;
         /// true/false, yes/no, on/off, or a number (true from 0.5 up).
@@ -71,7 +78,11 @@ namespace CnaEngine
         void Save(const std::filesystem::path& path) const;
 
     private:
+        void Set(std::string_view key, std::string value, int line);
+
         std::vector<std::pair<std::string, std::string>> entries_;
+        /// The line each entry was read from (0: set in code), parallel to entries_.
+        std::vector<int> lines_;
         std::vector<Problem> problems_;
         std::string header_;
     };

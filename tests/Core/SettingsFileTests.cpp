@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 #include <sstream>
 #include <string>
 
@@ -81,6 +82,9 @@ namespace CnaEngine
         EXPECT_EQ(settings.Problems()[0].line, 6);
         EXPECT_EQ(settings.Problems()[1].line, 7);
         EXPECT_FALSE(settings.Contains("broken line"));
+        EXPECT_EQ(settings.Line("volume"), 5) << "the line the value came from";
+        EXPECT_EQ(settings.Line("name"), 4);
+        EXPECT_EQ(settings.Line("missing"), 0);
     }
 
     TEST(SettingsFileTests, TypedReadsFallBackAndClamp)
@@ -102,6 +106,10 @@ namespace CnaEngine
         EXPECT_TRUE(settings.GetBool("one", false));
         EXPECT_FALSE(settings.GetBool("zero", true));
         EXPECT_TRUE(settings.GetBool("text", true)) << "neither a word nor a number";
+        EXPECT_EQ(settings.TryGetFloat("high"), 4.5f) << "unclamped";
+        EXPECT_EQ(settings.TryGetFloat("trailing"), std::nullopt) << "malformed, not the fallback";
+        EXPECT_EQ(settings.TryGetFloat("infinite"), std::nullopt);
+        EXPECT_EQ(settings.TryGetFloat("missing"), std::nullopt);
     }
 
     TEST(SettingsFileTests, WritesInOrderWithAHeader)
@@ -115,6 +123,7 @@ namespace CnaEngine
         settings.Set("name", "Lakehurst");
         EXPECT_TRUE(settings.Remove("name"));
         EXPECT_FALSE(settings.Remove("name"));
+        EXPECT_EQ(settings.Line("volume"), 0) << "set in code";
         EXPECT_EQ(settings.Serialize(), "# Preferences.\n# Edited by hand at your own risk.\n"
                                         "volume = 0.12\nquality = 2\ncaptions = 1\n");
         const SettingsFile back = SettingsFile::Parse(settings.Serialize());

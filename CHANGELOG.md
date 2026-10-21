@@ -191,6 +191,7 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   given its ephemeris's declination and hour angle) and found UP-016.
 - `Core/SettingsFile.hpp`: `SettingsFile` (`key = value` lines, `#`
   comments, problems by line, typed reads with a fallback and a range,
+  `TryGetFloat` and `Line` for a file that rejects bad values instead,
   ordered writes with a header, atomic `Save`) and `UserConfigPath` (XDG,
   `~/.config`, `%APPDATA%`) — train-simulator's preferences file; the
   settings probe reads its files as the same values and writes the same
