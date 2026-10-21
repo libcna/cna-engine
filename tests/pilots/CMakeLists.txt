@@ -290,3 +290,17 @@ gtest_discover_tests(cna_engine_sun_equivalence_tests
     TEST_PREFIX "cna_engine.pilot."
     DISCOVERY_MODE PRE_TEST
     PROPERTIES LABELS "pilot")
+
+# Settings files (Core/SettingsFile.hpp) against train-simulator's
+# Config::Settings, compiled read-only: same values read, same bytes written.
+if(EXISTS "${CNA_ENGINE_TRAIN_SIMULATOR_DIR}/src/config/Settings.cpp")
+    add_library(cna_engine_pilot_train_settings STATIC "${CNA_ENGINE_TRAIN_SIMULATOR_DIR}/src/config/Settings.cpp")
+    target_include_directories(cna_engine_pilot_train_settings PUBLIC "${CNA_ENGINE_TRAIN_SIMULATOR_DIR}/include")
+    add_executable(cna_engine_settings_equivalence_tests SettingsEquivalenceTests.cpp)
+    target_link_libraries(cna_engine_settings_equivalence_tests PRIVATE
+        cna_engine_core cna_engine_pilot_train_settings GTest::gtest_main)
+    gtest_discover_tests(cna_engine_settings_equivalence_tests
+        TEST_PREFIX "cna_engine.pilot."
+        DISCOVERY_MODE PRE_TEST
+        PROPERTIES LABELS "pilot")
+endif()

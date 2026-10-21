@@ -189,6 +189,13 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   (north along -Z) — the solar geometry car-, room- and house-simulator each
   compute; the sun probe agrees with all three (house within 1e-9 degrees
   given its ephemeris's declination and hour angle) and found UP-016.
+- `Core/SettingsFile.hpp`: `SettingsFile` (`key = value` lines, `#`
+  comments, problems by line, typed reads with a fallback and a range,
+  ordered writes with a header, atomic `Save`) and `UserConfigPath` (XDG,
+  `~/.config`, `%APPDATA%`) — train-simulator's preferences file; the
+  settings probe reads its files as the same values and writes the same
+  bytes. It also reads the texts `ActionMap::SaveBindings` and
+  `QualitySchema::SaveSelection` write.
 
 - `Graphics/GpuMemory.hpp`: `GpuMemoryEstimate` (meshes, textures, materials,
   queues; shared resources once) and `TextureBytes`; `DiagnosticsSources::memoryEstimate`.

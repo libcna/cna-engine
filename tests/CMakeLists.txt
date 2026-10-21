@@ -24,6 +24,7 @@ add_executable(cna_engine_tests
     Core/FixedStepClockTests.cpp
     Core/NoiseTests.cpp
     Core/SunPositionTests.cpp
+    Core/SettingsFileTests.cpp
     Input/InputNamesTests.cpp
     Input/ActionMapTests.cpp
     Input/BindingCaptureTests.cpp
