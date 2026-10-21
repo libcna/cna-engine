@@ -842,7 +842,9 @@ segments, system keys as actions, and the world and train through
 54 views pixel-identical after every step (llvmpipe; the last step also on
 the GPU), report counters unchanged, CTest 73/75 with both failures predating
 the migration or due to the build's system SDL (`docs/pilots/migration.md`,
-"train-simulator"). The engine gained `RenderBucket::Sequenced` (hand-ordered
+"train-simulator"). The owner's first desktop run found a crash the game has
+with any CNA since 2026-10-19 (sit/stand bone blends that XNA's exact
+`Matrix::Decompose` refuses); fixed on the branch. The engine gained `RenderBucket::Sequenced` (hand-ordered
 scenes) and byte-based screen captures for it. Open: the owner's decision to
 merge and push the branch.
 

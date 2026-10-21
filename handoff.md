@@ -147,8 +147,9 @@ Done (see `plan.md` for per-task results):
    PILOT-006: train-simulator runs on the engine on its branch
    `engine-adoption` (worktree `libcnalab/train-simulator-engine`, build
    `build/` = Release `OPENGL33` against the baseline clones, easy-gl
-   `v0.1.1` and the CNA checkout's system SDL, three jobs; eight commits,
-   not merged or pushed; 54 `--lockstep` captures pixel-identical after every
+   `v0.1.1` and the CNA checkout's system SDL, three jobs; nine commits
+   (the last fixes an avatar crash the game has with any CNA since
+   2026-10-19), not merged or pushed; 54 `--lockstep` captures pixel-identical after every
    step, the last also on the GPU). It needs this repository's commits
    `52ccbf6` (byte captures) and `ece1943` (`RenderBucket::Sequenced`).
    Open: the owner's merge and push of the branch; `develop` must reach

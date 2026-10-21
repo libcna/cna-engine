@@ -352,11 +352,19 @@ asynchronously and animate per drawn frame), which are inspected instead.
 | `ef5bee9` | system keys | X11 input (start menu, M, F1, Esc, the pause-menu arrows, E, F12) does what it did; 54/54 identical |
 | `cbf786b` | scene | 54/54 identical on llvmpipe and on the GPU; every `--report-state` counter unchanged; uncapped GPU frame time within the noise (about 5 ms); CTest 73/75 |
 | `01a6e2d` | records | — |
+| `4e260bb` | avatar bone blend (a fix, not a step) | the first desktop run stopped with "Every avatar bone transform must be decomposable"; see below |
 
 The two CTest failures are not the migration's: `trainsim_world_prefetch_-1` fails the same way
 before the first step (two synchronous world builds where one is expected), and
 `trainsim_install_layout` copies the project-local SDL build, which this configuration (system
 SDL) does not have. Not checked: the WebGL 2 build, which now also compiles the engine.
+
+The owner's first desktop run stopped when a passenger sat down in view: CNA's AvatarRenderer
+refuses a bone matrix that `Matrix::Decompose` refuses, and since CNA `705ea2324` (2026-10-19)
+that decomposition is XNA's exact one, which refuses sheared matrices. The game blended the
+shoulder, elbow and wrist into their seated rest with `Matrix::Lerp`, which shears mid-way; the
+unmodified game crashes the same way with today's CNA. `4e260bb` blends those rotations as
+quaternions; the 54 views are unchanged and three 180-second avatar runs complete.
 
 ## Order of work
 
