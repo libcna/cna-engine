@@ -197,7 +197,8 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   bytes. It also reads the texts `ActionMap::SaveBindings` and
   `QualitySchema::SaveSelection` write.
 - `Graphics/AutomatedRun.hpp`: `AutomatedRunOptions` (`--frames`,
-  `--run-seconds`, `--screenshot`, `--lockstep`), `ParseAutomatedRunOption`,
+  `--run-seconds`, `--screenshot` -- alone, of the first frame -- and
+  `--lockstep`; `Finite()`, `Automated()`), `ParseAutomatedRunOption`,
   `AutomatedRunUsage` and `AutomatedRun` (one fixed step per drawn frame in
   lockstep, the simulation frozen at the limit, frames drawn on until the
   game is ready, the screenshot read after the last frame was presented) —

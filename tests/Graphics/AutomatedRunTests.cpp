@@ -121,5 +121,16 @@ namespace CnaEngine::Graphics
         EXPECT_EQ(texel, Color(30, 60, 90, 255));
         EXPECT_TRUE(run.BeginDraw(device)) << "the run stays over; the file is written once";
         std::filesystem::remove(path);
+
+        // A screenshot without a limit is of the first frame.
+        AutomatedRun firstFrame({.screenshotPath = path.string()});
+        EXPECT_TRUE(firstFrame.Options().Automated());
+        EXPECT_FALSE(firstFrame.Options().Finite());
+        ASSERT_FALSE(firstFrame.BeginDraw(device));
+        firstFrame.EndDraw();
+        EXPECT_TRUE(firstFrame.BeginDraw(device));
+        EXPECT_EQ(firstFrame.FramesDrawn(), 1);
+        std::filesystem::remove(path);
+        EXPECT_FALSE(AutomatedRunOptions{}.Automated());
     }
 }

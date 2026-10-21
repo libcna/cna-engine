@@ -62,7 +62,7 @@ namespace CnaEngine::Graphics
     {
         return "  --frames N          stop after N drawn frames\n"
                "  --run-seconds S     stop after S simulated seconds\n"
-               "  --screenshot FILE   save the last frame as a PNG before stopping\n"
+               "  --screenshot FILE   save the last frame as a PNG before stopping (alone: the first frame)\n"
                "  --lockstep          one fixed simulation step per drawn frame (repeatable captures)\n";
     }
 
@@ -100,7 +100,8 @@ namespace CnaEngine::Graphics
         ++framesDrawn_;
         if (!limitReached_) {
             limitReached_ = (options_.frames > 0 && framesDrawn_ >= options_.frames)
-                            || (options_.runSeconds > 0.0 && simulatedSeconds_ >= options_.runSeconds);
+                            || (options_.runSeconds > 0.0 && simulatedSeconds_ >= options_.runSeconds)
+                            || (!options_.Finite() && !options_.screenshotPath.empty());
         }
         if (limitReached_ && ready) {
             finished_ = true;

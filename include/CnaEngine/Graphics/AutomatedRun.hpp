@@ -21,7 +21,8 @@ namespace CnaEngine::Graphics
         int frames = 0;
         /// --run-seconds S: stop once S simulated seconds have passed (0: no limit).
         double runSeconds = 0.0;
-        /// --screenshot PATH: save the last frame as a PNG before stopping.
+        /// --screenshot PATH: save the last frame as a PNG before stopping;
+        /// without a frame or time limit, the first frame is the last.
         std::string screenshotPath;
         /// --lockstep: exactly one simulation step of the fixed length per
         /// drawn frame, so a capture at frame N shows the same scene however
@@ -31,6 +32,9 @@ namespace CnaEngine::Graphics
 
         /// Whether the run stops by itself (a frame or time limit).
         [[nodiscard]] bool Finite() const noexcept { return frames > 0 || runSeconds > 0.0; }
+        /// Whether this is an automated run at all (a limit or a screenshot):
+        /// such runs skip start menus and the like.
+        [[nodiscard]] bool Automated() const noexcept { return Finite() || !screenshotPath.empty(); }
     };
 
     /// Reads one shared option at `args[index]`, advancing `index` past its
