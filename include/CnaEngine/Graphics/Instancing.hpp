@@ -75,7 +75,8 @@ namespace CnaEngine::Graphics
         /// binds mesh + instance streams, issues one instanced draw and
         /// restores the device's previous vertex and index bindings. The
         /// caller has applied the effect pass. Throws std::logic_error on a
-        /// Reach device. Returns false when there is nothing to draw.
+        /// Reach device and for a non-indexed mesh (XNA instances indexed
+        /// meshes only). Returns false when there is nothing to draw.
         bool DrawHardware(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
                           RenderStatistics* statistics = nullptr);
 

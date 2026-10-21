@@ -115,6 +115,14 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   mesh drawn once per pass of the effect's current technique, for games that
   configure their own effect (easy-3d's mesh renderers). Reason: PILOT-004.
 
+- `Graphics/GpuMesh.hpp`, additive: `Borrow(vertices, primitiveCount,
+  bounds, attributes, startVertex)` — a borrowed non-indexed triangle list
+  drawn with `DrawPrimitives` — and `Indexed()`. `BaseVertex()` is the start
+  vertex of such a list. XNA instances indexed meshes only:
+  `InstanceSet::DrawHardware` rejects a non-indexed mesh, and
+  `ForwardRenderer` draws one instanced on HiDef once per instance. Reason:
+  backrooms-simulator streams plain vertex lists into pooled buffers.
+
 - `Graphics/RenderQueue.hpp`: an unused private member removed (no API
   change; the header's fingerprint changes). Reason: Clang reports it
   (`-Wunused-private-field`), which failed the engine's `-Werror` build with

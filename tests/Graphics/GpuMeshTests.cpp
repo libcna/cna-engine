@@ -10,10 +10,12 @@
 #include "Microsoft/Xna/Framework/Graphics/ModelMeshPart.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
+#include "Microsoft/Xna/Framework/Graphics/VertexPositionColor.hpp"
 
 #include <gtest/gtest.h>
 
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace CnaEngine::Graphics
@@ -188,6 +190,50 @@ namespace CnaEngine::Graphics
         EXPECT_TRUE(owner.IsDrawable()) << "dropping the borrowed view leaves the owner intact";
         EXPECT_THROW((void)GpuMesh::Borrow(*owner.Vertices(), *owner.Indices(), 0, 1, BoundingBox()),
                      std::invalid_argument);
+    }
+
+    TEST(GpuMeshTests, BorrowedNonIndexedListsDrawFromTheirStartVertex)
+    {
+        using Microsoft::Xna::Framework::Graphics::VertexPositionColor;
+        GraphicsDevice device;
+        // Two quads as plain triangle lists: a blue one off screen, then the
+        // red one, wound clockwise as seen from the camera (XNA front faces).
+        std::vector<VertexPositionColor> vertices;
+        const auto quad = [&](float x0, float y0, float x1, float y1, Color color) {
+            const std::pair<float, float> corners[] = {{x0, y1}, {x1, y1}, {x1, y0}, {x0, y1}, {x1, y0}, {x0, y0}};
+            for (const auto& [x, y] : corners) {
+                vertices.emplace_back(Vector3(x, y, 0.0f), color);
+            }
+        };
+        quad(5.0f, 5.0f, 6.0f, 6.0f, Color(0, 0, 255, 255));
+        quad(-0.5f, -0.5f, 0.5f, 0.5f, Color(255, 0, 0, 255));
+        Microsoft::Xna::Framework::Graphics::VertexBuffer buffer(
+            device, VertexPositionColor::getVertexDeclarationStatic(), static_cast<int>(vertices.size()),
+            Microsoft::Xna::Framework::Graphics::BufferUsage::WriteOnly);
+        buffer.SetData(vertices.data(), static_cast<int>(vertices.size()));
+
+        const auto memoryBefore = CurrentGpuMemory();
+        const GpuMesh red = GpuMesh::Borrow(buffer, 2, BoundingBox(Vector3(-0.5f, -0.5f, 0.0f), Vector3(0.5f, 0.5f, 0.0f)),
+                                            AttributeMask{VertexAttribute::Position, VertexAttribute::Color}, 6);
+        EXPECT_FALSE(red.Indexed());
+        EXPECT_TRUE(red.IsDrawable());
+        EXPECT_FALSE(red.OwnsBuffers());
+        EXPECT_EQ(red.VertexCount(), 6);
+        EXPECT_EQ(red.BaseVertex(), 6);
+        EXPECT_EQ(CurrentGpuMemory().meshes, memoryBefore.meshes);
+        RenderStatistics stats;
+        const auto pixels = Render(device, red, &stats);
+        EXPECT_EQ(stats.drawCalls, 1u);
+        EXPECT_EQ(stats.primitives, 2u);
+        EXPECT_EQ(stats.vertices, 6u);
+        EXPECT_EQ(At(pixels, Size / 2, Size / 2), Color(255, 0, 0, 255)) << "drawn from the start vertex";
+        EXPECT_EQ(At(pixels, 2, 2), Color(0, 0, 0, 255));
+
+        EXPECT_THROW((void)GpuMesh::Borrow(buffer, 0, BoundingBox()), std::invalid_argument);
+        EXPECT_THROW((void)GpuMesh::Borrow(buffer, 1, BoundingBox(), AttributeMask{VertexAttribute::Position}, -1),
+                     std::invalid_argument);
+        buffer.Dispose();
+        EXPECT_FALSE(red.IsDrawable());
     }
 
     TEST(GpuMeshTests, DisposedBuffersAreNotDrawn)

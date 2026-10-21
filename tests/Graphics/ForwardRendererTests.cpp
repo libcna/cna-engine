@@ -18,6 +18,8 @@
 #include "Microsoft/Xna/Framework/Graphics/SamplerStateCollection.hpp"
 #include "Microsoft/Xna/Framework/Graphics/TextureFilter.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
+#include "Microsoft/Xna/Framework/Graphics/VertexBuffer.hpp"
+#include "Microsoft/Xna/Framework/Graphics/VertexPositionColor.hpp"
 
 #include <gtest/gtest.h>
 
@@ -329,14 +331,28 @@ namespace CnaEngine::Graphics
     // world in both.
     TEST(ForwardRendererInstancingTests, InstancedItemsMatchAcrossProfiles)
     {
-        auto render = [](Microsoft::Xna::Framework::Graphics::GraphicsProfile profile, RenderStatistics& stats) {
+        auto render = [](Microsoft::Xna::Framework::Graphics::GraphicsProfile profile, RenderStatistics& stats,
+                         bool plainList = false) {
             GraphicsDevice device;
             device.SetGraphicsProfileEXT(profile);
             RenderTarget2D target(device, Size, Size, false, SurfaceFormat::Color, DepthFormat::Depth24);
             MeshBuilder builder({VertexAttribute::Position, VertexAttribute::Color});
             builder.SetColor(Color(255, 64, 0, 255));
             builder.AddBox(Vector3(-0.15f, -0.15f, -0.15f), Vector3(0.15f, 0.15f, 0.15f));
-            const GpuMesh box = GpuMesh::Upload(device, builder.Mesh(), VertexLayout::PositionColor());
+            GpuMesh box = GpuMesh::Upload(device, builder.Mesh(), VertexLayout::PositionColor());
+            // The same triangles as a non-indexed list, which XNA cannot instance.
+            std::vector<Microsoft::Xna::Framework::Graphics::VertexPositionColor> list;
+            for (const auto index : builder.Mesh().indices) {
+                list.emplace_back(builder.Mesh().positions[index], builder.Mesh().colors[index]);
+            }
+            Microsoft::Xna::Framework::Graphics::VertexBuffer listBuffer(
+                device, Microsoft::Xna::Framework::Graphics::VertexPositionColor::getVertexDeclarationStatic(),
+                static_cast<int>(list.size()), Microsoft::Xna::Framework::Graphics::BufferUsage::WriteOnly);
+            listBuffer.SetData(list.data(), static_cast<int>(list.size()));
+            if (plainList) {
+                box = GpuMesh::Borrow(listBuffer, static_cast<int>(list.size() / 3), box.Bounds(),
+                                      AttributeMask{VertexAttribute::Position, VertexAttribute::Color});
+            }
             InstanceSet instances(&box);
             for (const float x : {-0.6f, 0.0f, 0.6f}) {
                 instances.Add(Matrix::CreateTranslation(x, 0.0f, 0.0f));
@@ -384,6 +400,12 @@ namespace CnaEngine::Graphics
         const int y = Size / 2 - static_cast<int>(0.4f * Size / 2.0f);
         EXPECT_GT(at(reach, Size / 2, y).getRProperty(), 128) << "per-instance: base applied";
         EXPECT_EQ(hiDef, reach) << "hardware and per-instance paths agree";
+
+        RenderStatistics listStats;
+        const auto list = render(Microsoft::Xna::Framework::Graphics::GraphicsProfile::HiDef, listStats, true);
+        EXPECT_EQ(listStats.drawCalls, 3u) << "a non-indexed mesh is drawn once per instance on HiDef too";
+        EXPECT_EQ(listStats.primitives, perInstance.primitives);
+        EXPECT_EQ(list, reach);
     }
 
     TEST_F(Fixture, DepthBiasPullsDecalsInFront)

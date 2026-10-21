@@ -176,10 +176,31 @@ namespace CnaEngine::Graphics
                       part.getStartIndexProperty());
     }
 
+    GpuMesh GpuMesh::Borrow(VertexBuffer& vertices, const int primitiveCount, const BoundingBox& bounds,
+                            const AttributeMask attributes, const int startVertex)
+    {
+        if (primitiveCount <= 0) {
+            throw std::invalid_argument("GpuMesh::Borrow: counts must be positive");
+        }
+        if (startVertex < 0) {
+            throw std::invalid_argument("GpuMesh::Borrow: offsets must not be negative");
+        }
+        GpuMesh gpu;
+        gpu.vertices_ = &vertices;
+        gpu.attributes_ = attributes;
+        gpu.attributes_.Add(VertexAttribute::Position);
+        gpu.vertexCount_ = primitiveCount * 3;
+        gpu.primitiveCount_ = primitiveCount;
+        gpu.bounds_ = bounds;
+        gpu.sphere_ = BoundingSphere::CreateFromBoundingBox(bounds);
+        gpu.baseVertex_ = startVertex;
+        return gpu;
+    }
+
     bool GpuMesh::IsDrawable() const noexcept
     {
-        return vertices_ != nullptr && indices_ != nullptr && primitiveCount_ > 0
-               && !vertices_->getIsDisposedProperty() && !indices_->getIsDisposedProperty();
+        return vertices_ != nullptr && primitiveCount_ > 0 && !vertices_->getIsDisposedProperty()
+               && (indices_ == nullptr || !indices_->getIsDisposedProperty());
     }
 
     bool GpuMesh::Draw(GraphicsDevice& device, RenderStatistics* statistics) const
@@ -188,9 +209,13 @@ namespace CnaEngine::Graphics
             return false;
         }
         device.SetVertexBuffer(vertices_);
-        device.setIndicesProperty(indices_);
-        device.DrawIndexedPrimitives(PrimitiveType::TriangleList, baseVertex_, 0, vertexCount_, startIndex_,
-                                     primitiveCount_);
+        if (indices_ != nullptr) {
+            device.setIndicesProperty(indices_);
+            device.DrawIndexedPrimitives(PrimitiveType::TriangleList, baseVertex_, 0, vertexCount_, startIndex_,
+                                         primitiveCount_);
+        } else {
+            device.DrawPrimitives(PrimitiveType::TriangleList, baseVertex_, primitiveCount_);
+        }
         if (statistics != nullptr) {
             statistics->Record(static_cast<std::uint64_t>(primitiveCount_), static_cast<std::uint64_t>(vertexCount_));
         }

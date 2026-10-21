@@ -32,8 +32,8 @@ namespace CnaEngine::Graphics
         bool preferSixteenBitIndices = true;
     };
 
-    /// An indexed triangle list on the GPU: one vertex buffer, one index
-    /// buffer and the draw parameters.
+    /// A triangle list on the GPU: one vertex buffer, one index buffer (none
+    /// for a borrowed non-indexed list) and the draw parameters.
     ///
     /// Ownership: a GpuMesh made by Upload() owns its buffers and releases
     /// them in its destructor (move-only). A GpuMesh made by Borrow() refers to
@@ -80,11 +80,22 @@ namespace CnaEngine::Graphics
                                             const Microsoft::Xna::Framework::BoundingBox& bounds,
                                             AttributeMask attributes = {VertexAttribute::Position});
 
+        /// Wraps a non-indexed triangle list owned elsewhere: `primitiveCount`
+        /// triangles read in order from `startVertex` (XNA's DrawPrimitives),
+        /// as games that stream plain vertex lists into pooled buffers keep
+        /// them. XNA instances indexed meshes only, so such a mesh is drawn
+        /// once per instance.
+        [[nodiscard]] static GpuMesh Borrow(Microsoft::Xna::Framework::Graphics::VertexBuffer& vertices,
+                                            int primitiveCount, const Microsoft::Xna::Framework::BoundingBox& bounds,
+                                            AttributeMask attributes = {VertexAttribute::Position},
+                                            int startVertex = 0);
+
         /// Releases owned buffers (no-op for borrowed ones) and empties the mesh.
         void Reset() noexcept;
 
-        /// Binds the buffers and issues DrawIndexedPrimitives for the whole
-        /// triangle list. The caller has applied an effect pass. Adds one draw
+        /// Binds the buffers and issues DrawIndexedPrimitives (DrawPrimitives
+        /// for a non-indexed list) for the whole triangle list. The caller
+        /// has applied an effect pass. Adds one draw
         /// to `statistics` when given. Returns false (and draws nothing) when
         /// the mesh is empty or its buffers have been disposed.
         bool Draw(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
@@ -97,11 +108,14 @@ namespace CnaEngine::Graphics
                   Microsoft::Xna::Framework::Graphics::Effect& effect, RenderStatistics* statistics = nullptr) const;
 
         [[nodiscard]] bool IsDrawable() const noexcept;
+        /// False for a non-indexed list (and for an empty mesh).
+        [[nodiscard]] bool Indexed() const noexcept { return indices_ != nullptr; }
         [[nodiscard]] bool OwnsBuffers() const noexcept { return owned_; }
         /// Attributes present in the vertex buffer (the layout's elements).
         [[nodiscard]] AttributeMask Attributes() const noexcept { return attributes_; }
         [[nodiscard]] int VertexCount() const noexcept { return vertexCount_; }
-        /// Added to every index (DrawIndexedPrimitives' baseVertex).
+        /// Added to every index (DrawIndexedPrimitives' baseVertex); for a
+        /// non-indexed list the first vertex drawn (DrawPrimitives' startVertex).
         [[nodiscard]] int BaseVertex() const noexcept { return baseVertex_; }
         /// First index read from the index buffer.
         [[nodiscard]] int StartIndex() const noexcept { return startIndex_; }

@@ -151,6 +151,13 @@ namespace CnaEngine::Graphics
 
         InstanceSet empty(&box);
         EXPECT_FALSE(empty.DrawHardware(device));
+
+        // XNA's DrawInstancedPrimitives reads indices: a plain list cannot be instanced.
+        const GpuMesh list = GpuMesh::Borrow(*box.Vertices(), 8, box.Bounds(),
+                                             AttributeMask{VertexAttribute::Position, VertexAttribute::Color});
+        InstanceSet plain(&list);
+        plain.Add(Matrix::getIdentityProperty());
+        EXPECT_THROW(plain.DrawHardware(device), std::logic_error);
     }
 
     TEST(InstancingTests, StockEffectsReadTheInstanceStream)

@@ -142,6 +142,9 @@ namespace CnaEngine::Graphics
         if (mesh_ == nullptr || !mesh_->IsDrawable() || count == 0) {
             return false;
         }
+        if (!mesh_->Indexed()) {
+            throw std::logic_error("InstanceSet::DrawHardware: XNA instances indexed meshes only");
+        }
         if (dirty_ || !instances_ || instances_->getIsContentLostProperty()) {
             Upload(device);
         }

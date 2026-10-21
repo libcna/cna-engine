@@ -185,7 +185,8 @@ namespace CnaEngine::Graphics
                 sink_(material, "instanced item ignored: skinned items are not instanced");
                 continue;
             }
-            if (device_.getGraphicsProfileProperty() == Microsoft::Xna::Framework::Graphics::GraphicsProfile::HiDef) {
+            if (device_.getGraphicsProfileProperty() == Microsoft::Xna::Framework::Graphics::GraphicsProfile::HiDef
+                && item.mesh->Indexed()) {
                 // One draw: the effect's World is the shared base, the
                 // instance stream supplies each instance's own transform.
                 if (binder_->Apply(device_, item, bucket, camera, sink_)) {
@@ -193,7 +194,7 @@ namespace CnaEngine::Graphics
                 }
                 continue;
             }
-            // Reach: one draw per instance through the binder.
+            // Reach, or a non-indexed mesh: one draw per instance through the binder.
             RenderItem single = item;
             single.instances = nullptr;
             for (const Microsoft::Xna::Framework::Matrix& instance : set.VisibleWorlds()) {
