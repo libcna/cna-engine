@@ -856,6 +856,41 @@ captures for it. At the owner's request the branch was fast-forwarded into
 the game's `develop` and pushed the same day, after this repository's
 `develop`.
 
+### SHARE-001 — Facilities the simulators each wrote `[~]`
+
+A read-only survey (2026-10-21) of the nine simulators and galaxy-eggbert
+for work each repeats. The owner asked for the four strongest candidates.
+
+Acceptance: each is an engine facility with unit tests and, where a game
+has the same code, a read-only probe matching it (bit for bit where the
+games compute the same way); differences found in the games go to
+`upstream-issues.md`.
+
+Result (2026-10-21), four experimental facilities:
+
+- `Graphics/Image.hpp` and `Core/Noise.hpp` (`6f33311`): CPU RGBA8 images,
+  mip chains (truncating or rounding box filter, sRGB, alpha-test coverage),
+  upload; street-simulator's noise. The image probe matches car-, train-,
+  school- and room-simulator and street's noise bit for bit; backrooms' and
+  island's loops are inline in their renderers and were read, not compiled.
+- `Core/SunPosition.hpp` (`9a4377d`): Cooper's declination, the hour angle,
+  elevation, azimuth, direction. The games compute differently (single
+  precision, an ephemeris), so the sun probe compares car, room and house
+  within tolerances; it found UP-016. train- and island-simulator draw an
+  artistic sun path and street only scatters light for a given sun, so they
+  have no solar geometry to share.
+- `Core/SettingsFile.hpp` (`7e95498`): key = value preferences, typed
+  clamped reads, atomic save, the XDG location. The settings probe reads
+  train-simulator's files as the same values and writes the same bytes;
+  island keeps its settings through XNA storage and house as JSON.
+- `Graphics/AutomatedRun.hpp` (`49a20be`): the shared --frames,
+  --run-seconds, --screenshot and --lockstep options and their driver
+  (unit tests; car's and train's code as evidence).
+
+Open: adoption in the games, which needs the owner's leave for each
+(candidates: car's, school's and train's mip uploads, street's noise,
+train's settings file and automated runs).
+
 ## Phase 6 — release readiness
 
 Progress: facilities validated by both pilots are marked `pilot-validated`

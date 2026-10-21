@@ -115,6 +115,12 @@ Done (see `plan.md` for per-task results):
 
 ## Open, in priority order
 
+0. SHARE-001 (2026-10-21): four facilities taken from what the simulators
+   each wrote — `Graphics/Image.hpp` with `Core/Noise.hpp`,
+   `Core/SunPosition.hpp`, `Core/SettingsFile.hpp`, `Graphics/AutomatedRun.hpp`
+   — experimental, with probes against car-, train-, school-, room-, street-
+   and house-simulator (`plan.md`). Open: adopting them in the games, with
+   the owner's leave for each game.
 1. Pilot adoption (PILOT-001/002/003) is done: both `engine-adoption`
    branches are merged into car-simulator's `main` and street-simulator's
    `develop` (2026-10-20). car-simulator:
