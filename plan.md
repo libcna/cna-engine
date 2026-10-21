@@ -821,7 +821,7 @@ gained `CaptureOptions::opaque`, `Material::frontFace` and
 the games' `main` and pushed at the owner's request the same day, and this
 repository's `develop` with them.
 
-### PILOT-006 — Adopt the engine in train-simulator `[~]`
+### PILOT-006 — Adopt the engine in train-simulator `[x]`
 
 The owner allowed it on 2026-10-21 after a second read-only survey of the
 remaining simulators: train-simulator is dormant, uses only XNA 4.0 types
@@ -835,8 +835,7 @@ before and the game's own suites; engine additions only where a step needs
 them, with tests, in `CHANGELOG.md`.
 
 Result (2026-10-21): train-simulator runs on the engine on its branch
-`engine-adoption` (worktree `libcnalab/train-simulator-engine`, not merged or
-pushed): repeatable `--lockstep` captures, build, screenshots, camera, mesh
+`engine-adoption` (worktree `libcnalab/train-simulator-engine`): repeatable `--lockstep` captures, build, screenshots, camera, mesh
 segments, system keys as actions, and the world and train through
 `ForwardRenderer` with the game's own binder over its effects and shaders —
 54 views pixel-identical after every step (llvmpipe; the last step also on
@@ -844,9 +843,11 @@ the GPU), report counters unchanged, CTest 73/75 with both failures predating
 the migration or due to the build's system SDL (`docs/pilots/migration.md`,
 "train-simulator"). The owner's first desktop run found a crash the game has
 with any CNA since 2026-10-19 (sit/stand bone blends that XNA's exact
-`Matrix::Decompose` refuses); fixed on the branch. The engine gained `RenderBucket::Sequenced` (hand-ordered
-scenes) and byte-based screen captures for it. Open: the owner's decision to
-merge and push the branch.
+`Matrix::Decompose` refuses); fixed on the branch. The engine gained
+`RenderBucket::Sequenced` (hand-ordered scenes) and byte-based screen
+captures for it. At the owner's request the branch was fast-forwarded into
+the game's `develop` and pushed the same day, after this repository's
+`develop`.
 
 ## Phase 6 — release readiness
 

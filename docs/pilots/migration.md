@@ -332,8 +332,8 @@ all effects and both shaders (configured by the game's binder), streaming, and `
 
 ### train-simulator adoption (branch `engine-adoption`)
 
-Worktree `libcnalab/train-simulator-engine`, branched from `develop` at `099a0b0`; not merged
-or pushed. Release build (three jobs) against `~/deps/cna-baseline` (`900d0db3b`),
+Worktree `libcnalab/train-simulator-engine`, branched from `develop` at `099a0b0`;
+fast-forwarded into `develop` and pushed on 2026-10-21. Release build (three jobs) against `~/deps/cna-baseline` (`900d0db3b`),
 `~/deps/sharp-runtime-baseline` and easy-gl `v0.1.1`, with the system SDL of the CNA checkout.
 The check after every step: 56 lockstep captures (the game's 37 visual-audit views; night,
 dusk, rain, fog, overcast; quality 0 and 1; both facade shaders; avatars; the HUD overlays)

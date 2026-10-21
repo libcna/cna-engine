@@ -13,7 +13,8 @@ branch" and "Street branch" in the Consumers column mark that use. "backrooms
 branch" and "school branch" mark backrooms-simulator's and
 school-simulator's `engine-adoption` branches (PILOT-005, merged into both
 games' `main` and pushed on 2026-10-21). "train branch" marks
-train-simulator's `engine-adoption` branch (PILOT-006, not merged). The nine
+train-simulator's `engine-adoption` branch (PILOT-006, merged into its
+`develop` and pushed on 2026-10-21). The nine
 facilities both pilots use — camera (`SetMatrices`), GPU mesh (`Borrow`),
 render statistics, materials, render queue, visibility and LOD, forward
 renderer, quality schema and asset registry — are `stable`; their headers are

@@ -27,7 +27,8 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
   for backrooms-simulator and school-simulator (PILOT-005; branches
   `engine-adoption`, merged into both games' `main` and pushed at the
   owner's request), and later for train-simulator (PILOT-006; branch
-  `engine-adoption`, not merged or pushed); island, museum, house and room
+  `engine-adoption`, merged into its `develop` and pushed at the owner's
+  request); island, museum, house and room
   were only surveyed and stay untouched. Defects found elsewhere are
   written to `upstream-issues.md` (UP-001 … UP-015 so far). Pilot code may be
   *read and compiled read-only* (that is what `tests/pilots/` does).
@@ -149,11 +150,14 @@ Done (see `plan.md` for per-task results):
    `build/` = Release `OPENGL33` against the baseline clones, easy-gl
    `v0.1.1` and the CNA checkout's system SDL, three jobs; nine commits
    (the last fixes an avatar crash the game has with any CNA since
-   2026-10-19), not merged or pushed; 54 `--lockstep` captures pixel-identical after every
-   step, the last also on the GPU). It needs this repository's commits
+   2026-10-19); 54 `--lockstep` captures pixel-identical after every
+   step, the last also on the GPU). It uses this repository's commits
    `52ccbf6` (byte captures) and `ece1943` (`RenderBucket::Sequenced`).
-   Open: the owner's merge and push of the branch; `develop` must reach
-   GitHub with or before it.
+   The branch was fast-forwarded into the game's `develop` and pushed on
+   2026-10-21 at the owner's request, after this repository's `develop`.
+   The game's main worktree `libcnalab/train-simulator` has no `build/`
+   yet and no `libcnalab/cna-engine` sibling: configure it with
+   `-DTRAINSIM_CNA_ENGINE_ROOT=/rv/data/development/github.com/libcna/cna-engine`.
 2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)
    is recorded but not enforced until it is measured on this machine in a
    Release build when the machine is idle (`docs/pilots/performance-budgets.md`).
