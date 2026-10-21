@@ -119,8 +119,16 @@ Done (see `plan.md` for per-task results):
    each wrote — `Graphics/Image.hpp` with `Core/Noise.hpp`,
    `Core/SunPosition.hpp`, `Core/SettingsFile.hpp`, `Graphics/AutomatedRun.hpp`
    — experimental, with probes against car-, train-, school-, room-, street-
-   and house-simulator (`plan.md`). Open: adopting them in the games, with
-   the owner's leave for each game.
+   and house-simulator (`plan.md`). Adopted on 2026-10-21 in car-, school-,
+   train- and street-simulator, each on a branch `engine-shared` in its
+   `libcnalab/*-engine` worktree (car and school: mips; train: mips,
+   settings, automated runs; street: noise), each game's pictures or baked
+   surfaces identical to those from before the adoption (apart from the
+   train's two avatar views, which vary between runs anyway); the probes
+   now compare frozen copies of the
+   replaced code (`tests/fixtures/simulator_oracles`). Open: merging and
+   pushing those branches, on the owner's word; UP-017 (street's capture
+   runs out of memory).
 1. Pilot adoption (PILOT-001/002/003) is done: both `engine-adoption`
    branches are merged into car-simulator's `main` and street-simulator's
    `develop` (2026-10-20). car-simulator:

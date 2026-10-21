@@ -424,3 +424,24 @@ which needs no branch.
 Engine handling: `CnaEngine::SunAnglesFor` uses the two-argument form; the
 sun probe (`tests/pilots/SunEquivalenceTests.cpp`) checks the rig against it
 outside that hour and the mirror inside it.
+
+## UP-017 — street-simulator's `--capture` exhausts memory while importing its models
+
+- Repository: `libcnalab/street-simulator` (`develop`, `3611348`), built
+  against the live `libcna/cna` checkout (`926db4ac9`) and cna-engine
+  `develop`: Release, CNA's software renderer, headless platform
+- Status: open, cause not investigated
+- Found: 2026-10-21, preparing the SHARE-001 noise comparison
+
+`cna-street --capture DIR --width 640 --height 360 --no-overlay` grew to
+23 GB resident while importing the Poly Haven models, before writing any
+image, and the kernel's OOM killer ended it (the machine has 30 GB and no
+swap). The same capture of all 18 viewpoints ran on 2026-10-20 during the
+street adoption (`docs/pilots/migration.md`, commit `b137025`), and the
+models are older than that (September). What changed since is the CNA
+checkout (this build recompiled 199 CNA objects) and Street's adoption
+commits after `b137025` (`513dd93`, derived materials in an `AssetRegistry`,
+among them); which of them grows the import is not known.
+
+Engine handling: none needed for the engine; SHARE-001 checked Street's noise
+with `bake-assets --content` (215 surfaces, 85 MB peak) instead of a capture.

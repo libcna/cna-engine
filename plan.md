@@ -887,9 +887,43 @@ Result (2026-10-21), four experimental facilities:
   --run-seconds, --screenshot and --lockstep options and their driver
   (unit tests; car's and train's code as evidence).
 
-Open: adoption in the games, which needs the owner's leave for each
-(candidates: car's, school's and train's mip uploads, street's noise,
-train's settings file and automated runs).
+Adoption (2026-10-21, the owner: "převeď je: vlak, škola, car a street"),
+each game on a branch `engine-shared` in its `libcnalab/*-engine` worktree,
+not merged:
+
+- car-simulator (`eec91c2`, `77c36ee`): `Image::Downsampled`,
+  `UploadTexture` and `UpdateTexture` delegate to the engine; the road-shadow
+  worker builds its levels with `BuildMipChain`. The eleven reference
+  captures are byte-identical; CTest 7/7.
+- school-simulator (`c48b243`, `0eccf53`): the texture library uploads
+  through `UploadTexture`; `ImageUtil` is gone. The 19 tour captures are
+  pixel-identical; CTest 5/5.
+- train-simulator (`87da297`, `b9d743c`, `683b694`, `2fd191d`): procedural
+  textures through `Image`; preferences through `SettingsFile` (strictness
+  kept on top with `Line` and `TryGetFloat`, added for it in `69cf3ea`) in a
+  game-only library; `--frames`, `--run-seconds`, `--screenshot` and
+  `--lockstep` through `AutomatedRun`. 54 of the 56 lockstep views
+  pixel-identical (the two onboard avatar views vary between runs anyway),
+  counters unchanged, CTest 73 of 75 with the two known failures.
+- street-simulator (`2e40f0c`): `CnaStreet::Noise` forwards to
+  `CnaEngine::Noise` under its old names. All 215 surfaces `bake-assets
+  --content` writes are byte-identical; CTest 15/15. A full `--capture`
+  could not be run: it was OOM-killed at 23 GB while importing the models,
+  with the unchanged game too (UP-017).
+
+The image and settings probes now compare the engine with frozen copies of
+the replaced code (`tests/fixtures/simulator_oracles`, `dd8970b`), so they
+stay meaningful once the games call the engine. Not adopted in car: the sun
+(car computes it in single precision and mirrors the azimuth before 01:00,
+UP-016, so the engine's would change its pictures slightly rather than
+reproduce them) and the automated runs (car's also end once a route has been
+driven, save the instrument cluster's texture and print the benchmark in the
+same frame, and read the screenshot before Present; its options are parsed
+in `carsim_core`, which links only `CnaEngine::Core`, while
+`ParseAutomatedRunOption` is in Graphics). room and house, which also compute
+the sun, were not part of the request.
+
+Open: merging the four branches, on the owner's word.
 
 ## Phase 6 — release readiness
 
