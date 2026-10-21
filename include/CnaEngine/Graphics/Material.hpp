@@ -32,6 +32,17 @@ namespace CnaEngine::Graphics
         PremultipliedAlpha,
     };
 
+    /// The winding of a surface's front faces as seen by the camera.
+    enum class FrontFace : std::uint8_t
+    {
+        /// XNA's convention: its default rasterizer state culls
+        /// counter-clockwise triangles.
+        Clockwise,
+        /// OpenGL's and glTF's convention, and that of builders written for
+        /// them; culled with XNA's CullClockwise.
+        CounterClockwise,
+    };
+
     enum class ShadingModel : std::uint8_t
     {
         Unlit,
@@ -73,6 +84,18 @@ namespace CnaEngine::Graphics
         bool vertexColors = false;
         /// Draw both faces (no back-face culling).
         bool doubleSided = false;
+        /// Which winding faces the camera; the other is culled unless the
+        /// material is double-sided. A mirrored camera turns both around.
+        FrontFace frontFace = FrontFace::Clockwise;
+        /// The base texture's and vertex colors' color is not multiplied by
+        /// their alpha ("straight" alpha: images made or loaded at run time,
+        /// which XNA's content pipeline would have premultiplied). Blended
+        /// surfaces then cover what is behind as `color * alpha + behind *
+        /// (1 - alpha)`; the stock binder draws them with XNA's
+        /// NonPremultiplied state. XNA's stock effects premultiply
+        /// Material::alpha themselves, so it would count twice: the stock
+        /// binder reports straight-alpha materials with alpha < 1.
+        bool straightAlpha = false;
         /// Depth bias for coplanar decals such as road markings (XNA
         /// RasterizerState::DepthBias / SlopeScaleDepthBias; negative pulls
         /// the surface towards the camera).

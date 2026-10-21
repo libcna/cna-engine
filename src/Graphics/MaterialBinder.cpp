@@ -27,7 +27,11 @@ namespace CnaEngine::Graphics
     const Microsoft::Xna::Framework::Graphics::BlendState& IMaterialBinder::BlendStateFor(const RenderItem& item) const
     {
         using Microsoft::Xna::Framework::Graphics::BlendState;
-        return item.material->blend == BlendMode::Additive ? BlendState::Additive : BlendState::AlphaBlend;
+        if (item.material->blend == BlendMode::Additive) {
+            return BlendState::Additive;
+        }
+        // Stock effects pass texture and vertex colors through as they are.
+        return item.material->straightAlpha ? BlendState::NonPremultiplied : BlendState::AlphaBlend;
     }
 
     StockMaterialBinder::StockMaterialBinder(GraphicsDevice& device)
@@ -109,6 +113,10 @@ namespace CnaEngine::Graphics
         }
         if (material.blend == BlendMode::PremultipliedAlpha && material.alpha < 1.0f) {
             fallback(material, "premultiplied blending drawn as AlphaBlend (stock effects scale the color by alpha)");
+        }
+        if (material.straightAlpha && material.alpha < 1.0f
+            && (bucket == RenderBucket::Transparent || bucket == RenderBucket::Overlay)) {
+            fallback(material, "straight alpha with alpha < 1: stock effects premultiply it, so it counts twice");
         }
 
         if (item.bones != nullptr) {

@@ -118,28 +118,29 @@ namespace CnaEngine::Graphics
 
     const RasterizerState& ForwardRenderer::RasterizerFor(const Material& material, const bool mirrored)
     {
-        // A mirrored view turns front faces around (Camera::SetMirrored).
+        // XNA's front faces are clockwise; counter-clockwise materials and a
+        // mirrored view (Camera::SetMirrored) each turn them around.
+        using Microsoft::Xna::Framework::Graphics::CullMode;
+        const bool flipped = (material.frontFace == FrontFace::CounterClockwise) != mirrored;
+        const CullMode cull = material.doubleSided ? CullMode::None
+                              : flipped            ? CullMode::CullClockwiseFace
+                                                   : CullMode::CullCounterClockwiseFace;
         if (material.depthBias == 0.0f && material.slopeScaleDepthBias == 0.0f) {
-            if (material.doubleSided) {
-                return RasterizerState::CullNone;
-            }
-            return mirrored ? RasterizerState::CullClockwise : RasterizerState::CullCounterClockwise;
+            return cull == CullMode::None                ? RasterizerState::CullNone
+                   : cull == CullMode::CullClockwiseFace ? RasterizerState::CullClockwise
+                                                         : RasterizerState::CullCounterClockwise;
         }
         for (const auto& biased : biasedStates_) {
-            if (biased.doubleSided == material.doubleSided && biased.mirrored == mirrored
-                && biased.depthBias == material.depthBias && biased.slopeScale == material.slopeScaleDepthBias) {
+            if (biased.cull == cull && biased.depthBias == material.depthBias
+                && biased.slopeScale == material.slopeScaleDepthBias) {
                 return *biased.state;
             }
         }
-        using Microsoft::Xna::Framework::Graphics::CullMode;
         auto state = std::make_unique<RasterizerState>();
-        state->setCullModeProperty(material.doubleSided ? CullMode::None
-                                   : mirrored           ? CullMode::CullClockwiseFace
-                                                        : CullMode::CullCounterClockwiseFace);
+        state->setCullModeProperty(cull);
         state->setDepthBiasProperty(material.depthBias);
         state->setSlopeScaleDepthBiasProperty(material.slopeScaleDepthBias);
-        biasedStates_.push_back(BiasedState{material.doubleSided, mirrored, material.depthBias,
-                                            material.slopeScaleDepthBias, std::move(state)});
+        biasedStates_.push_back(BiasedState{cull, material.depthBias, material.slopeScaleDepthBias, std::move(state)});
         return *biasedStates_.back().state;
     }
 

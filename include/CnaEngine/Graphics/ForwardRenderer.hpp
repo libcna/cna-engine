@@ -6,6 +6,7 @@
 #include "CnaEngine/Graphics/RenderQueue.hpp"
 #include "CnaEngine/Graphics/RenderStatistics.hpp"
 
+#include "Microsoft/Xna/Framework/Graphics/CullMode.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 
@@ -105,8 +106,7 @@ namespace CnaEngine::Graphics
         /// Rasterizer states for biased materials, created on first use.
         struct BiasedState
         {
-            bool doubleSided;
-            bool mirrored;
+            Microsoft::Xna::Framework::Graphics::CullMode cull;
             float depthBias;
             float slopeScale;
             std::unique_ptr<Microsoft::Xna::Framework::Graphics::RasterizerState> state;

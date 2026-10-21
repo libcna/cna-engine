@@ -123,6 +123,18 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   `ForwardRenderer` draws one instanced on HiDef once per instance. Reason:
   backrooms-simulator streams plain vertex lists into pooled buffers.
 
+- `Graphics/Material.hpp`, additive: `Material::frontFace` (`FrontFace`:
+  `Clockwise`, XNA's convention and the default, or `CounterClockwise`,
+  culled with XNA's CullClockwise; a mirrored camera turns either around)
+  and `Material::straightAlpha` (texture and vertex colors not
+  premultiplied by their alpha: the stock binder blends such AlphaBlend
+  surfaces with `NonPremultiplied` and reports material alpha < 1, which
+  stock effects would apply twice). `Graphics/ForwardRenderer.hpp`: its
+  private depth-bias state cache is keyed by cull mode (no API change).
+  Reason: school-simulator's geometry is wound counter-clockwise and its
+  glass carries straight alpha; its world renderer now draws through the
+  engine.
+
 - `Graphics/ScreenCapture.hpp`, additive: `CaptureOptions::opaque` — alpha
   255 in every captured pixel and in the file. Reason: school-simulator's
   screenshots were opaque, while its glass blending leaves the back

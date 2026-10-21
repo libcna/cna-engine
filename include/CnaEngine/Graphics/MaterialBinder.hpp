@@ -88,7 +88,9 @@ namespace CnaEngine::Graphics
         /// effect writes: XNA's stock effects multiply their color by the
         /// material alpha (premultiplied output), CNA's PbrEffect does not
         /// (straight output). The default is XNA's convention: `Additive`
-        /// for BlendMode::Additive, `AlphaBlend` otherwise.
+        /// for BlendMode::Additive, `AlphaBlend` otherwise, and
+        /// `NonPremultiplied` for materials with Material::straightAlpha,
+        /// whose colors stock effects pass through unmultiplied.
         [[nodiscard]] virtual const Microsoft::Xna::Framework::Graphics::BlendState&
         BlendStateFor(const RenderItem& item) const;
     };

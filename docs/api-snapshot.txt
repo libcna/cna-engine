@@ -14,11 +14,11 @@ CnaEngine/Graphics/ScreenCapture.hpp 8d1f6142c61e8319
 CnaEngine/Graphics/QualitySchema.hpp b443359f740e0a6b
 CnaEngine/Assets/AssetRegistry.hpp bb84cc840d5c174d
 CnaEngine/Core/FixedStepClock.hpp 7d8301690ba6b541
-CnaEngine/Graphics/Material.hpp 8f6d2848cf0e54ea
+CnaEngine/Graphics/Material.hpp 5e5f5304a37324b1
 CnaEngine/Graphics/MaterialBinder.hpp 1fd7e558c4d16784
 CnaEngine/Graphics/RenderQueue.hpp 0524050a14b41d0a
 CnaEngine/Graphics/Visibility.hpp aab30c7a3179c144
-CnaEngine/Graphics/ForwardRenderer.hpp 9b2801b057367b28
+CnaEngine/Graphics/ForwardRenderer.hpp 474a90abeb2dcefa
 CnaEngine/Graphics/Instancing.hpp 50caf56545e60a04
 CnaEngine/Enhanced/PbrMaterialBinder.hpp 629d2f81a3648489
 CnaEngine/Graphics/RenderStatistics.hpp 89b259ce46724a4e

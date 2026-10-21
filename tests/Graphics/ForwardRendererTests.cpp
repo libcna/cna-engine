@@ -474,6 +474,53 @@ namespace CnaEngine::Graphics
         EXPECT_TRUE(Near(At(pixels, Size / 2 - 6, Size / 2), 255, 0, 255)) << "red + blue";
     }
 
+    TEST_F(Fixture, CounterClockwiseMaterialsCullTheOtherFaces)
+    {
+        // The fixture's quad faces the camera with XNA's clockwise winding.
+        Material ccw = Unlit("ccw", Vector3(0.0f, 1.0f, 0.0f));
+        ccw.frontFace = FrontFace::CounterClockwise;
+        RenderQueue queue;
+        queue.Submit(Item(ccw, 0.0f));
+        EXPECT_TRUE(Near(At(Draw(queue), Size / 2, Size / 2), 0, 0, 0)) << "seen from behind: culled";
+
+        // Seen from the other side the same triangles wind counter-clockwise.
+        camera.SetLookAt(Vector3(0.0f, 0.0f, -5.0f), Vector3::Zero, Vector3::Up);
+        EXPECT_TRUE(Near(At(Draw(queue), Size / 2, Size / 2), 0, 255, 0)) << "front face: drawn";
+        const Material cw = Unlit("cw", Vector3(0.0f, 1.0f, 0.0f));
+        RenderQueue plain;
+        plain.Submit(Item(cw, 0.0f));
+        EXPECT_TRUE(Near(At(Draw(plain), Size / 2, Size / 2), 0, 0, 0)) << "XNA's winding is culled from there";
+
+        camera.SetMirrored(true);
+        EXPECT_TRUE(Near(At(Draw(queue), Size / 2, Size / 2), 0, 255, 0)) << "a mirror keeps front faces";
+        ccw.depthBias = -0.00002f;
+        EXPECT_TRUE(Near(At(Draw(queue), Size / 2, Size / 2), 0, 255, 0)) << "with a depth bias too";
+    }
+
+    TEST_F(Fixture, StraightAlphaMaterialsBlendWithTheirAlpha)
+    {
+        // A texel with straight alpha: its color is not multiplied by its 50 %.
+        Texture2D texture(device, 1, 1);
+        const Color texel(200, 100, 40, 128);
+        texture.SetData(&texel, 1);
+        Material pane = Unlit("pane", Vector3(1.0f, 1.0f, 1.0f));
+        pane.blend = BlendMode::AlphaBlend;
+        pane.baseTexture = &texture;
+        RenderQueue queue;
+        queue.Submit(Item(pane, 0.0f));
+
+        EXPECT_TRUE(Near(At(Draw(queue), Size / 2, Size / 2), 200, 100, 40)) << "read as premultiplied: too bright";
+        pane.straightAlpha = true;
+        EXPECT_TRUE(Near(At(Draw(queue), Size / 2, Size / 2), 100, 50, 20)) << "color * alpha over black";
+        EXPECT_TRUE(renderer.LastFallbacks().empty());
+
+        pane.alpha = 0.5f;
+        (void)Draw(queue);
+        ASSERT_EQ(renderer.LastFallbacks().size(), 1u);
+        EXPECT_EQ(renderer.LastFallbacks()[0],
+                  "material 'pane': straight alpha with alpha < 1: stock effects premultiply it, so it counts twice");
+    }
+
     TEST_F(Fixture, StockEffectsReportPremultipliedTransparency)
     {
         Material pane = Unlit("pane", Vector3(0.0f, 0.0f, 1.0f));
