@@ -52,10 +52,25 @@ if grep -rq "$root/include\|$root/src" "$prefix/lib/cmake/CnaEngine"; then
     exit 1
 fi
 
+# cna-extended 0.2.0 and later install a CMake package: install it beside the
+# engine, so the probes take it from there as a binary consumer would.
+extended_package=OFF
+if [ -f "$extended_dir/cmake/CnaExtendedConfig.cmake.in" ]; then
+    extended_build="$consumer_build/extended-package"
+    cmake -S "$extended_dir" -B "$extended_build" -G Ninja -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}" \
+        -DCNA_EXTENDED_CNA_DIR="$cna_dir" -DCNA_EXTENDED_SHARP_RUNTIME_DIR="$sharp_dir" \
+        -DCNA_EXTENDED_BUILD_TESTS=OFF -DCNA_EXTENDED_BUILD_EXAMPLES=OFF \
+        -DCNA_ENABLE_SDL=OFF -DCNA_ENABLE_VIDEO=OFF "${launcher[@]}" > /dev/null
+    cmake --build "$extended_build" --parallel "$jobs"
+    cmake --install "$extended_build" --prefix "$prefix" > /dev/null
+    extended_package=ON
+fi
+
 cmake -S "$root/tests/consumer" -B "$consumer_build" -G Ninja \
     -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}" \
     -DCMAKE_PREFIX_PATH="$prefix" \
     -DPROBE_CNA_DIR="$cna_dir" -DPROBE_SHARP_RUNTIME_DIR="$sharp_dir" -DPROBE_EXTENDED_DIR="$extended_dir" \
+    -DPROBE_EXTENDED_FROM_PACKAGE="$extended_package" \
     "${launcher[@]}"
 cmake --build "$consumer_build" --parallel "$jobs"
 ctest --test-dir "$consumer_build" --output-on-failure --parallel "$jobs"

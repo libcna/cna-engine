@@ -4,6 +4,40 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-22 — cna-extended fixes (EXT-002, UP-005/011/015), its package (REL-001), CNA reports
+
+The owner of cna-extended delegated its fixes; CNA defects went to the Codex
+session `cna-demos`. CNA `~/deps/cna-baseline` `900d0db3b`, Sharp Runtime
+`~/deps/sharp-runtime-baseline` `f2aecfef`; cna-extended branch
+`engine-upstream` (worktree `libcna/cna-extended-engine`, fast-forwarded into
+the local `develop` at `86870ad`, not pushed).
+
+- cna-extended `build/` (Debug, SOFTWARE/HEADLESS/NULL, SDL and video off,
+  through ccache with the shared base directory): before, 2371 tests with 5
+  failures (the four bitmap-font fixture tests, UP-011; the skinned animation
+  test, UP-005) and 2 skips (EXT-002); after, **2372 of 2372 pass, none
+  skipped** (the new one keeps `Version.hpp` equal to the project version).
+  `cna_extended_minimal`, `cna_extended_tiled_demo` and
+  `cna_extended_world3d_demo` (which failed with "BlendIndices0 is missing"
+  before `59f179f`) run headlessly. Clang `-Wmismatched-tags` no longer warns
+  on `SizeF` (it did before `a6b0c56`).
+- `tools/check_package.sh` (cna-extended): installed the package into
+  `build-consumer/install` and built and ran a consumer
+  (`find_package(CnaExtended 0.2)`, an `OrthographicCamera` on a software
+  device): ok. Without CNA's targets the package reports which are missing;
+  `find_package(CnaExtended 0.3)` does not match 0.2.0.
+- Engine `build/` against the local cna-extended `develop`: **339 of 339**
+  (`ctest -E carsim_suite`). `tools/run_consumer_probes.sh`: **3 of 3**, with
+  `CNA::Extended` taken from the installed cna-extended package 0.2.0.
+- CNA (`codex queue` to `cna-demos`): UP-002 documented (CNA `99b54079e`);
+  UP-018 judged not reproducible there and a regression test added
+  (`a6e731cc2`), but the engine's shadow-map test at `900d0db3b` still reads
+  `-nan` from a `Single` target on SOFTWARE (precision probe: 8 bits), so a
+  reproducer from the engine's exact sequence (Clear, then a fogged
+  BasicEffect draw into a Single target with Depth24) was sent; UP-019
+  reproduced there; UP-006 may be fixed by CNA `470b12a5d` (not in the pin);
+  UP-001 accepted as a gap. Nothing is pushed in CNA yet.
+
 ## 2026-10-22 — GAME-064/065: shadows on baked light, shadows and menus in backrooms and school
 
 Engine `develop` `2d893cb` (`Material::bakedKeyLight`) and `fd5a478` (menu

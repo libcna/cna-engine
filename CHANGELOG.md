@@ -242,6 +242,12 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 
 ### Other API additions (experimental headers)
 
+- Installed package: when a consumer asks for `ExtendedIntegration` and has
+  no `CNA::Extended`, `CnaEngineConfig.cmake` looks for cna-extended's own
+  package (`find_package(CnaExtended <the version the engine was built
+  with>)`, cna-extended 0.2.0 and later; UP-001). The consumer probes take
+  cna-extended from that package when it has one.
+
 - `Graphics/TextureAtlas.hpp`: `TextureAtlas`, `AtlasRect`, `UvRect` (named
   regions in pixels, normalized coordinates, frame grids) — easy-3d's atlas.
 - `Graphics/MeshBuilder.hpp`: `AddBox(min, max, BoxFaces)` (per-face

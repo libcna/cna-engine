@@ -37,6 +37,24 @@ install(EXPORT CnaEngineTargets
     DESTINATION "${CNA_ENGINE_INSTALL_CMAKEDIR}")
 
 set(CNA_ENGINE_PACKAGE_HAS_EXTENDED ${CNA_ENGINE_WITH_EXTENDED})
+# The cna-extended package version to look for when the consumer defines no
+# CNA::Extended: the version this engine was built with, from 0.2.0 on (the
+# first that installs a package); otherwise any.
+set(CNA_ENGINE_EXTENDED_PACKAGE_VERSION "")
+if(CNA_ENGINE_WITH_EXTENDED AND TARGET CNA::Extended)
+    get_target_property(_extended_target CNA::Extended ALIASED_TARGET)
+    if(NOT _extended_target)
+        set(_extended_target CNA::Extended)
+    endif()
+    get_target_property(_extended_source ${_extended_target} SOURCE_DIR)
+    get_target_property(_extended_imported ${_extended_target} IMPORTED)
+    if(_extended_source AND NOT _extended_imported)
+        get_directory_property(_extended_version DIRECTORY "${_extended_source}" DEFINITION cna_extended_VERSION)
+        if(_extended_version VERSION_GREATER_EQUAL 0.2)
+            set(CNA_ENGINE_EXTENDED_PACKAGE_VERSION "${_extended_version}")
+        endif()
+    endif()
+endif()
 # CNA and cna-extended targets cannot be exported (UP-001): the package
 # configuration re-attaches each target's links once the consumer defined them.
 set(CNA_ENGINE_PACKAGE_REQUIRED "")

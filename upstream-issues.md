@@ -3,7 +3,10 @@
 Defects and gaps found in sibling repositories (CNA, Sharp Runtime,
 cna-extended, simulators). By agreement with the repository owner they are
 **recorded here only** and not fixed in those repositories from cna-engine
-work. Each entry says how cna-engine copes in the meantime.
+work. Each entry says how cna-engine copes in the meantime. Since 2026-10-22
+the owner of cna-extended has delegated its fixes to cna-engine's agent
+(done in cna-extended itself), and CNA defects are sent to the Codex session
+`cna-demos`, which works on CNA (`codex queue --thread <its id>`).
 
 Status values: `open` (unresolved upstream), `worked around` (engine copes, an
 upstream change would still be better), `resolved` (fixed upstream; keep the
@@ -14,7 +17,7 @@ entry for provenance).
 ## UP-001 — CNA and cna-extended install no CMake package
 
 - Repositories: `libcna/cna` (`next`), `libcna/cna-extended` (`develop`)
-- Status: worked around
+- Status: worked around; cna-extended installs a package since 0.2.0 (`86870ad`, local `develop`, not pushed yet), the CNA part was reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
 - Found: 2026-10-19, ENG-010
 
 Neither project has `install(EXPORT ...)` or a `<Name>Config.cmake`; the only
@@ -32,7 +35,7 @@ config file should call `find_dependency(CNA)` instead.
 ## UP-002 — Several XNA-compatible constructors are tagged `CNAEXT`
 
 - Repository: `libcna/cna`, `modules/input` and `modules/math`
-- Status: open (informational)
+- Status: open (informational), reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
 - Found: 2026-10-19, ENG-020
 
 `KeyboardState()`, `MouseState()`, `GamePadState()` default constructors and
@@ -120,7 +123,7 @@ containment, so it is unaffected; no workaround is added.
 - Repository: `libcna/cna-extended` (`develop` at `0061e3e1`), test
   `tests/CNA/Extended/World3DEXT/AnimationSystem3DEXTTests.cpp`
   (`MakeMovingTriangleModel`, line ~104)
-- Status: open
+- Status: fixed in cna-extended `6925fa3` (the test) and `59f179f` (the four production buffers and the World3D demo), local `develop`, not pushed yet; the owner delegated cna-extended work on 2026-10-22
 - Found: 2026-10-19, ADR-002 rerun of the cna-extended suite against CNA
   `5a44d2c5`
 
@@ -156,7 +159,7 @@ Engine handling: engine GPU meshes always pass a `VertexDeclaration`
 ## UP-006 — The `CNA` umbrella and CNA's module targets give two runtimes in one process
 
 - Repository: `libcna/cna` (`CNA_SHARED_LIBRARY`, default ON on Linux/GCC/Clang)
-- Status: worked around in the engine's probes; matters for engine adoption
+- Status: worked around in the engine's probes and the games (CNA built statically); reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
 - Found: 2026-10-19, MILESTONE-2 Street scene comparison
 
 With `CNA_SHARED_LIBRARY=ON`, the `CNA` umbrella target links `libcna.so`,
@@ -268,7 +271,7 @@ Engine handling: none (the engine compiles Street's tests without `-Werror`).
 
 - Repository: `libcna/cna-extended` (`develop`),
   `tests/CNA/Extended/BitmapFonts/BitmapFontFileReaderTests.cpp` (`FixturePath`)
-- Status: open (test robustness; the library is fine)
+- Status: fixed in cna-extended `f70b669` (local `develop`, not pushed yet)
 - Found: 2026-10-20, rerunning the cna-extended suite against CNA `688f3f23`
 
 `FixturePath` builds `std::filesystem::path(__FILE__).parent_path() / "files"
@@ -387,7 +390,7 @@ outlines as lines and works on every context.
 - Repository: `libcna/cna-extended` (`develop`),
   `include/CNA/Extended/Size.hpp` (`class SizeF;`) and
   `include/CNA/Extended/SizeF.hpp` (`struct SizeF`)
-- Status: open
+- Status: fixed in cna-extended `a6b0c56` (local `develop`, not pushed yet)
 - Found: 2026-10-20, compiling every engine translation unit with Clang
 
 Clang warns (`-Wmismatched-tags`) in every translation unit that includes
@@ -449,7 +452,7 @@ with `bake-assets --content` (215 surfaces, 85 MB peak) instead of a capture.
 ## UP-018 — The software renderer keeps a `Single` render target as 8-bit colour
 
 - Repository: `libcna/cna` (baseline `900d0db3b`), software renderer
-- Status: open
+- Status: reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
 - Found: 2026-10-22, GAME-031 (the engine's shadow map)
 
 A `RenderTarget2D` created with `SurfaceFormat::Single` on the software
@@ -469,7 +472,7 @@ when its floats come back as NaN (`tests/Graphics/ShadowMapTests.cpp`), with an
 
 - Repository: `libcna/cna` (baseline `900d0db3b`), software and EasyGL
   (OpenGL ES 3) renderers
-- Status: open
+- Status: worked around (calibration); reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
 - Found: 2026-10-22, GAME-031
 
 `IShadowReceiverEXT` receivers look the map up at `v = y * 0.5 + 0.5` of the

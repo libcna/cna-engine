@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MIT
 @PACKAGE_INIT@
 
-# CNA and cna-extended export no CMake package (upstream-issues.md UP-001).
-# A consumer adds them as source trees (or otherwise defines their targets)
-# BEFORE find_package(CnaEngine); this file only verifies that they exist.
+# CNA exports no CMake package (upstream-issues.md UP-001): a consumer adds
+# its source tree (or otherwise defines its targets) BEFORE
+# find_package(CnaEngine); this file verifies that they exist. cna-extended
+# installs a package since 0.2.0: when CNA::Extended is not defined yet, it
+# is looked up with find_package(CnaExtended).
 set(CnaEngine_HAS_EXTENDED @CNA_ENGINE_PACKAGE_HAS_EXTENDED@)
 
 # Every CNA target an exported engine target links (cna-extended aside).
@@ -26,10 +28,11 @@ if(_cna_engine_wants_extended AND NOT CnaEngine_HAS_EXTENDED)
         "this CnaEngine installation was built without ExtendedIntegration (CNA_ENGINE_WITH_EXTENDED=OFF)")
     return()
 endif()
-if(CnaEngine_HAS_EXTENDED AND NOT TARGET CNA::Extended)
-    # The exported ExtendedIntegration target names CNA::Extended; it is only
-    # usable when the consumer provides it.
-    if(_cna_engine_wants_extended)
+if(CnaEngine_HAS_EXTENDED AND NOT TARGET CNA::Extended AND _cna_engine_wants_extended)
+    # The exported ExtendedIntegration target names CNA::Extended: from the
+    # consumer's cna-extended source tree, else from its installed package.
+    find_package(CnaExtended @CNA_ENGINE_EXTENDED_PACKAGE_VERSION@ CONFIG QUIET)
+    if(NOT TARGET CNA::Extended)
         list(APPEND _cna_engine_missing CNA::Extended)
     endif()
 endif()

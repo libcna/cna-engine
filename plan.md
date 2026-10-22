@@ -194,6 +194,15 @@ there the same day (ADR-002). Remaining, for cna-extended's owner: remove the
 two unconditional `GTEST_SKIP()`s in `tests/CNA/Extended/OrthographicCameraTests.cpp`;
 the CI lane reports when the skips are gone.
 
+Progress (2026-10-22): the owner of cna-extended delegated the work there.
+cna-extended `0fae0ee` (branch `engine-upstream`, fast-forwarded into its
+local `develop`, not pushed) removes both skips and pins its CI to CNA
+`900d0db3b` and Sharp Runtime `f2aecfef`; both tests pass unmodified, the
+whole suite runs 2371 of 2371 with no skips (2372 with the version test of
+`86870ad`). The same branch fixes UP-005, UP-011 and UP-015. Open: pushing
+cna-extended and moving the engine's cna-extended pin (then the CI lane's
+`KNOWN_FAILURE` list empties).
+
 ### EXT-003 — Establish an upstream compatibility lane `[x]`
 
 Acceptance:
@@ -948,9 +957,14 @@ Progress: installed CMake package with `SameMinorVersion`, MIT `LICENSE`,
 `CHANGELOG.md`, API snapshot of pilot-validated headers, and baseline revisions
 machine-checked at configure time, including where a differing checkout
 stands relative to the pin (descendant by N commits, or older/diverged;
-`CNA_ENGINE_REQUIRE_BASELINE_DESCENDANT` enforces the range). Open:
-CNA/cna-extended packages (UP-001) and version ranges once dependencies have
-releases.
+`CNA_ENGINE_REQUIRE_BASELINE_DESCENDANT` enforces the range). 2026-10-22:
+cna-extended installs a CMake package from 0.2.0 (`86870ad`, delegated by its
+owner; not pushed yet); the engine's installed configuration finds it
+(`find_package(CnaExtended <the version it was built with>)`, same minor
+version) when the consumer has no `CNA::Extended`, and the consumer probes
+take cna-extended from that package. Open: CNA's package (UP-001, reported to
+CNA through the Codex session `cna-demos`) and version ranges once the
+dependencies tag releases.
 
 ### REL-002 — Complete documentation and examples `[~]`
 
