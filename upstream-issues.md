@@ -17,7 +17,7 @@ entry for provenance).
 ## UP-001 — CNA and cna-extended install no CMake package
 
 - Repositories: `libcna/cna` (`next`), `libcna/cna-extended` (`develop`)
-- Status: worked around; cna-extended installs a package since 0.2.0 (`86870ad`, published, pinned), the CNA part was reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue; Sharp Runtime published a relocatable package for it on 2026-10-22 (`42847935`, `1dc8785b`, in the engine's pin), CNA's C++ module package is still open
+- Status: resolved on 2026-10-22: cna-extended installs a package since 0.2.0 (`86870ad`), Sharp Runtime since `42847935`/`1dc8785b`, and CNA a relocatable C++ module SDK since `58ebc46fd` (`CNA_INSTALL_CXX`, made by the Codex session `cna-demos` at the owner's request). The engine pins CNA `cb377fa04`; its installed configuration looks up `find_package(CNA CONFIG COMPONENTS ...)` and `find_package(CnaExtended)` when the consumer has not defined their targets, and the consumer probes build from installed packages only
 - Found: 2026-10-19, ENG-010
 
 Neither project has `install(EXPORT ...)` or a `<Name>Config.cmake`; the only

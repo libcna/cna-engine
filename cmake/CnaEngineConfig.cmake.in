@@ -1,15 +1,24 @@
 # SPDX-License-Identifier: MIT
 @PACKAGE_INIT@
 
-# CNA exports no CMake package (upstream-issues.md UP-001): a consumer adds
-# its source tree (or otherwise defines its targets) BEFORE
-# find_package(CnaEngine); this file verifies that they exist. cna-extended
-# installs a package since 0.2.0: when CNA::Extended is not defined yet, it
-# is looked up with find_package(CnaExtended).
+# The consumer may define CNA's targets itself (add_subdirectory() of CNA's
+# source tree) BEFORE find_package(CnaEngine); otherwise CNA's installed C++
+# SDK (CNA_INSTALL_CXX, since CNA 58ebc46fd: UP-001) is looked up here, with
+# the modules the engine links. cna-extended installs a package since 0.2.0:
+# when CNA::Extended is not defined yet, it is looked up too.
 set(CnaEngine_HAS_EXTENDED @CNA_ENGINE_PACKAGE_HAS_EXTENDED@)
 
 # Every CNA target an exported engine target links (cna-extended aside).
 set(_cna_engine_required_targets @CNA_ENGINE_PACKAGE_REQUIRED@)
+set(_cna_engine_cna_components "")
+foreach(_cna_engine_target IN LISTS _cna_engine_required_targets)
+    if(NOT TARGET ${_cna_engine_target} AND _cna_engine_target MATCHES "^CNA::(.+)$")
+        list(APPEND _cna_engine_cna_components ${CMAKE_MATCH_1})
+    endif()
+endforeach()
+if(_cna_engine_cna_components)
+    find_package(CNA CONFIG QUIET COMPONENTS ${_cna_engine_cna_components})
+endif()
 set(_cna_engine_missing "")
 foreach(_cna_engine_target IN LISTS _cna_engine_required_targets)
     if(NOT TARGET ${_cna_engine_target})
@@ -40,7 +49,7 @@ endif()
 if(_cna_engine_missing)
     set(CnaEngine_FOUND FALSE)
     set(CnaEngine_NOT_FOUND_MESSAGE
-        "define these targets before find_package(CnaEngine), e.g. by add_subdirectory() of the CNA/cna-extended source trees: ${_cna_engine_missing}")
+        "define these targets before find_package(CnaEngine), by add_subdirectory() of the CNA/cna-extended source trees or with CNA's installed C++ SDK and cna-extended's package on CMAKE_PREFIX_PATH: ${_cna_engine_missing}")
     return()
 endif()
 

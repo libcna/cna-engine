@@ -242,11 +242,14 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 
 ### Other API additions (experimental headers)
 
-- Installed package: when a consumer asks for `ExtendedIntegration` and has
-  no `CNA::Extended`, `CnaEngineConfig.cmake` looks for cna-extended's own
-  package (`find_package(CnaExtended <the version the engine was built
-  with>)`, cna-extended 0.2.0 and later; UP-001). The consumer probes take
-  cna-extended from that package when it has one.
+- Installed package: when a consumer has not defined CNA's targets,
+  `CnaEngineConfig.cmake` looks for CNA's installed C++ SDK
+  (`find_package(CNA CONFIG COMPONENTS <the modules the engine links>)`, CNA
+  `58ebc46fd` and later); when it asks for `ExtendedIntegration` and has no
+  `CNA::Extended`, for cna-extended's own package (`find_package(CnaExtended
+  <the version the engine was built with>)`, cna-extended 0.2.0 and later;
+  UP-001). A game can then be built from installed packages alone; the
+  consumer probes do so when the dependencies can install.
 
 - `Graphics/TextureAtlas.hpp`: `TextureAtlas`, `AtlasRect`, `UvRect` (named
   regions in pixels, normalized coordinates, frame grids) — easy-3d's atlas.

@@ -14,8 +14,8 @@ on:
 # configure step runs with CNA_ENGINE_ENFORCE_BASELINE=ON, so a mismatch fails
 # the build instead of silently testing another revision.
 env:
-  CNA_REF: 08c1387eca7f9707d6180ff57d07f0360e059672
-  CNA_EXTENDED_REF: 86870ad2bf6b3d9a947edc359a5819c83f56f6dc
+  CNA_REF: cb377fa04057b061f1daafb45c906e7aa2b31379
+  CNA_EXTENDED_REF: c19c6e5e175ccf11a6e5e998f808502a9fc862a9
   SHARP_RUNTIME_REF: 1dc8785b35284b5cf50f3aec361703bfaf090b72
   # Workspace convention: at most three parallel compile and test jobs.
   JOBS: 3

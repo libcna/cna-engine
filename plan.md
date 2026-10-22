@@ -977,9 +977,13 @@ cna-extended installs a CMake package from 0.2.0 (`86870ad`, delegated by its
 owner; not pushed yet); the engine's installed configuration finds it
 (`find_package(CnaExtended <the version it was built with>)`, same minor
 version) when the consumer has no `CNA::Extended`, and the consumer probes
-take cna-extended from that package. Open: CNA's package (UP-001, reported to
-CNA through the Codex session `cna-demos`) and version ranges once the
-dependencies tag releases.
+take cna-extended from that package. Later the same day CNA published a
+relocatable C++ module SDK (`58ebc46fd`, UP-001; Sharp Runtime's package came
+with `1dc8785b`); the engine pins CNA `cb377fa04`, its installed configuration
+finds CNA's SDK when the consumer has not defined CNA's targets, and the
+consumer probes (strict, enhanced, a `cna_engine_add_game` game) build from
+the installed CNA, cna-extended and engine packages alone. Open: version
+ranges once the dependencies tag releases.
 
 ### REL-002 — Complete documentation and examples `[x]`
 

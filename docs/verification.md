@@ -4,6 +4,25 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-22 — Baseline move: CNA `cb377fa04` (UP-001), cna-extended `c19c6e5`
+
+CNA published `cb377fa04`, which installs a relocatable C++ module SDK
+(`58ebc46fd`, UP-001); Sharp Runtime stays at `1dc8785b` (its package);
+cna-extended `c19c6e5` (CI pins only after `86870ad`). Clean clones as below.
+
+- `build/`, baseline enforced (all three match): **339 of 339**.
+- cna-extended's suite against CNA `cb377fa04`: **2372 of 2372**, nothing
+  skipped.
+- `tools/run_consumer_probes.sh`: **3 of 3**, now from installed packages
+  alone. The script builds CNA's SDK (`CNA_INSTALL_CXX=ON`, static, SOFTWARE,
+  HEADLESS, NULL audio, target `cna_cpp_sdk`) and installs its `SharpRuntime`
+  and `CNACpp` components, installs cna-extended's package and the engine's;
+  the consumer adds no source tree, and the engine's configuration finds CNA
+  (runtime 0.1.0) and cna-extended 0.2.0. The strict and enhanced consumers
+  and a game made with the installed `cna_engine_add_game` build and run.
+- `build-probe/`, baseline enforced, pilot suites: **50 of 50** (car-simulator's
+  suite, street-simulator's 13 programs, the equivalence probes).
+
 ## 2026-10-22 — Baseline move: CNA `08c1387ec`, Sharp Runtime `1dc8785b` (ADR-002)
 
 CNA's published `next` `08c1387ec` carries the fixes for UP-006 and UP-019;

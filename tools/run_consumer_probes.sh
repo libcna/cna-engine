@@ -52,6 +52,27 @@ if grep -rq "$root/include\|$root/src" "$prefix/lib/cmake/CnaEngine"; then
     exit 1
 fi
 
+sharp_components="Core.Base;IO;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Storage;Security.Cryptography;IO.Compression;Text.Json;Threading.Tasks;Xml"
+
+# CNA installs a relocatable C++ SDK with CNA_INSTALL_CXX (UP-001, CNA
+# 58ebc46fd): build it with the engine's axes (static, software, headless,
+# null audio) and install it with its Sharp Runtime beside the engine.
+cna_package=OFF
+if [ -f "$cna_dir/cmake/InstallCxx.cmake" ]; then
+    cna_build="$consumer_build/cna-sdk"
+    cmake -S "$cna_dir" -B "$cna_build" -G Ninja -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}" \
+        -DCNA_INSTALL_CXX=ON -DCNA_SHARED_LIBRARY=OFF -DCNA_SHARP_RUNTIME_ROOT="$sharp_dir" \
+        -DSHARP_RUNTIME_COMPONENTS="$sharp_components" -DSHARP_RUNTIME_BUILD_TESTS=OFF \
+        -DCNA_GRAPHICS_RENDERER=SOFTWARE -DCNA_PLATFORM=HEADLESS -DCNA_AUDIO_PLATFORM=NULL \
+        -DCNA_ENABLE_SDL=OFF -DCNA_ENABLE_VIDEO=OFF -DCNA_BUILD_TESTS=OFF -DCNA_BUILD_EXAMPLES=OFF \
+        -DCNA_BUILD_C_API=OFF -DCNA_CNAEXT=OFF -DCNA_DEVICES=OFF -DCNA_ENABLE_NET=OFF -DCNA_ENABLE_DRACO=OFF \
+        "${launcher[@]}" > /dev/null
+    cmake --build "$cna_build" --target cna_cpp_sdk --parallel "$jobs"
+    cmake --install "$cna_build" --prefix "$prefix" --component SharpRuntime > /dev/null
+    cmake --install "$cna_build" --prefix "$prefix" --component CNACpp > /dev/null
+    cna_package=ON
+fi
+
 # cna-extended 0.2.0 and later install a CMake package: install it beside the
 # engine, so the probes take it from there as a binary consumer would.
 extended_package=OFF
@@ -70,7 +91,7 @@ cmake -S "$root/tests/consumer" -B "$consumer_build" -G Ninja \
     -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}" \
     -DCMAKE_PREFIX_PATH="$prefix" \
     -DPROBE_CNA_DIR="$cna_dir" -DPROBE_SHARP_RUNTIME_DIR="$sharp_dir" -DPROBE_EXTENDED_DIR="$extended_dir" \
-    -DPROBE_EXTENDED_FROM_PACKAGE="$extended_package" \
+    -DPROBE_EXTENDED_FROM_PACKAGE="$extended_package" -DPROBE_CNA_FROM_PACKAGE="$cna_package" \
     "${launcher[@]}"
 cmake --build "$consumer_build" --parallel "$jobs"
 ctest --test-dir "$consumer_build" --output-on-failure --parallel "$jobs"

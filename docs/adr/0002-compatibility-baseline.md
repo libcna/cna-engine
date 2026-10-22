@@ -46,8 +46,8 @@ throwaway repositories.
 
 | Dependency | Branch | Commit | Committed |
 | --- | --- | --- | --- |
-| CNA | `next` | `08c1387eca7f9707d6180ff57d07f0360e059672` | 2026-10-22 |
-| cna-extended | `develop` | `86870ad2bf6b3d9a947edc359a5819c83f56f6dc` | 2026-10-22 |
+| CNA | `next` | `cb377fa04057b061f1daafb45c906e7aa2b31379` | 2026-10-22 |
+| cna-extended | `develop` | `c19c6e5e175ccf11a6e5e998f808502a9fc862a9` | 2026-10-22 |
 | Sharp Runtime | `next` | `1dc8785b35284b5cf50f3aec361703bfaf090b72` | 2026-10-22 |
 
 cna-extended's pin matches `origin/develop`: on 2026-10-22 it moved from
@@ -74,7 +74,11 @@ UP-019 (`144d9f909`) made at the owner's request by the Codex session
 `cna-demos`; since `abbd8a4ea` its video module needs Uri members of Sharp
 Runtime `c26614e8` (UP-020), so Sharp Runtime moved with it to `1dc8785b`,
 which also begins a Sharp Runtime package for UP-001. The engine's
-calibration test now expects the software renderer the right way up.
+calibration test now expects the software renderer the right way up. Later
+the same day CNA moved on to `cb377fa04`, which installs a relocatable C++
+module SDK (`58ebc46fd`, UP-001), and cna-extended to `c19c6e5`, whose own CI
+pins the same CNA and Sharp Runtime revisions (no code change since
+`86870ad`).
 
 ### Updating the pin
 

@@ -4,10 +4,11 @@
 #
 # This is a separate CMake project that uses cna-engine exactly like a game
 # would: through `find_package(CnaEngine)` on an installed prefix, never through
-# the engine's source tree. CNA installs no package (upstream-issues.md
-# UP-001), so - like any CNA game today - the probe adds it as a source tree
-# first. cna-extended comes from its installed package when it has one
-# (0.2.0 on: PROBE_EXTENDED_FROM_PACKAGE), else from its source tree.
+# the engine's source tree. CNA, Sharp Runtime and cna-extended come from
+# their installed packages when they have them (PROBE_CNA_FROM_PACKAGE: CNA's
+# C++ SDK, UP-001; PROBE_EXTENDED_FROM_PACKAGE: cna-extended 0.2.0 on), and
+# then the probe adds no source tree at all: the engine's package finds them.
+# Otherwise CNA (and cna-extended) are added as source trees first.
 #
 # Run it with tools/run_consumer_probes.sh.
 cmake_minimum_required(VERSION 3.20)
@@ -21,8 +22,13 @@ set(PROBE_CNA_DIR "" CACHE PATH "CNA source tree")
 set(PROBE_SHARP_RUNTIME_DIR "" CACHE PATH "Sharp Runtime source tree")
 set(PROBE_EXTENDED_DIR "" CACHE PATH "cna-extended source tree")
 option(PROBE_EXTENDED_FROM_PACKAGE "cna-extended from its installed package (found by the engine's package)" OFF)
+option(PROBE_CNA_FROM_PACKAGE "CNA and Sharp Runtime from CNA's installed C++ SDK (found by the engine's package)" OFF)
+if(PROBE_CNA_FROM_PACKAGE AND NOT PROBE_EXTENDED_FROM_PACKAGE)
+    message(FATAL_ERROR "cna-extended's source tree needs CNA's: PROBE_CNA_FROM_PACKAGE needs PROBE_EXTENDED_FROM_PACKAGE")
+endif()
 
 # --- Dependencies as a CNA game adds them (same axes as the engine build). ---
+if(NOT PROBE_CNA_FROM_PACKAGE)
 set(CNA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(CNA_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(CNA_BUILD_C_API OFF CACHE BOOL "" FORCE)
@@ -43,6 +49,7 @@ set(SHARP_RUNTIME_COMPONENTS
     CACHE STRING "" FORCE)
 set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory("${PROBE_CNA_DIR}" "${CMAKE_BINARY_DIR}/_cna" EXCLUDE_FROM_ALL)
+endif()
 
 if(NOT PROBE_EXTENDED_FROM_PACKAGE)
     set(CNA_EXTENDED_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -52,6 +59,13 @@ endif()
 
 # --- The engine, from its installed package only. ----------------------------
 find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics App Audio UI EnhancedGraphics ExtendedIntegration)
+if(PROBE_CNA_FROM_PACKAGE)
+    get_target_property(_probe_cna_imported CNA::Math IMPORTED)
+    if(NOT _probe_cna_imported)
+        message(FATAL_ERROR "CNA::Math should come from CNA's installed C++ SDK")
+    endif()
+    message(STATUS "consumer probes: CNA from its installed C++ SDK (runtime ${CNA_RUNTIME_VERSION})")
+endif()
 if(PROBE_EXTENDED_FROM_PACKAGE)
     get_target_property(_probe_extended_imported CNA::Extended IMPORTED)
     if(NOT _probe_extended_imported)
