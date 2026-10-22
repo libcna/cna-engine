@@ -995,6 +995,177 @@ on the software renderer, OpenGL on Mesa llvmpipe and the machine's AMD GPU
 budget, which waits for its idle-machine measurement
 (`docs/pilots/performance-budgets.md`).
 
+## Phase 7 — a new game from CNA and the engine alone
+
+Asked by the owner on 2026-10-22 ("udělej to vše, jak navrhuješ … pokračuj,
+dokud nebudeš mít hotový celý plán"). Phases 1–6 extracted what existing
+games had; someone starting a game from nothing still has to write the
+build, the game loop's wiring and every common game system themselves.
+The simulators show which systems those are: each wrote its own.
+
+Rules for this phase:
+
+- Every facility names the games whose code is its evidence (at least
+  two, `conventions.md`); where the games compute the same thing, a
+  read-only probe compares them, as in SHARE-001. Games are read, never
+  changed: adopting a facility in a game needs the owner's request.
+- New facilities are `experimental` until a game adopts them.
+- Strict placement (XNA 4.0 types only) unless the facility needs a CNA
+  extension; then it goes to the enhanced profile, with a strict fallback
+  where one is possible.
+- Each facility has unit tests; GPU-facing ones a software-renderer test
+  that checks pixels; each new example runs headless as a test.
+- Nothing from "Deferred work and non-goals" below: no editor, no general
+  rigid-body physics, no navmesh/AI framework, no own ECS, no shader graph.
+
+### Part A — starting a game
+
+### GAME-001 — One CMake call builds a game for the desktop and the browser `[x]`
+
+Evidence: the CMake of backrooms-, school- and train-simulator (115, 188
+and 905 lines) and the browser builds of backrooms, school and house, which
+repeat the same Emscripten recipe and shell page.
+
+Acceptance:
+
+- `include(<engine>/cmake/CnaEngineGame.cmake)` adds CNA and the engine
+  with game defaults (desktop renderer, SDL3 platform and audio, static
+  CNA, dependency tests off; WebGL 2 under Emscripten);
+- `cna_engine_add_game(<target> SOURCES … [ASSETS <dir>] [PROFILE
+  strict|enhanced] [WEB_SHELL <file>] [TITLE <text>])` builds the
+  executable, copies the assets beside it on the desktop, preloads them
+  under Emscripten (exception ABI, Asyncify, memory, the renderer link
+  contract), and packages `web-package/` (page, script, wasm, data,
+  `index.html`);
+- the engine ships a default shell page (loading bar, pointer lock, options
+  from the address);
+- a test configures a game through the function in the engine's build.
+
+Result (2026-10-22): `cmake/CnaEngineGame.cmake`,
+`cmake/CnaEngineGameFunctions.cmake`, `cmake/CnaEngineWebPackage.cmake`,
+`cmake/web/shell.html`. `examples/hello_engine` is built with the function
+(desktop test with a screenshot; an Emscripten build of the same example in
+`build-probe/` ran in headless Chrome: WebGL 2, the preloaded texture, the
+page's hint). An empty renderer/platform/audio value leaves the choice to
+CNA. With a shared CNA (the engine's own default build) the function links
+`CNA::Runtime` instead of the `CNA` umbrella (UP-006).
+
+### GAME-002 — Fetch the dependencies at the pinned revisions `[x]`
+
+Acceptance: `tools/fetch_dependencies.sh [dir]` clones CNA, Sharp Runtime
+and easy-gl at the baseline revisions (ADR-002) beside the engine, or
+reuses checkouts that are already there, and initialises only the
+submodules a game build needs; `--dry-run` prints the plan and is tested.
+
+Result (2026-10-22): `tools/fetch_dependencies.sh` (`--dry-run`,
+`--with-extended`, `--no-sdl`, `CNA_ENGINE_GIT_BASE`); all five repositories
+are public on GitHub (`libcna/…`). easy-gl `f4d6afa` (0.1.1) and meta-gl
+`dd3b300` (0.4.1) pinned in `cmake/CnaEngineBaseline.cmake`. Test
+`cna_engine.fetch_dependencies_dry_run` reads the expected pins from that file.
+
+### GAME-003 — `EngineGame`: the game loop already wired `[x]`
+
+Evidence: `examples/quick_start` (425 lines, most of them wiring) and the
+game classes of backrooms, school and train, which each wire the same
+facilities by hand.
+
+Acceptance:
+
+- a strict target `CnaEngine::App` with `EngineGame`, an XNA `Game` that
+  owns the device manager, the action map (with default bindings for quit,
+  screenshot, statistics), a fixed-step clock, a camera kept at the
+  window's aspect, the forward renderer, frame and render statistics, the
+  screenshot queue, automated runs from the command line and the
+  preferences file;
+- a game overrides `LoadGame`, `FixedUpdate`, `Update` and `Submit` (render
+  items into the frame) and may draw over the frame; every part can be
+  replaced or left out;
+- an asset-directory lookup that works beside the executable, from the
+  working directory and in the browser's preload;
+- `examples/hello_engine` shows a lit, textured, moving scene in well under
+  100 lines and runs headless as a test.
+
+Result (2026-10-22): strict target `CnaEngine::App` (`EngineGame`,
+`RunGame`, `Frame`, `AssetDirectory`, `MouseCapture`; `App` added to the
+boundary checker's strict modules) and `Enhanced/RelativeMouseCapture` for
+browser mouse look. `hello_engine` is 81 lines. Found on the way: CNA
+creates the device when `Run()` starts, before `Initialize`, so the window's
+settings are applied in the constructor and `ParseCommandLine` (preferences
+read in `Initialize` are applied with `ApplyChanges`).
+
+### GAME-004 — A project template and `tools/new_game.sh` `[ ]`
+
+Acceptance: `tools/new_game.sh <dir> <Name>` writes a working game project
+(CMake through GAME-001, a game class on `EngineGame`, assets, README,
+`tools/build_web.sh`); the template's game is also built and run by the
+engine's tests, so it cannot rot.
+
+### GAME-005 — Tutorial and examples `[ ]`
+
+Acceptance: `docs/tutorial.md` builds a small 3D game step by step with
+the facilities of this phase; examples for a first-person walk (collision,
+interaction), a third-person animated character and the sky and lights
+run headless as tests.
+
+### Part B — what every game wrote itself
+
+### GAME-010 — Models into render items `[ ]`
+
+Acceptance: an XNA `Model` (from the content manager or CNA's runtime glTF
+import) becomes render items with materials and bone transforms in a few
+lines; strict for XNA `Model`, enhanced where CNA's importer is an
+extension.
+
+### GAME-011 — Skeletal animation `[ ]`
+
+Acceptance: an animation player samples clips (interpolated keyframes,
+bone hierarchy, cross-fade), fills the bone palette that skinned render
+items already take, and is tested against hand-computed poses.
+
+### GAME-020 — Static collision world and raycasts `[ ]`
+
+Acceptance: boxes, triangles and height fields in a spatial grid; ray,
+sphere and capsule queries with hit point, normal and distance; strict.
+
+### GAME-021 — Character controller `[ ]`
+
+Acceptance: a capsule that walks, slides along walls, climbs steps, keeps
+to slopes up to a limit, falls under gravity and jumps, deterministic for
+a fixed step; drives the walk camera.
+
+### GAME-030 — Sky, fog and time of day `[ ]`
+
+Acceptance: a sky dome with a gradient, sun disc and colour ramps over the
+day (with `SunPosition`), fog matched to the horizon, and a lighting rig
+that follows the time of day; strict.
+
+### GAME-031 — Shadows `[ ]`
+
+Acceptance: decided by what CNA offers at the baseline: shadow maps where
+the effects can receive them, otherwise planar and contact shadows for
+strict games; the choice and fallbacks documented.
+
+### GAME-040 — 3D sound `[ ]`
+
+Acceptance: a strict `CnaEngine::Audio` target: a listener that follows the
+camera, positional one-shots and loops with a voice limit, ambience, and
+silent operation without an audio device.
+
+### GAME-050 — Text, menus and HUD `[ ]`
+
+Acceptance: text with a font a game can get without the XNA content
+pipeline, a menu navigated by actions, HUD anchoring, and a settings screen
+built from a `QualitySchema` and the action map's rebinding.
+
+### Part C — later in the same phase
+
+### GAME-060 — Post-processing hook `[ ]` (ENG-035 step 4)
+### GAME-061 — Local lights `[ ]`
+### GAME-062 — cna-extended particles and animation adapters `[ ]` (ENG-030)
+### GAME-063 — Save slots `[ ]`
+
+Acceptance for each is written when its part B evidence is in.
+
 ## Deferred work and non-goals for 1.0
 
 - editor and authoring suite;
