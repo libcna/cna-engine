@@ -4,6 +4,48 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-22 — Phase 7: a new game from CNA and the engine alone
+
+Engine `develop` from `8f2aa7f` (plan) to `76a9b9a`; CNA `~/deps/cna-baseline`
+`900d0db3b`, Sharp Runtime `~/deps/sharp-runtime-baseline` `f2aecfef` (the
+pins, clean), cna-extended `../cna-extended` `0061e3e` (its pin, clean),
+easy-gl `v0.1.1`, meta-gl `v0.4.1`.
+
+- `build/` (GCC, Debug, software/headless/null, SDL and video off, against
+  the pinned clones): **337 of 337 tests pass** (`ctest -E carsim_suite`),
+  among them the new App, Collision, Animation, Sky, ShadowMap, LocalLights,
+  PostProcess, Audio (null audio platform), UI, SaveSlots, ModelImport
+  (CNA's run-time glTF import; palettes equal to CNA's `AnimationPlayer`
+  within 2e-4), ShadowReception, LocalLight and ParticleBillboards tests,
+  `cna_engine.new_game`, `cna_engine.fetch_dependencies_dry_run`, and eight
+  examples (`hello_engine`, `template_game`, `first_person`, `third_person`,
+  `day_night` new). The strict boundary check covers App, Collision,
+  Animation, Audio and UI; the API snapshot moved for three additive
+  accessors (CHANGELOG).
+- `tools/run_consumer_probes.sh` (`build-consumer/`): the installed package
+  with the new components App, Audio and UI; **3 of 3** — the strict and
+  enhanced consumers and a game built with the installed
+  `cna_engine_add_game` (the hello example, run with a screenshot).
+- A new user's path: `tools/new_game.sh build-consumer/new_game "Crate Walk"`,
+  configured on its own through `cmake/CnaEngineGame.cmake` (CNA's default
+  OpenGL ES 3, SDL3 from the CNA checkout's Linux prebuilt, Release): built,
+  and run on the GPU (`SDL_VIDEODRIVER=offscreen`, Mesa 25.0.7 radeonsi):
+  sky, the crates' and the platform's shadows away from the sun, the
+  crosshair and hint. Its `tools/build_web.sh` (Emscripten 6.0.9, the CNA
+  checkout's `.sdl-prebuilt-emscripten` read-only): in headless Chrome
+  (SwiftShader, a private Xvfb) W walks up the stairs, Escape opens the pause
+  menu, Down and Enter its settings (volume, the Jump and Run keys); WebGL 2
+  shadows fall the right way; no error in the console.
+- The engine's `hello_engine` was also built under Emscripten in
+  `build-probe/` and ran in headless Chrome (the preloaded texture, the
+  page's hint).
+
+Found on the way (`upstream-issues.md`): UP-018 (the software renderer keeps
+a `Single` render target as 8-bit colour) and UP-019 (shadow receivers read a
+render-target shadow map the other way up on the software renderer than on
+EasyGL; the engine calibrates per device). Not checked: other GPUs and
+browsers than the above, audible sound output, Windows and macOS.
+
 ## 2026-10-21 — easy-3d oracle made self-contained (PILOT-004 closure)
 
 The test-only portions of easy-3d used by `Easy3DEquivalenceTests` were frozen
