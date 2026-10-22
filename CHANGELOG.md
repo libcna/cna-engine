@@ -228,6 +228,7 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 - `Graphics/LocalLights.hpp` (GAME-061): `LocalLight`, `LightReach`,
   `StrongestLight`, `LightPools`; `Enhanced/LocalLightBinder.hpp`:
   `LocalLightBinder`, `InstallLocalLights`.
+- `Extended/ParticleBillboards.hpp` (GAME-062): `ParticleBillboards`.
 
 ### Other API additions (experimental headers)
 

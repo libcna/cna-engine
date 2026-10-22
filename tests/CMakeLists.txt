@@ -106,6 +106,7 @@ if(CNA_ENGINE_WITH_EXTENDED)
         Extended/DebugOverlayTests.cpp
         Extended/EngineWorldScreenTests.cpp
         Extended/WorldCameraSyncTests.cpp
+        Extended/ParticleBillboardsTests.cpp
     )
     target_link_libraries(cna_engine_extended_tests PRIVATE cna_engine_extended GTest::gtest_main)
     cna_engine_sanitize(cna_engine_extended_tests)

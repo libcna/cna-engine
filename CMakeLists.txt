@@ -152,6 +152,7 @@ if(CNA_ENGINE_WITH_EXTENDED)
         src/Extended/DebugOverlay.cpp
         src/Extended/EngineWorldScreen.cpp
         src/Extended/WorldCameraSync.cpp
+        src/Extended/ParticleBillboards.cpp
     )
     target_link_libraries(cna_engine_extended PUBLIC cna_engine_graphics)
     cna_engine_link_external(cna_engine_extended CNA::Extended)

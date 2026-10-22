@@ -441,7 +441,8 @@ Blocked by: ENG-012. EXT-001 is complete.
 
 Result: `Extended/EngineWorldScreen.hpp` (a World3DScreenEXT whose update
 order is documented and tested) and `Extended/WorldCameraSync.hpp` for games
-that opt out. Open: particles/animation adapters once a pilot needs them.
+that opt out. Particles: `Extended/ParticleBillboards.hpp` (GAME-062);
+animation: the engine's `Animator` (GAME-011).
 
 ### ENG-031 — Define materials and shader-facing parameters `[x]`
 
@@ -1325,7 +1326,21 @@ the wrapped binder stays alive. Several lamps on one item are not added up
 (museum draws extra passes for that). Tests: reach and cone, the strongest
 lamp, a pool's pixels, a lamp lighting a dark floor through the stock and
 the PBR binders.
-### GAME-062 — cna-extended particles and animation adapters `[ ]` (ENG-030)
+### GAME-062 — cna-extended particles and animation adapters `[x]` (ENG-030)
+
+Acceptance: cna-extended's 3D particles drawn by the engine's renderer
+with the frame's other items; its animation facilities usable without
+adapters where they need none.
+
+Result (2026-10-22): `Extended/ParticleBillboards.hpp` (ExtendedIntegration):
+every live particle of a `ParticleEffect3DEXT` becomes a camera-facing quad
+(colour, opacity, scale, rotation) in one transparent render item, additive
+with a soft dot by default; vertices packed by the declaration's offsets
+(CNA rejects partial `SetData`, and the C++ vertex struct need not match
+the GPU stride). Tests: one particle's colour and place, ten particles as
+twenty triangles. Skeletal animation is the engine's own `Animator`
+(GAME-011) rather than cna-extended's ECS component; its `Tweener` works on
+plain values and needs no adapter.
 ### GAME-063 — Save slots `[ ]`
 
 Acceptance for each is written when its part B evidence is in.
