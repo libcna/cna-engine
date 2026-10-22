@@ -141,7 +141,11 @@ def check_file(path: pathlib.Path, display: str, xna_types: set[str], violations
             if not STRICT_ENGINE_INCLUDE_RE.match(inc):
                 violations.append(f"{where}: strict code includes non-strict engine header '{inc}'")
         elif opener == '"' and not (inc.startswith("System/") or inc.startswith("SharpRuntime/")):
-            violations.append(f"{where}: unexpected local include '{inc}'")
+            # A private header beside a source file (src/<module>/X.hpp) is
+            # itself part of the scanned strict tree, so it is checked too.
+            private = path.parent / inc
+            if not ("/" not in inc and path.parent.parts[-2:-1] == ("src",) and private.is_file()):
+                violations.append(f"{where}: unexpected local include '{inc}'")
 
     for line_no, line in enumerate(code.splitlines(), start=1):
         for pat in FORBIDDEN_IDENTIFIERS:
