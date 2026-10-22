@@ -439,7 +439,7 @@ engine's strict surface with only the ADR-001 include allowance
 reaches cna-extended (boundary tests and the consumer probe's link-closure
 check).
 
-### ENG-030 — Integrate `cna-extended` lifecycle and World3D `[~]`
+### ENG-030 — Integrate `cna-extended` lifecycle and World3D `[x]`
 
 Acceptance:
 
@@ -453,7 +453,10 @@ Blocked by: ENG-012. EXT-001 is complete.
 Result: `Extended/EngineWorldScreen.hpp` (a World3DScreenEXT whose update
 order is documented and tested) and `Extended/WorldCameraSync.hpp` for games
 that opt out. Particles: `Extended/ParticleBillboards.hpp` (GAME-062);
-animation: the engine's `Animator` (GAME-011).
+animation: the engine's `Animator` (GAME-011). Closed on 2026-10-22: every
+acceptance point has its result above (adapters for `Screen`/`World3DScreenEXT`
+with ECS systems, an opt-out path, documented and tested ownership and
+order), and cna-extended now also installs a package the engine finds.
 
 ### ENG-031 — Define materials and shader-facing parameters `[x]`
 
@@ -544,7 +547,7 @@ instances) go through engine instanced render items with Street's `PbrEffect`
 time is equal within run-to-run noise (engine 7.4–9.9 s, Street 7.6–10.8 s
 over the same runs, software renderer, Debug).
 
-### ENG-035 — Add pass orchestration incrementally `[~]`
+### ENG-035 — Add pass orchestration incrementally `[x]`
 
 Deliver in this order:
 
@@ -572,6 +575,16 @@ a pilot that needs them (Street's renderer has no post pass at present).
 Step 5 (reflection probes): `PbrMaterialBinder::EnvironmentSelector` with
 `RenderItem::userData`; Street's probe-lit frame is reproduced to 75 differing
 pixels of 129,600 (probes change 82 % of Street's own frame).
+
+Update (2026-10-22): steps 3 and 4 came with Phase 7 once games needed them.
+Shadows: `Graphics/ShadowMap.hpp` with reception in
+`Enhanced/ShadowReception.hpp` (GAME-031), also on baked light
+(`Material::bakedKeyLight`, GAME-064), in use in backrooms and school
+(GAME-065). Post-processing: `Graphics/PostProcess.hpp` (GAME-060). Each has
+documented fallbacks (devices without shadow sampling get no map; a chain
+without a render target draws straight to the back buffer). Cascaded shadow
+maps are not built: no game needs them yet, and a single map fitted ahead of
+the camera covers the games that use shadows.
 
 ### ENG-036 — Add quality profiles and capability resolution `[x]`
 
@@ -968,7 +981,7 @@ take cna-extended from that package. Open: CNA's package (UP-001, reported to
 CNA through the Codex session `cna-demos`) and version ranges once the
 dependencies tag releases.
 
-### REL-002 — Complete documentation and examples `[~]`
+### REL-002 — Complete documentation and examples `[x]`
 
 Acceptance:
 
@@ -988,7 +1001,10 @@ pilots adopted the engine (2026-10-20): the quick start keeps the
 engine-owned camera as the pattern for new games; what existing games
 needed — their own camera matrices (`Camera::SetMatrices`), borrowed meshes,
 game passes between engine renders, overlay presets — is in the strict and
-enhanced guides.
+enhanced guides. Closed on 2026-10-22: Phase 7 added `docs/tutorial.md`, the
+`templates/game` project written by `tools/new_game.sh`, and the
+`first_person`, `third_person` and `day_night` examples, all run headlessly
+as tests; every acceptance point holds.
 
 ### REL-003 — Establish the verification matrix `[~]`
 

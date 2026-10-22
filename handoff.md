@@ -214,12 +214,16 @@ Done (see `plan.md` for per-task results):
 3. CI: green on GitHub (engine job, cna-extended lane, canary; run
    39409759296). The known cna-extended failures are named in the lane
    (UP-005, UP-011) and its UP-004 skips are reported when they disappear.
-4. ENG-035: shadows and post-processing only when a pilot needs them (Street
-   currently draws neither; see `docs/pilots/street-simulator.md`).
-   Reflection probes are supported through the PBR binder's selector.
+4. ENG-035 is done: shadows (GAME-031, on baked light GAME-064) and
+   post-processing (GAME-060) came with Phase 7; cascades wait for a game
+   that needs them. Reflection probes go through the PBR binder's selector.
 5. The CNA pin is `900d0db3b` (published, contains UP-004's fix) since
-   2026-10-20; cna-extended's owner can now remove its two orthographic-camera
-   skips (EXT-002).
+   2026-10-20. cna-extended's pin is `86870ad` since 2026-10-22: its owner
+   delegated the fixes (EXT-002's skips gone, UP-005/011/015 fixed, a CMake
+   package from 0.2.0); its CI lane allows no failure or skip. CNA defects
+   UP-001, UP-018 and UP-019 are with the Codex session `cna-demos`
+   (UP-002 documented, UP-006 confirmed fixed by CNA `470b12a5d`); move the
+   CNA pin once a CNA revision with the fixes is published.
 6. Upstream, for their owners: UP-001 (no CNA package), UP-005 (cna-extended
    skinned test), UP-006 (CNA umbrella vs module targets), UP-007 (unpushed
    pin), UP-008 (Street's mesh-memory accounting), UP-009 (car-simulator's
