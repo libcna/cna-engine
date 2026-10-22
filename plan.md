@@ -1370,6 +1370,33 @@ the renames, listing past a junk file, removing, bad names. XNA's
 `StorageContainer` (house, island) is not wrapped: it has no rename, and
 `std::filesystem` covers the desktop and the browser's virtual file system.
 
+### GAME-064 — Shadows on baked light `[x]`
+
+Acceptance: a game that bakes its light into unlit vertex colours (backrooms,
+school, most simulators here) receives the engine's shadow map without
+relighting its world: outside shadows the colours stay as baked.
+
+Result (2026-10-22): `Material::bakedKeyLight`, the key light's share of the
+baked light. The stock binder draws such a material through the lit
+`BasicEffect` with ambient `1 - share`, the key light at `share` and no fill
+lights or specular, so CNA's receivers (which attenuate direct light only)
+take the share away in a shadow; the frame's key light, fills and ambient
+are restored for the next lit item. The mesh needs normals: normals facing
+the key light keep the baked colour exactly, real normals add the key
+light's `N.L`. Tests: the share follows `N.L`, lit items get their lighting
+back, a mesh without normals draws unlit (reported), `keyLight = false`
+keeps the baked colour; a baked floor keeps 0.5 + 0.5 N.L of its colour in
+the light and 0.5 in the box's shadow.
+
+### GAME-065 — Shadows and menus in backrooms and school `[ ]`
+
+Acceptance: backrooms-simulator and school-simulator (branch
+`engine-shadows-menu`, one revertible commit per step, captures compared)
+draw shadows through `ShadowMap`, `CalibrateShadowMap` and
+`ApplyShadowReception` on baked light (GAME-064), and pause into the
+engine's `Menu`/`MenuStack` with a settings page (volume, look
+sensitivity, shadows, key rebinding) whose choices are saved.
+
 ## Deferred work and non-goals for 1.0
 
 - editor and authoring suite;

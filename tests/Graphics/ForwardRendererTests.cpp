@@ -289,6 +289,61 @@ namespace CnaEngine::Graphics
         EXPECT_LT(filled.getRProperty(), bright.getRProperty());
     }
 
+    // Baked light keeps (1 - share) and the key light gives the share back
+    // as N.L allows: the color as baked where the normal faces the light.
+    TEST_F(Fixture, BakedLightKeepsAllButTheKeyLightsShare)
+    {
+        MeshBuilder builder;
+        builder.AddBox(Vector3(-1.0f, -1.0f, -0.1f), Vector3(1.0f, 1.0f, 0.1f));
+        const GpuMesh baked = GpuMesh::Upload(device, builder.Mesh(), VertexLayout::PositionNormalColorTexture(),
+                                              GpuMeshOptions{.missingAttributes = MissingAttributePolicy::UseDefaults});
+        renderer.Lighting().defaultLighting = false;
+        renderer.Lighting().lightColor = Vector3(1.0f, 1.0f, 1.0f);
+        renderer.Lighting().ambientColor = Vector3(0.1f, 0.1f, 0.1f);
+        renderer.Lighting().fillLights = {{Vector3(0.0f, 0.0f, -1.0f), Vector3(0.5f, 0.5f, 0.5f), Vector3::Zero}};
+        Material wall = Unlit("wall", Vector3(0.8f, 0.8f, 0.8f));
+        wall.vertexColors = true;
+        wall.bakedKeyLight = 0.5f;
+        Material sunlit = Unlit("sunlit", Vector3(1.0f, 1.0f, 1.0f));
+        sunlit.shading = ShadingModel::Lit;
+
+        auto draw = [&](const GpuMesh& mesh, const Material& material) {
+            RenderQueue queue;
+            RenderItem item;
+            item.mesh = &mesh;
+            item.material = &material;
+            item.bounds = WorldBounds(mesh, item.world);
+            queue.Submit(item);
+            return At(Draw(queue), Size / 2, Size / 2);
+        };
+        // Lit through the key light alone: the fill light does not add.
+        renderer.Lighting().lightDirection = Vector3(0.0f, 0.0f, -1.0f);
+        EXPECT_TRUE(Near(draw(baked, wall), 204, 204, 204)) << "facing the light: as baked";
+        renderer.Lighting().lightDirection = Vector3(1.0f, 0.0f, 0.0f);
+        EXPECT_TRUE(Near(draw(baked, wall), 102, 102, 102)) << "edge-on: the share is gone";
+        EXPECT_TRUE(renderer.LastFallbacks().empty());
+        // The next lit draw gets the frame's key light, fill and ambient back.
+        renderer.Lighting().lightDirection = Vector3(0.0f, 0.0f, -1.0f);
+        const Color bright = draw(baked, sunlit);
+        EXPECT_GT(bright.getRProperty(), 250);
+        renderer.Lighting().lightDirection = Vector3(1.0f, 0.0f, 0.0f);
+        const Color edge = draw(baked, sunlit);
+        (void)draw(baked, wall);
+        EXPECT_EQ(draw(baked, sunlit), edge) << "fill and ambient restored";
+        EXPECT_TRUE(Near(edge, 153, 153, 153)) << "ambient 0.1 + fill 0.5";
+
+        // Without normals the share cannot be lit: drawn unlit, reported.
+        Material flat = wall;
+        flat.vertexColors = false;
+        EXPECT_TRUE(Near(draw(quad, flat), 204, 204, 204));
+        ASSERT_EQ(renderer.LastFallbacks().size(), 1u);
+        EXPECT_EQ(renderer.LastFallbacks().front(), "material 'wall': drawn unlit: mesh has no normals");
+        // A material without the key light keeps its baked color.
+        flat.keyLight = false;
+        EXPECT_TRUE(Near(draw(baked, flat), 204, 204, 204));
+        EXPECT_TRUE(renderer.LastFallbacks().empty());
+    }
+
     TEST_F(Fixture, SecondaryTextureUsesDualTextureEffect)
     {
         MeshBuilder builder({VertexAttribute::Position, VertexAttribute::TexCoord0, VertexAttribute::TexCoord1});

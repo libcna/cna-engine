@@ -2,7 +2,8 @@
 //
 // The engine's shadow map received by CNA's effects in an EngineGame: a box
 // above a floor lit from the side casts its shadow on the side away from the
-// light -- not mirrored, not missing -- and nothing darkens without shadows.
+// light -- not mirrored, not missing -- and nothing darkens without shadows;
+// a floor of baked light loses its key-light share there.
 #include "CnaEngine/Enhanced/ShadowReception.hpp"
 
 #include "CnaEngine/Enhanced/PbrMaterialBinder.hpp"
@@ -40,7 +41,10 @@ namespace CnaEngine::Enhanced
         class ShadowGame final : public App::EngineGame
         {
         public:
-            ShadowGame(const bool shadows, const bool pbr) : EngineGame(Small()), shadows_(shadows), pbr_(pbr) {}
+            ShadowGame(const bool shadows, const bool pbr, const bool bakedFloor = false)
+                : EngineGame(Small()), shadows_(shadows), pbr_(pbr), bakedFloor_(bakedFloor)
+            {
+            }
 
             Graphics::CaptureResult shot;
             bool enabled = false;
@@ -52,7 +56,13 @@ namespace CnaEngine::Enhanced
                 const auto& layout = Graphics::VertexLayout::PositionNormalTexture();
                 Graphics::MeshBuilder builder;
                 builder.AddBox(Vector3(-6.0f, -0.5f, -6.0f), Vector3(6.0f, 0.0f, 6.0f));
-                floor_ = Graphics::GpuMesh::Upload(device, builder.Take(), layout);
+                floor_ = Graphics::GpuMesh::Upload(device, builder.Take(),
+                                                   bakedFloor_ ? Graphics::VertexLayout::PositionNormalColorTexture() : layout,
+                                                   {.missingAttributes = Graphics::MissingAttributePolicy::UseDefaults});
+                floorMaterial_.shading = Graphics::ShadingModel::Unlit;
+                floorMaterial_.vertexColors = true;
+                floorMaterial_.diffuseColor = Vector3(0.6f, 0.6f, 0.6f);
+                floorMaterial_.bakedKeyLight = 0.5f;
                 builder.AddBox(Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f));
                 box_ = Graphics::GpuMesh::Upload(device, builder.Take(), layout);
                 if (pbr_) {
@@ -73,7 +83,7 @@ namespace CnaEngine::Enhanced
             }
             void Submit(App::Frame& frame) override
             {
-                frame.Add(floor_, material_, Matrix::getIdentityProperty());
+                frame.Add(floor_, bakedFloor_ ? floorMaterial_ : material_, Matrix::getIdentityProperty());
                 frame.Add(box_, material_, Matrix::CreateTranslation(2.0f, 1.5f, 1.0f));
             }
             void UpdateFrame(double) override
@@ -95,9 +105,11 @@ namespace CnaEngine::Enhanced
         private:
             bool shadows_;
             bool pbr_;
+            bool bakedFloor_;
             Graphics::GpuMesh floor_;
             Graphics::GpuMesh box_;
             Graphics::Material material_;
+            Graphics::Material floorMaterial_;
         };
 
         struct Pass
@@ -107,9 +119,9 @@ namespace CnaEngine::Enhanced
             bool enabled;
         };
 
-        Pass Draw(const bool shadows, const bool pbr)
+        Pass Draw(const bool shadows, const bool pbr, const bool bakedFloor = false)
         {
-            ShadowGame game(shadows, pbr);
+            ShadowGame game(shadows, pbr, bakedFloor);
             const std::vector<std::string_view> arguments{"--frames", "3", "--lockstep"};
             game.ParseCommandLine(arguments);
             game.Run();
@@ -155,5 +167,20 @@ namespace CnaEngine::Enhanced
             EXPECT_NEAR(Brightness(shadowed, 0.875f, -1.0f), Brightness(lit, 0.875f, -1.0f), 6) << (pbr ? "PBR" : "stock");
             EXPECT_NEAR(Brightness(shadowed, -3.0f, -3.0f), Brightness(lit, -3.0f, -3.0f), 6) << (pbr ? "PBR" : "stock");
         }
+    }
+
+    // Baked light (Unlit, vertex colors) with a key-light share: the floor
+    // keeps 0.5 + 0.5 * N.L of its color in the light, 0.5 in the shadow.
+    TEST(ShadowReceptionTest, BakedLightLosesItsKeyShareInTheShadow)
+    {
+        const Pass lit = Draw(false, false, true);
+        const Pass shadowed = Draw(true, false, true);
+        ASSERT_TRUE(shadowed.enabled);
+        ASSERT_TRUE(lit.shot.success && shadowed.shot.success);
+        const int baked = 3 * 153; // 0.6 of white
+        EXPECT_NEAR(Brightness(lit, 0.875f, 1.0f), baked * 9 / 10, 9) << "N.L = 0.8";
+        EXPECT_NEAR(Brightness(shadowed, 0.875f, 1.0f), baked / 2, 9) << "the share is gone";
+        EXPECT_NEAR(Brightness(shadowed, 3.2f, 1.0f), Brightness(lit, 3.2f, 1.0f), 6);
+        EXPECT_NEAR(Brightness(shadowed, -3.0f, -3.0f), Brightness(lit, -3.0f, -3.0f), 6);
     }
 }

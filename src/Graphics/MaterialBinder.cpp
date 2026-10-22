@@ -81,6 +81,10 @@ namespace CnaEngine::Graphics
         light(*basic_);
         light(*skinned_);
         light(*environment_);
+        keyDiffuse_ = basic_->getDirectionalLight0Property().getDiffuseColorProperty();
+        keySpecular_ = basic_->getDirectionalLight0Property().getSpecularColorProperty();
+        ambient_ = basic_->getAmbientLightColorProperty();
+        bakedLighting_ = false;
         for (IEffectFog* fog : {static_cast<IEffectFog*>(basic_.get()), static_cast<IEffectFog*>(alphaTest_.get()),
                                 static_cast<IEffectFog*>(dual_.get()), static_cast<IEffectFog*>(skinned_.get()),
                                 static_cast<IEffectFog*>(environment_.get())}) {
@@ -155,9 +159,13 @@ namespace CnaEngine::Graphics
         }
 
         bool lit = material.shading != ShadingModel::Unlit;
-        if (lit && !attributes.Has(VertexAttribute::Normal)) {
+        // Baked light keeps (1 - share) and gets the key light's share from
+        // the lit effect, where a received shadow can take it away.
+        float bakedShare = !lit && material.keyLight ? std::min(material.bakedKeyLight, 1.0f) : 0.0f;
+        if ((lit || bakedShare > 0.0f) && !attributes.Has(VertexAttribute::Normal)) {
             fallback(material, "drawn unlit: mesh has no normals");
             lit = false;
+            bakedShare = 0.0f;
         } else if (material.shading == ShadingModel::PhysicallyBased) {
             fallback(material, "PhysicallyBased drawn as Lit (stock effects have no PBR)");
         }
@@ -172,7 +180,7 @@ namespace CnaEngine::Graphics
             secondary = nullptr;
         }
         if (secondary != nullptr) {
-            if (lit) {
+            if (lit || bakedShare > 0.0f) {
                 fallback(material, "two-texture surfaces draw unlit (XNA DualTextureEffect)");
             }
             if (material.environmentMap != nullptr) {
@@ -228,19 +236,32 @@ namespace CnaEngine::Graphics
         }
 
         BasicEffect& effect = *basic_;
+        const bool baked = bakedShare > 0.0f;
         // The key light can be switched off per material (interiors); fill
         // lights and ambient stay.
-        effect.getDirectionalLight0Property().setEnabledProperty(material.keyLight);
-        effect.getDirectionalLight1Property().setEnabledProperty(fillEnabled_[0]);
-        effect.getDirectionalLight2Property().setEnabledProperty(fillEnabled_[1]);
+        auto& key = effect.getDirectionalLight0Property();
+        key.setEnabledProperty(material.keyLight);
+        effect.getDirectionalLight1Property().setEnabledProperty(fillEnabled_[0] && !baked);
+        effect.getDirectionalLight2Property().setEnabledProperty(fillEnabled_[1] && !baked);
+        if (baked) {
+            key.setDiffuseColorProperty(Vector3(bakedShare, bakedShare, bakedShare));
+            key.setSpecularColorProperty(Vector3::Zero);
+            effect.setAmbientLightColorProperty(Vector3(1.0f - bakedShare, 1.0f - bakedShare, 1.0f - bakedShare));
+            bakedLighting_ = true;
+        } else if (bakedLighting_) {
+            key.setDiffuseColorProperty(keyDiffuse_);
+            key.setSpecularColorProperty(keySpecular_);
+            effect.setAmbientLightColorProperty(ambient_);
+            bakedLighting_ = false;
+        }
         effect.setWorldProperty(item.world);
         effect.setViewProperty(camera.View());
         effect.setProjectionProperty(camera.Projection());
-        effect.setLightingEnabledProperty(lit);
+        effect.setLightingEnabledProperty(lit || baked);
         effect.setDiffuseColorProperty(material.diffuseColor);
         effect.setAlphaProperty(material.alpha);
         effect.setEmissiveColorProperty(material.emissiveColor);
-        effect.setSpecularColorProperty(material.specularColor);
+        effect.setSpecularColorProperty(baked ? Vector3::Zero : material.specularColor);
         effect.setSpecularPowerProperty(material.specularPower);
         effect.setTextureEnabledProperty(texture != nullptr);
         effect.setTextureProperty(texture);

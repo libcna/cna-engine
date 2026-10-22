@@ -103,7 +103,8 @@ namespace CnaEngine::Graphics
     /// TexCoord1) draw through XNA's DualTextureEffect, which is unlit.
     ///
     /// Fallbacks (reported through the sink):
-    ///  - Lit/PhysicallyBased without normals in the mesh draws Unlit;
+    ///  - Lit/PhysicallyBased without normals in the mesh draws Unlit, and so
+    ///    does an Unlit material with a `bakedKeyLight` share;
     ///  - a secondary texture on a mesh without TexCoord1 is ignored; a lit
     ///    material with a secondary texture draws unlit (DualTextureEffect);
     ///  - PhysicallyBased draws Lit (stock effects have no PBR);
@@ -155,5 +156,10 @@ namespace CnaEngine::Graphics
         bool defaultLighting_ = true;
         bool fogEnabled_ = false;
         bool fillEnabled_[2] = {false, false};
+        // The frame's key light and ambient, put back after a baked-light draw.
+        Microsoft::Xna::Framework::Vector3 keyDiffuse_;
+        Microsoft::Xna::Framework::Vector3 keySpecular_;
+        Microsoft::Xna::Framework::Vector3 ambient_;
+        bool bakedLighting_ = false;
     };
 }

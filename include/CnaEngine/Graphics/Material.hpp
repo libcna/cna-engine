@@ -104,6 +104,17 @@ namespace CnaEngine::Graphics
         /// Lit by the scene's key (directional) light. Interiors seen through
         /// windows turn it off and live on ambient, fill and emissive light.
         bool keyLight = true;
+        /// Unlit surfaces whose colors are baked light (vertex colors,
+        /// textures): the share of that light which came from the key light,
+        /// 0..1. Above 0 the stock binder draws them through the lit
+        /// BasicEffect as color * ((1 - share) + share * N.L), without fill
+        /// lights or specular, so a shadow map the key light casts
+        /// (Enhanced::ApplyShadowReception) takes that share away where it
+        /// falls. Needs normals; normals facing the key light (all up under a
+        /// light from above) keep the baked color outside shadows. Ignored
+        /// where the surface draws unlit anyway (alpha test, a secondary
+        /// texture) and when `keyLight` is off.
+        float bakedKeyLight = 0.0f;
         /// Receives the scene's fog (ForwardLighting). Glows, light pools and
         /// sky-like surfaces turn it off.
         bool fog = true;

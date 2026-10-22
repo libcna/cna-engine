@@ -103,6 +103,14 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   AlphaTestEffect; PBR binder: Mask mode). Reason: car-simulator relights its
   tree and sign cards additively under the headlights.
 
+- `Material::bakedKeyLight` (default 0), additive: an unlit surface whose
+  colours are baked light names the key light's share of it; the stock binder
+  then draws it through the lit `BasicEffect` as `color * ((1 - share) +
+  share * N.L)` without fill lights or specular, so a received shadow map
+  takes that share away. Reason: backrooms- and school-simulator bake all
+  their light into vertex colours and could not receive the engine's
+  shadows (GAME-064).
+
 - Reflective materials, additive: `Material::environmentMap`,
   `environmentMapAmount`, `environmentMapSpecular`, `fresnelFactor`; the stock
   binder draws them with XNA's `EnvironmentMapEffect` (pixel-identical to the
