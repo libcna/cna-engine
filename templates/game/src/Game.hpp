@@ -4,6 +4,7 @@
 #include "CnaEngine/Collision/CharacterController.hpp"
 #include "CnaEngine/Collision/StaticWorld.hpp"
 #include "CnaEngine/Graphics/CameraControllers.hpp"
+#include "CnaEngine/Graphics/Sky.hpp"
 
 #include "Microsoft/Xna/Framework/BoundingBox.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
@@ -26,6 +27,7 @@ protected:
 
 private:
     void AddBlock(const Microsoft::Xna::Framework::BoundingBox& box, const CnaEngine::Graphics::Material& material);
+    void UpdateSky();
 
     CnaEngine::Graphics::CameraInputAxes axes_;
     CnaEngine::Input::ActionId captureMouse_{};
@@ -33,6 +35,11 @@ private:
     bool jumpQueued_ = false;
     float yaw_ = 0.0f;
     float pitch_ = 0.0f;
+
+    // The sky and the light follow the time of day.
+    CnaEngine::Graphics::TimeOfDay time_;
+    CnaEngine::Graphics::DayNightPalette palette_ = CnaEngine::Graphics::DayNightPalette::Default();
+    std::unique_ptr<CnaEngine::Graphics::SkyDome> sky_;
 
     // What the body collides with, and the body.
     CnaEngine::Collision::StaticWorld world_;

@@ -103,18 +103,22 @@ void @GAME_CLASS@::LoadGame()
     }
     AddBlock(BoundingBox(Vector3(-2.5f, 0.0f, -8.5f), Vector3(2.5f, 0.85f, -4.5f)), stoneMaterial_);
 
-    // Light and fog: a low sun, a cool sky fill, fog the colour of the sky.
-    auto& lighting = Renderer().Lighting();
-    lighting.defaultLighting = false;
-    lighting.lightDirection = Vector3(-0.5f, -0.7f, -0.4f);
-    lighting.lightColor = Vector3(1.0f, 0.95f, 0.85f);
-    lighting.ambientColor = Vector3(0.3f, 0.32f, 0.36f);
-    lighting.fogEnabled = true;
-    lighting.fogColor = Options().clearColor.ToVector3();
-    lighting.fogStart = 20.0f;
-    lighting.fogEnd = 60.0f;
+    // The sky: a dome drawn before everything else, and the light and fog
+    // set from the same colours, an afternoon to start with.
+    time_.hours = 16.0;
+    sky_ = std::make_unique<Graphics::SkyDome>(device);
+    sky_->AttachTo(Renderer());
+    UpdateSky();
 
     body_.Teleport(world_, Vector3(0.0f, 0.0f, 2.0f));
+}
+
+void @GAME_CLASS@::UpdateSky()
+{
+    const Vector3 sun = time_.DirectionToSun();
+    const auto colors = palette_.At(static_cast<float>(time_.Sun().elevationDegrees));
+    sky_->SetColors(colors, sun);
+    Graphics::ApplySkyLighting(Renderer().Lighting(), colors, sun, 25.0f, 70.0f);
 }
 
 void @GAME_CLASS@::FixedUpdate(const double stepSeconds)
@@ -140,6 +144,10 @@ void @GAME_CLASS@::UpdateFrame(const double frameSeconds)
     pitch_ = std::clamp(pitch_ + look.pitch - MouseDelta().Y * MouseRadiansPerPixel, -1.5f, 1.5f);
     MainCamera().SetYawPitchRoll(yaw_, pitch_);
     MainCamera().SetPosition(body_.Eye() + Vector3(0.0f, body_.HeadBob(0.02f), 0.0f));
+
+    // A day passes in 48 minutes.
+    time_.Advance(frameSeconds, 30.0);
+    UpdateSky();
 }
 
 void @GAME_CLASS@::Submit(App::Frame& frame)

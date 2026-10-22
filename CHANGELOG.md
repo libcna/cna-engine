@@ -198,6 +198,8 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   `CnaEngine::Core`): `BonePose`, `Skeleton`, `BoneKey`, `BoneTrack`,
   `AnimationClip`, `Animator`, `PlayOptions`.
 - `EngineGame::OnScreenshot` (screenshots of the queue go to the game).
+- `Graphics/Sky.hpp` (GAME-030): `SkyColors`, `DayNightPalette`, `TimeOfDay`,
+  `ApplySkyLighting`, `SkyDome`.
 
 ### Other API additions (experimental headers)
 

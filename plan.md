@@ -1193,11 +1193,24 @@ fallen off, 20 degree ramp walked and 60 degree ramp refused, jump height,
 bit-identical positions at 30, 60 and 144 fps, strides, height fields. The
 template game walks on it (stairs to a platform, jumping).
 
-### GAME-030 — Sky, fog and time of day `[ ]`
+### GAME-030 — Sky, fog and time of day `[x]`
 
 Acceptance: a sky dome with a gradient, sun disc and colour ramps over the
 day (with `SunPosition`), fog matched to the horizon, and a lighting rig
 that follows the time of day; strict.
+
+Result (2026-10-22): strict `Graphics/Sky.hpp`: `SkyColors`,
+`DayNightPalette` (night below -18 degrees, twilight, sunrise, golden light,
+day; overcast greys it), `TimeOfDay` (SunPosition's clock), `ApplySkyLighting`
+(sun, or the moon from the other side at night; sky fill from above;
+ambient; fog in the horizon's colour) and `SkyDome` (vertex colours through
+BasicEffect, drawn with `DrawUserPrimitives` as the renderer's first pass:
+horizon-to-zenith gradient, ground colour below and closed underneath, a
+glow round a low sun, the sun's disc, stars that fade in). Evidence: the
+domes of car, train, school, museum and house. Tests: palette keys and
+interpolation, overcast, the noon sun at 50 degrees north, sun and moon
+lighting, and pixels of the dome (gradient, disc, stars). The template's
+day passes in 48 minutes.
 
 ### GAME-031 — Shadows `[ ]`
 

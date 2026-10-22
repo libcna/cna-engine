@@ -91,6 +91,7 @@ cna_engine_add_library(cna_engine_graphics Graphics
     src/Graphics/GpuMemory.cpp
     src/Graphics/MaterialBinder.cpp
     src/Graphics/ModelView.cpp
+    src/Graphics/Sky.cpp
     src/Assets/AssetRegistry.cpp
 )
 target_link_libraries(cna_engine_graphics PUBLIC cna_engine_core)

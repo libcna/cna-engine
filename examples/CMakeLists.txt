@@ -78,7 +78,7 @@ if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     endif()
     if(CNA_ENGINE_BUILD_TESTS AND NOT EMSCRIPTEN)
         add_test(NAME cna_engine.example.template_game
-            COMMAND cna_engine_template_game --frames 90 --lockstep
+            COMMAND cna_engine_template_game --frames 90 --lockstep --width 480 --height 270
                     --screenshot "${CMAKE_CURRENT_BINARY_DIR}/template_game.png")
         set_tests_properties(cna_engine.example.template_game PROPERTIES LABELS "example")
     endif()
