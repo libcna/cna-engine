@@ -108,7 +108,14 @@ cna_engine_add_library(cna_engine_app App
 target_link_libraries(cna_engine_app PUBLIC cna_engine_graphics)
 cna_engine_link_external(cna_engine_app CNA::Runtime)
 
-set(CNA_ENGINE_EXPORTED_TARGETS cna_engine_core cna_engine_graphics cna_engine_app)
+# Sound (plan.md GAME-040): positional voices, mixing and a voice budget.
+cna_engine_add_library(cna_engine_audio Audio
+    src/Audio/SoundSystem.cpp
+)
+target_link_libraries(cna_engine_audio PUBLIC cna_engine_graphics)
+cna_engine_link_external(cna_engine_audio CNA::Audio)
+
+set(CNA_ENGINE_EXPORTED_TARGETS cna_engine_core cna_engine_graphics cna_engine_app cna_engine_audio)
 
 # ---------------------------------------------------------------------------
 # Enhanced graphics: CNA extension APIs (PbrEffect, ...), never cna-extended.
@@ -143,7 +150,7 @@ endif()
 add_library(cna_engine INTERFACE)
 add_library(CnaEngine::Engine ALIAS cna_engine)
 set_target_properties(cna_engine PROPERTIES EXPORT_NAME Engine)
-target_link_libraries(cna_engine INTERFACE cna_engine_core cna_engine_graphics cna_engine_app)
+target_link_libraries(cna_engine INTERFACE cna_engine_core cna_engine_graphics cna_engine_app cna_engine_audio)
 if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     target_link_libraries(cna_engine INTERFACE cna_engine_enhanced)
 endif()

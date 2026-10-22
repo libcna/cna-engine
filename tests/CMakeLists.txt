@@ -72,6 +72,15 @@ gtest_discover_tests(cna_engine_app_tests
     DISCOVERY_MODE PRE_TEST
     PROPERTIES LABELS unit)
 
+# --- Sound (GAME-040): strict, on CNA's null audio platform. ------------------
+add_executable(cna_engine_audio_tests Audio/SoundSystemTests.cpp)
+target_link_libraries(cna_engine_audio_tests PRIVATE cna_engine_audio GTest::gtest_main)
+cna_engine_sanitize(cna_engine_audio_tests)
+gtest_discover_tests(cna_engine_audio_tests
+    TEST_PREFIX "cna_engine.audio."
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES LABELS unit)
+
 # --- Performance scaling checks (REL-003): their own label, no budgets. -------
 add_executable(cna_engine_performance_tests Performance/ScalingTests.cpp)
 target_link_libraries(cna_engine_performance_tests PRIVATE cna_engine_core cna_engine_graphics GTest::gtest_main)
@@ -191,7 +200,8 @@ file(GLOB_RECURSE _cna_engine_strict_headers CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/Assets/*.hpp"
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/App/*.hpp"
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/Collision/*.hpp"
-    "${PROJECT_SOURCE_DIR}/include/CnaEngine/Animation/*.hpp")
+    "${PROJECT_SOURCE_DIR}/include/CnaEngine/Animation/*.hpp"
+    "${PROJECT_SOURCE_DIR}/include/CnaEngine/Audio/*.hpp")
 set(_cna_engine_header_tus "")
 foreach(_header IN LISTS _cna_engine_strict_headers)
     file(RELATIVE_PATH _rel "${PROJECT_SOURCE_DIR}/include" "${_header}")
@@ -201,4 +211,5 @@ foreach(_header IN LISTS _cna_engine_strict_headers)
     list(APPEND _cna_engine_header_tus "${_tu}")
 endforeach()
 add_library(cna_engine_strict_header_check OBJECT ${_cna_engine_header_tus})
-target_link_libraries(cna_engine_strict_header_check PRIVATE cna_engine_core cna_engine_graphics cna_engine_app)
+target_link_libraries(cna_engine_strict_header_check PRIVATE cna_engine_core cna_engine_graphics cna_engine_app
+    cna_engine_audio)

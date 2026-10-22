@@ -1,14 +1,17 @@
 #pragma once
 
 #include "CnaEngine/App/EngineGame.hpp"
+#include "CnaEngine/Audio/SoundSystem.hpp"
 #include "CnaEngine/Collision/CharacterController.hpp"
 #include "CnaEngine/Collision/StaticWorld.hpp"
 #include "CnaEngine/Graphics/CameraControllers.hpp"
 #include "CnaEngine/Graphics/Sky.hpp"
 
+#include "Microsoft/Xna/Framework/Audio/SoundEffect.hpp"
 #include "Microsoft/Xna/Framework/BoundingBox.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -40,6 +43,12 @@ private:
     CnaEngine::Graphics::TimeOfDay time_;
     CnaEngine::Graphics::DayNightPalette palette_ = CnaEngine::Graphics::DayNightPalette::Default();
     std::unique_ptr<CnaEngine::Graphics::SkyDome> sky_;
+
+    // Footsteps: a stride of the body plays one of the step sounds.
+    CnaEngine::Audio::SoundSystem sound_;
+    CnaEngine::Audio::SoundBank steps_;
+    std::vector<std::unique_ptr<Microsoft::Xna::Framework::Audio::SoundEffect>> stepSounds_;
+    std::uint32_t stepSeed_ = 1;
 
     // What the body collides with, and the body.
     CnaEngine::Collision::StaticWorld world_;

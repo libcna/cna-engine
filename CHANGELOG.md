@@ -210,6 +210,9 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   `EngineGame::EnableShadowMap`, `DisableShadowMap`, `Shadows`;
   `Enhanced/ShadowReception.hpp`: `ApplyShadowReception`, `EnableShadows`,
   `CalibrateShadowMap`, `ShadowReceptionSettings`.
+- Strict target `CnaEngine::Audio` (GAME-040): `Audio/SoundSystem.hpp`
+  (`SoundSystem`, `VoiceOptions`, `SoundBank`, `Falloff`, `Spatialize`,
+  `Listener`, `ListenerFrom`, `AudioState`).
 
 ### Other API additions (experimental headers)
 

@@ -1244,11 +1244,26 @@ checked on the software renderer (tests) and on the GPU (OpenGL ES 3, Mesa
 radeonsi: the template's crates and platform cast their shadows away from
 the sun).
 
-### GAME-040 — 3D sound `[ ]`
+### GAME-040 — 3D sound `[x]`
 
 Acceptance: a strict `CnaEngine::Audio` target: a listener that follows the
 camera, positional one-shots and loops with a voice limit, ambience, and
 silent operation without an audio device.
+
+Result (2026-10-22): strict target `CnaEngine::Audio` (`Audio` added to the
+strict modules), `Audio/SoundSystem.hpp`: `Spatialize` (reference
+distance, rolloff, a fade over the last part of the reach, pan from the
+listener's right; hand-computed like backrooms, car and house rather than
+Apply3D, so it is the same on every platform), `ListenerFrom(Camera)`,
+`SoundBank` (seeded variants), and `SoundSystem`: one-shots and loops,
+positional or stereo, category volumes under a master and mute, a voice
+budget by priority then loudness (loops wait silently, one-shots are
+dropped), finished one-shots retired, and on any audio failure a Silent
+state with the reason instead of exceptions. Instances come from XNA's
+`CreateInstance`, built in place (no use of CNA's move constructor, an
+extension). Tests on CNA's null audio platform. The template plays
+footsteps (two generated CC0 WAVs) on the character's strides;
+`cna_engine_add_game` links `CnaEngine::Audio`.
 
 ### GAME-050 — Text, menus and HUD `[ ]`
 

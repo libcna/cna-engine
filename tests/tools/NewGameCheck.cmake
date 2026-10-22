@@ -11,7 +11,7 @@ if(NOT result EQUAL 0)
     message(FATAL_ERROR "new_game.sh failed (${result}): ${output}${error}")
 endif()
 foreach(file CMakeLists.txt README.md .gitignore src/Game.hpp src/Game.cpp src/main.cpp
-             assets/crate.png assets/LICENSE.md tools/build_web.sh)
+             assets/crate.png assets/step1.wav assets/step2.wav assets/LICENSE.md tools/build_web.sh)
     if(NOT EXISTS "${WORK}/${file}")
         message(FATAL_ERROR "new_game.sh did not write ${file}")
     endif()

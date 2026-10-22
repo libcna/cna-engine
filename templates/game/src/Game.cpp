@@ -90,6 +90,14 @@ void @GAME_CLASS@::LoadGame()
     groundMaterial_.diffuseColor = Vector3(0.36f, 0.52f, 0.3f);
     stoneMaterial_.diffuseColor = Vector3(0.62f, 0.6f, 0.56f);
 
+    // Footstep sounds from assets/ (step1.wav, step2.wav). Without an audio
+    // device the sound system stays silent and the game goes on.
+    for (const char* name : {"step1", "step2"}) {
+        stepSounds_.emplace_back(new Microsoft::Xna::Framework::Audio::SoundEffect(
+            getContentProperty().Load<Microsoft::Xna::Framework::Audio::SoundEffect>(name)));
+        steps_.Add("ground", *stepSounds_.back());
+    }
+
     // The world: the ground, a ring of crates, and stairs up to a platform.
     world_.AddBox(BoundingBox(Vector3(-40.0f, -1.0f, -40.0f), Vector3(40.0f, 0.0f, 40.0f)));
     for (int i = 0; i < 12; ++i) {
@@ -132,6 +140,15 @@ void @GAME_CLASS@::FixedUpdate(const double stepSeconds)
     const float speed = WalkSpeed * (input.fast ? RunMultiplier : 1.0f);
     body_.Step(world_, Collision::WishVelocity(input.move, yaw_, speed), jumpQueued_, static_cast<float>(stepSeconds));
     jumpQueued_ = false;
+    if (body_.StrideTaken()) {
+        if (const auto* step = steps_.Pick("ground", stepSeed_)) {
+            Audio::VoiceOptions options;
+            options.category = "footsteps";
+            options.volume = 0.6f;
+            options.position = body_.Feet();
+            (void)sound_.Play(*step, options);
+        }
+    }
 }
 
 void @GAME_CLASS@::UpdateFrame(const double frameSeconds)
@@ -152,6 +169,9 @@ void @GAME_CLASS@::UpdateFrame(const double frameSeconds)
     // A day passes in 48 minutes.
     time_.Advance(frameSeconds, 30.0);
     UpdateSky();
+
+    sound_.SetListener(Audio::ListenerFrom(MainCamera()));
+    sound_.Update(static_cast<float>(frameSeconds));
 }
 
 void @GAME_CLASS@::Submit(App::Frame& frame)

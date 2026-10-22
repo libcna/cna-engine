@@ -29,7 +29,7 @@ import pathlib
 import re
 import sys
 
-STRICT_MODULES = ("Core", "Input", "Diagnostics", "Graphics", "Assets", "App", "Collision", "Animation")
+STRICT_MODULES = ("Core", "Input", "Diagnostics", "Graphics", "Assets", "App", "Collision", "Animation", "Audio")
 SOURCE_SUFFIXES = {".hpp", ".cpp", ".h", ".c", ".inl", ".ipp"}
 
 INCLUDE_RE = re.compile(r'^\s*#\s*include\s*([<"])([^>"]+)[>"]', re.MULTILINE)

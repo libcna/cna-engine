@@ -52,8 +52,9 @@ Key bindings can be changed in `bindings.ini` beside the preferences
 ## Where things are
 
 - `src/Game.cpp` — the game: input, the world (each block is a box to
-  collide with and a cube to draw), light, the body (`CharacterController`:
-  walls, stairs, gravity, jumps), drawing.
+  collide with and a cube to draw), the sky and the sun's shadows over the
+  day, the body (`CharacterController`: walls, stairs, gravity, jumps),
+  footsteps (`SoundSystem`), drawing.
 - `assets/` — copied beside the executable (preloaded in the browser);
   loaded through XNA's content manager, e.g. `Load<Texture2D>("crate")`.
 - `CMakeLists.txt` — one `cna_engine_add_game()` call.
