@@ -47,7 +47,10 @@ namespace CnaEngine::Graphics
         for (const auto format : {Xna::SurfaceFormat::Single, Xna::SurfaceFormat::HalfSingle, Xna::SurfaceFormat::Color}) {
             try {
                 target_ = std::make_unique<Xna::RenderTarget2D>(device, size, size, false, format, Xna::DepthFormat::Depth24);
-                format_ = format;
+                // The format is a preference, as in XNA: a Reach device makes
+                // a Color target when Single is asked for. What counts is
+                // what the target is.
+                format_ = target_->getFormatProperty();
                 break;
             } catch (...) {
                 target_.reset();
@@ -56,8 +59,7 @@ namespace CnaEngine::Graphics
         if (!target_) {
             throw std::runtime_error("ShadowMap: the device has no render target format for a shadow map");
         }
-        // What a Single target really keeps: a mid grey must read back as 0.5
-        // (CNA's software renderer stores Single as 8-bit colour, UP-018).
+        // What a Single target really keeps: a mid grey must read back as 0.5.
         precisionBits_ = format_ == Xna::SurfaceFormat::HalfSingle ? 11 : 8;
         if (format_ == Xna::SurfaceFormat::Single) {
             device.SetRenderTarget(target_.get());

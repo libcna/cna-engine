@@ -453,7 +453,7 @@ with `bake-assets --content` (215 surfaces, 85 MB peak) instead of a capture.
 ## UP-018 — The software renderer keeps a `Single` render target as 8-bit colour
 
 - Repository: `libcna/cna` (baseline `900d0db3b`), software renderer
-- Status: reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
+- Status: resolved: not a CNA defect. The Codex session `cna-demos` found (2026-10-22, CNA `d49c080d9` adds regressions) that CNA's default `GraphicsDevice` is Reach, where a `Single` render target is a preference that CNA, like XNA, replaces with `Color` and reports through `getFormatProperty()`; HiDef keeps float precision through Clear, Depth24 and fogged draws. The engine stored the requested format instead of the target's, so it read Color bytes as floats. Fixed in the engine the same day (`ShadowMap` takes `getFormatProperty()`); the text below is the original, mistaken report
 - Found: 2026-10-22, GAME-031 (the engine's shadow map)
 
 A `RenderTarget2D` created with `SurfaceFormat::Single` on the software

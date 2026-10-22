@@ -1272,8 +1272,9 @@ casters) -- the linear fog of an orthographic light view is exactly the
 receivers' `z/w * 0.5 + 0.5` -- into a Single target (else HalfSingle, else
 Color), drawn upside down because the receivers read `v = y * 0.5 + 0.5`;
 the view moves in whole texels of a world-fixed grid; the bias follows the
-precision the target really keeps, measured when it is made (UP-018: the
-software renderer stores Single as 8-bit). `EngineGame::EnableShadowMap`
+precision the target really keeps, measured when it is made (a Reach device
+makes Color for Single: UP-018, which was the engine's error -- it kept the
+requested format instead of the target's -- fixed on 2026-10-22). `EngineGame::EnableShadowMap`
 renders it from each frame's opaque items before the frame; reception is
 enhanced: `Enhanced/ShadowReception.hpp` (`ApplyShadowReception`,
 `EnableShadows`), through the binders' effects (additive accessors

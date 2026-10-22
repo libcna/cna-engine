@@ -40,10 +40,7 @@ namespace CnaEngine::Graphics
             std::vector<float> red(static_cast<std::size_t>(count));
             if (map.Format() == Xna::SurfaceFormat::Single) {
                 map.Map().GetData(red.data(), count);
-                // CNA's software renderer keeps a Single target as 8-bit
-                // colour and hands those bytes back as floats
-                // (upstream-issues.md UP-018): read it as colour then.
-                return std::isnan(red[0]) ? ReadColour(map, count) : red;
+                return red;
             }
             if (map.Format() == Xna::SurfaceFormat::HalfSingle) {
                 std::vector<Xna::PackedVector::HalfSingle> half(static_cast<std::size_t>(count));
@@ -89,7 +86,7 @@ namespace CnaEngine::Graphics
         EXPECT_EQ(map.CastersDrawn(), 2);
 
         const auto red = Read(map);
-        const float tolerance = 0.006f; // 8-bit on the software renderer (UP-018)
+        const float tolerance = 0.006f; // a Color map on a Reach device keeps 8 bits
         const int middle = map.Size() / 2;
         // Under the box: its top, 9 m from the light.
         EXPECT_NEAR(red[static_cast<std::size_t>(middle * map.Size() + middle)], 9.0f / 20.0f * 0.5f + 0.5f, tolerance);

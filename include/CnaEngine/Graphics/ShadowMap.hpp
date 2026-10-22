@@ -34,8 +34,10 @@ namespace CnaEngine::Graphics
     /// its own producers upstream (room-simulator keeps a copy, island wrote
     /// its own; docs/game-facilities-survey.md).
     ///
-    /// The map is a Single render target, else HalfSingle, else Color (whose
-    /// 8 bits band visibly); Format() tells which one the device took.
+    /// The map asks for a Single render target, else HalfSingle, else Color
+    /// (whose 8 bits band visibly); Format() tells which one the device made.
+    /// As in XNA the format is a preference: a Reach device (CNA's default
+    /// GraphicsDevice) makes Color, HiDef keeps Single.
     class ShadowMap
     {
     public:

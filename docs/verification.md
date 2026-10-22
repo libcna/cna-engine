@@ -37,6 +37,11 @@ the local `develop` at `86870ad`, not pushed).
   BasicEffect draw into a Single target with Depth24) was sent; UP-019
   reproduced there; UP-006 may be fixed by CNA `470b12a5d` (not in the pin);
   UP-001 accepted as a gap. Nothing is pushed in CNA yet.
+- UP-018 correction (later the same day): the Codex session showed the
+  `Single` target on CNA's default (Reach) device is a Color target, as in
+  XNA, and the engine kept the requested format; `ShadowMap` now takes the
+  target's own format. `ShadowMapTest`, `ShadowReceptionTest`, the sky,
+  EngineGame and example tests: 19 of 19.
 - Pin move (ADR-002): cna-extended `develop` pushed (`0061e3e..86870ad`);
   `cmake/CnaEngineBaseline.cmake`, CI and the ADR table name `86870ad`; the
   engine's `build/` configured with `CNA_ENGINE_ENFORCE_BASELINE=ON` reports
