@@ -1388,7 +1388,7 @@ back, a mesh without normals draws unlit (reported), `keyLight = false`
 keeps the baked colour; a baked floor keeps 0.5 + 0.5 N.L of its colour in
 the light and 0.5 in the box's shadow.
 
-### GAME-065 — Shadows and menus in backrooms and school `[ ]`
+### GAME-065 — Shadows and menus in backrooms and school `[x]`
 
 Acceptance: backrooms-simulator and school-simulator (branch
 `engine-shadows-menu`, one revertible commit per step, captures compared)
@@ -1396,6 +1396,38 @@ draw shadows through `ShadowMap`, `CalibrateShadowMap` and
 `ApplyShadowReception` on baked light (GAME-064), and pause into the
 engine's `Menu`/`MenuStack` with a settings page (volume, look
 sensitivity, shadows, key rebinding) whose choices are saved.
+
+Result (2026-10-22), worktrees `libcnalab/backrooms-simulator-engine` and
+`libcnalab/school-simulator-engine`, not merged:
+
+- backrooms (from `main` `31e53fc`): `eccb0ac` build (EnhancedGraphics, UI),
+  `50167c5` shadows, `12527a7` pause menu. Creatures within 20 m cast into
+  a 1024 map from one ceiling light a little off vertical; the chunk
+  vertices carry a normal facing it, so with `bakedKeyLight` 0.45 the floor
+  outside shadows is exactly as baked. Fading creatures, `--no-shadows` and
+  devices without shadow sampling keep the contact spots. Escape opens
+  Resume / Settings / Back to the start / Quit; settings (volume, look
+  sensitivity, creature shadows, two keys) go to `settings.ini` and
+  `bindings.ini`; the world stands still meanwhile. Of 30 reference
+  captures (Radeon 780M) the 24 without creatures are identical, the
+  creature views differ only under the creatures; the game's
+  `validate_controls.py`, adapted to the menu, passes.
+- school (from `main` `0eccf53`): `bf79ed7` build, `0a2d3a8` sun shadows,
+  `59ed114` a mouse-look fix, `c1aee2a` pause menu. The facade and the
+  outdoor places keep their normals and give the sun `0.4 x daylight` of
+  their baked light (less under clouds); they cast into a 2048 map 55 m
+  around a point ahead of the eye. Surfaces turned from the sun get darker
+  as well as the shadows (real normals, so no seam at the map's edge).
+  `--no-shadows` and the night draw exactly as before; captures stay
+  deterministic. llvmpipe drew stripes on the self-shadowing ground below
+  an extra bias of 0.001. The menu replaces the HUD's pause panel and uses
+  the game's own font (`SpriteFontText`); settings are saved like
+  backrooms'. Driving it with real input found that every resume turned the
+  view by up to 90 degrees (the first relative mouse read is a position):
+  fixed in the game.
+- The engine: `Menu` let a resting pointer take the selection back on
+  every update, so arrows could not move while the mouse rested over the
+  menu (found by backrooms' control check): fixed in `fd5a478`.
 
 ## Deferred work and non-goals for 1.0
 

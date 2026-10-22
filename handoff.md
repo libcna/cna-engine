@@ -58,9 +58,22 @@ shared worktree is still clean at its pin); move them with
 
 ## State
 
+**Shadows and menus in backrooms and school (2026-10-22, GAME-064/065).**
+Asked by the owner after pushing Phase 7: both games bake their light into
+unlit vertex colours, which CNA's shadow receivers do not darken, so the
+engine got `Material::bakedKeyLight` (the key light's share of baked light,
+drawn through the lit BasicEffect). Both games now have shadows and an
+engine pause menu with saved settings on branch `engine-shadows-menu` in
+the worktrees `libcnalab/backrooms-simulator-engine` and
+`libcnalab/school-simulator-engine` (desktop `build/` and browser
+`build-consumer/` there) -- not merged or pushed; that needs the owner's
+word. The engine commits after `172e839` (`2d893cb`, `fd5a478` and the
+records) are not pushed either. Details in `plan.md` GAME-065 and
+`docs/verification.md`.
+
 **Phase 7 (2026-10-22, `plan.md`): a new game from CNA and the engine
 alone.** Asked by the owner after the SHARE-001 work: everything is built,
-tested and committed on `develop` (not pushed). Part A: `cna_engine_add_game`
+tested and committed on `develop` (pushed 2026-10-22, `172e839`). Part A: `cna_engine_add_game`
 and `cmake/CnaEngineGame.cmake` (desktop and browser), `tools/fetch_dependencies.sh`,
 `App/EngineGame`, `templates/game` with `tools/new_game.sh`, `docs/tutorial.md`
 and three examples run as tests. Part B: models (`Graphics/ModelView`,

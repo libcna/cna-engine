@@ -4,6 +4,48 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-22 — GAME-064/065: shadows on baked light, shadows and menus in backrooms and school
+
+Engine `develop` `2d893cb` (`Material::bakedKeyLight`) and `fd5a478` (menu
+pointer); CNA `~/deps/cna-baseline` `900d0db3b`, Sharp Runtime
+`~/deps/sharp-runtime-baseline` `f2aecfef`, easy-gl `v0.1.1`.
+
+- `build/` (as in the Phase 7 entry): **338 of 339 tests pass** after
+  `2d893cb`; the one failure was `cna_engine.api_snapshot`, expected for the
+  new `Material` field, and passes after the snapshot update in the same
+  commit. New: `ForwardRendererTest.BakedLightKeepsAllButTheKeyLightsShare`,
+  `ShadowReceptionTest.BakedLightLosesItsKeyShareInTheShadow`; the menu
+  test covers a resting pointer (`cna_engine_ui_tests`, 10 of 10).
+- backrooms-simulator, branch `engine-shadows-menu` (worktree
+  `libcnalab/backrooms-simulator-engine`, `build/` OpenGL ES 3 with the CNA
+  checkout's Linux SDL prebuilt, Release): 30 deterministic captures
+  (`--capture`) on the Radeon 780M (`SDL_VIDEODRIVER=offscreen`) after each
+  step. Build step identical; shadows: the 24 views without creatures
+  identical, five creature views differ only under the creatures (at most
+  one level elsewhere), the fading one identical; menu step identical.
+  llvmpipe shows the same shadow. `tools/validate_controls.py` (adapted to
+  the menu) passes on a private Xvfb; a scripted X11 run rebound a key,
+  clicked Resume and saved `settings.ini`/`bindings.ini`. Browser build
+  (`build-consumer/`, Emscripten, the CNA checkout's emscripten SDL
+  read-only): in headless Chrome (SwiftShader) the creature's shadow falls
+  under it, Escape opens the menu (no Quit in a page), Down and Enter the
+  settings, Escape returns and resumes; key presses shorter than one of
+  SwiftShader's slow frames are missed (CNA polls the keyboard).
+- school-simulator, branch `engine-shadows-menu` (worktree
+  `libcnalab/school-simulator-engine`, `build/`, -j2): 19 reference
+  captures plus six outdoor views (fixed step 0.05) on the Radeon 780M.
+  Build step identical; sun shadows: outdoor views changed (shadows, and
+  surfaces turned from the sun darker), indoor views only through windows;
+  a repeated run is byte-identical; `--no-shadows` is pixel-identical to the
+  reference (two views); llvmpipe needed an extra bias of 0.001 against
+  stripes on the self-shadowing ground. Menu step identical; real X11 input
+  (private Xvfb) opened the menu, the settings, went back, resumed without
+  turning the view (fixed in the game: `59ed114`), quit, clicked Resume and
+  rebound Use. `school_app_tests`: 3,705,866 checks, 0 failures. Browser
+  build (`build-consumer/`, configured by hand as before, `JOBS=2
+  tools/build_web.sh`): in headless Chrome the 2048 sun map is created
+  (float, 23 bits), Escape opens the menu without Quit and resumes.
+
 ## 2026-10-22 — Phase 7: a new game from CNA and the engine alone
 
 Engine `develop` from `8f2aa7f` (plan) to `76a9b9a`; CNA `~/deps/cna-baseline`
