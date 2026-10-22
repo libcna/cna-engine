@@ -12,6 +12,7 @@
 #include "CnaEngine/Graphics/Instancing.hpp"
 #include "CnaEngine/Graphics/Material.hpp"
 #include "CnaEngine/Graphics/ModelView.hpp"
+#include "CnaEngine/Graphics/PostProcess.hpp"
 #include "CnaEngine/Graphics/RenderQueue.hpp"
 #include "CnaEngine/Graphics/RenderStatistics.hpp"
 #include "CnaEngine/Graphics/ScreenCapture.hpp"
@@ -239,6 +240,14 @@ namespace CnaEngine::App
         /// The shadow map, or null when shadows are off.
         [[nodiscard]] Graphics::ShadowMap* Shadows() noexcept { return shadows_.get(); }
 
+        /// Draws the world into an off-screen target and through a chain of
+        /// full-screen passes to the screen; DrawOverlay's HUD stays on top,
+        /// untouched. Call once the device exists (in LoadGame); add passes to
+        /// the returned chain.
+        Graphics::PostProcessChain& EnablePostProcessing();
+        void DisablePostProcessing() noexcept { post_.reset(); }
+        [[nodiscard]] Graphics::PostProcessChain* PostProcessing() noexcept { return post_.get(); }
+
     protected:
         /// The device, the renderer and the asset directory are ready; load
         /// the game's content here.
@@ -305,6 +314,7 @@ namespace CnaEngine::App
         std::filesystem::path assetDirectory_;
         std::unique_ptr<IMouseCapture> mouse_;
         std::unique_ptr<Graphics::ShadowMap> shadows_;
+        std::unique_ptr<Graphics::PostProcessChain> post_;
         ShadowSettings shadowSettings_;
         std::function<void(Graphics::ShadowMap&)> shadowReceiver_;
         std::vector<Graphics::RenderItem> casters_;

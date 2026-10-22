@@ -64,7 +64,7 @@ gtest_discover_tests(cna_engine_tests
     PROPERTIES LABELS unit)
 
 # --- The game loop (GAME-003): strict, runs XNA Games on the headless platform. -
-add_executable(cna_engine_app_tests App/AssetDirectoryTests.cpp App/EngineGameTests.cpp)
+add_executable(cna_engine_app_tests App/AssetDirectoryTests.cpp App/EngineGameTests.cpp App/PostProcessTests.cpp)
 target_link_libraries(cna_engine_app_tests PRIVATE cna_engine_app GTest::gtest_main)
 cna_engine_sanitize(cna_engine_app_tests)
 gtest_discover_tests(cna_engine_app_tests

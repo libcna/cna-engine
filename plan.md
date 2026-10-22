@@ -1293,7 +1293,21 @@ needs a SpriteFont (content): the built-in font is ASCII.
 
 ### Part C — later in the same phase
 
-### GAME-060 — Post-processing hook `[ ]` (ENG-035 step 4)
+### GAME-060 — Post-processing hook `[x]` (ENG-035 step 4)
+
+Acceptance: the world drawn into an off-screen target and through a chain
+of full-screen passes to the screen, the HUD on top untouched; a game can
+add its own passes (any effect); built-in passes that need no custom
+shader, so they run on every renderer.
+
+Result (2026-10-22): strict `Graphics/PostProcess.hpp`: `PostProcessChain`
+(scene target sized like the viewport, ping-pong between two targets, the
+last pass into the back buffer), `PostPass`, and `ColorGradePass` (island's
+time-of-day multiply), `FadePass`, `VignettePass` through SpriteBatch only;
+`EngineGame::EnablePostProcessing`. Tests through an EngineGame: a plain
+copy, a grade and a vignette chained, a fade, a pass removed. Bloom,
+tonemapping and FXAA need custom shaders (room's vendored chain); a game
+adds them as its own passes.
 ### GAME-061 — Local lights `[ ]`
 ### GAME-062 — cna-extended particles and animation adapters `[ ]` (ENG-030)
 ### GAME-063 — Save slots `[ ]`

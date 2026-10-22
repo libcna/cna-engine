@@ -93,6 +93,7 @@ cna_engine_add_library(cna_engine_graphics Graphics
     src/Graphics/ModelView.cpp
     src/Graphics/Sky.cpp
     src/Graphics/ShadowMap.cpp
+    src/Graphics/PostProcess.cpp
     src/Assets/AssetRegistry.cpp
 )
 target_link_libraries(cna_engine_graphics PUBLIC cna_engine_core)

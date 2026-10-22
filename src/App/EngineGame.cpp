@@ -211,6 +211,14 @@ namespace CnaEngine::App
         shadowReceiver_ = std::move(receiver);
     }
 
+    Graphics::PostProcessChain& EngineGame::EnablePostProcessing()
+    {
+        if (!post_) {
+            post_ = std::make_unique<Graphics::PostProcessChain>(getGraphicsDeviceProperty());
+        }
+        return *post_;
+    }
+
     void EngineGame::DisableShadowMap() noexcept
     {
         shadows_.reset();
@@ -435,6 +443,9 @@ namespace CnaEngine::App
             }
         }
 
+        if (post_) {
+            post_->BeginScene(); // the world goes into the scene target
+        }
         device.Clear(options_.clearColor);
 
         queue_.Clear();
@@ -459,6 +470,9 @@ namespace CnaEngine::App
         }
         queue_.Sort(camera_.Position());
         renderer_->Render(queue_, camera_, &rendered_);
+        if (post_) {
+            post_->EndScene();
+        }
 
         DrawOverlay(device);
         for (const auto& shot : screenshots_.Process(device)) {

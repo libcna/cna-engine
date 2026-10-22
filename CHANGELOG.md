@@ -218,6 +218,9 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   `Box`, `TextStyle`, `Toasts`), `UI/Menu.hpp` (`Menu`, `MenuStack`,
   `MenuInput`, `MenuActions`, `ReadMenuInput`), `UI/SettingsMenu.hpp`
   (`AddQualitySettings`, `RebindRows`). `EngineGame::CurrentInput`.
+- `Graphics/PostProcess.hpp` (GAME-060): `PostProcessChain`, `PostPass`,
+  `ColorGradePass`, `FadePass`, `VignettePass`; `EngineGame::EnablePostProcessing`,
+  `DisablePostProcessing`, `PostProcessing`.
 
 ### Other API additions (experimental headers)
 
