@@ -13,5 +13,4 @@ cna_engine_add_game(@GAME_TARGET@
     SOURCES src/main.cpp src/Game.cpp
     ASSETS assets
     TITLE "@GAME_NAME@"
-    HINT "Click to look around &middot; WASD walk &middot; Shift runs &middot; Esc releases the mouse"
-    PROFILE enhanced)
+    PROFILE enhanced)  # no HINT: the game draws its own
