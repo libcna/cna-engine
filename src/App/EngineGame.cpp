@@ -340,9 +340,9 @@ namespace CnaEngine::App
 
     void EngineGame::Update(Microsoft::Xna::Framework::GameTime& gameTime)
     {
-        const auto snapshot = ReadInput();
-        actions_.Update(snapshot);
-        mouseDelta_ = mouse_->Delta(*this, snapshot.mouse);
+        input_ = ReadInput();
+        actions_.Update(input_);
+        mouseDelta_ = mouse_->Delta(*this, input_.mouse);
 
         if (actions_.Pressed(builtIns_.quit)) {
             OnQuit();

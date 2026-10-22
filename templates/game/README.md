@@ -41,20 +41,23 @@ then open <http://localhost:8080/>. Desktop options go in the address:
 | W A S D, left stick | Walk |
 | Shift | Run |
 | Space, A button | Jump |
-| Esc | Release the mouse; again: quit (not in a browser) |
+| Esc | The menu (resume, settings, quit); in a menu: back |
+| Arrows, Enter, mouse | Choose in a menu |
 | F3 | Statistics in the window's title |
 | F11 | Full screen |
 | F12 | Screenshot |
 
-Key bindings can be changed in `bindings.ini` beside the preferences
-(`~/.config/@GAME_TARGET@/` on Linux).
+Jump and Run can be rebound in the menu's settings; every binding can also
+be changed in `bindings.ini` beside the preferences (`~/.config/@GAME_TARGET@/`
+on Linux), where the volume is kept too.
 
 ## Where things are
 
 - `src/Game.cpp` — the game: input, the world (each block is a box to
   collide with and a cube to draw), the sky and the sun's shadows over the
   day, the body (`CharacterController`: walls, stairs, gravity, jumps),
-  footsteps (`SoundSystem`), drawing.
+  footsteps (`SoundSystem`), the crosshair and the pause menu (`UI`),
+  drawing.
 - `assets/` — copied beside the executable (preloaded in the browser);
   loaded through XNA's content manager, e.g. `Load<Texture2D>("crate")`.
 - `CMakeLists.txt` — one `cna_engine_add_game()` call.

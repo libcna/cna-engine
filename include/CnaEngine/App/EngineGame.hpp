@@ -220,6 +220,9 @@ namespace CnaEngine::App
         /// default) and reports its movement in MouseDelta().
         void CaptureMouse(bool captured);
         [[nodiscard]] bool MouseCaptured() const noexcept;
+        /// This update's input (ReadInput's snapshot): the mouse's position
+        /// for a menu, the raw state for a key-binding capture.
+        [[nodiscard]] const Input::InputSnapshot& CurrentInput() const noexcept { return input_; }
         /// The mouse's movement in pixels during this update; zero while the
         /// mouse is not captured.
         [[nodiscard]] Microsoft::Xna::Framework::Vector2 MouseDelta() const noexcept { return mouseDelta_; }
@@ -306,6 +309,7 @@ namespace CnaEngine::App
         std::function<void(Graphics::ShadowMap&)> shadowReceiver_;
         std::vector<Graphics::RenderItem> casters_;
         Microsoft::Xna::Framework::Vector2 mouseDelta_ = Microsoft::Xna::Framework::Vector2::Zero;
+        Input::InputSnapshot input_;
         std::uint64_t updates_ = 0;
         double statisticsAge_ = 0.0;
         bool statisticsVisible_ = false;

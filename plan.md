@@ -1265,11 +1265,31 @@ extension). Tests on CNA's null audio platform. The template plays
 footsteps (two generated CC0 WAVs) on the character's strides;
 `cna_engine_add_game` links `CnaEngine::Audio`.
 
-### GAME-050 — Text, menus and HUD `[ ]`
+### GAME-050 — Text, menus and HUD `[x]`
 
 Acceptance: text with a font a game can get without the XNA content
 pipeline, a menu navigated by actions, HUD anchoring, and a settings screen
 built from a `QualitySchema` and the action map's rebinding.
+
+Result (2026-10-22): strict target `CnaEngine::UI` (`UI` added to the strict
+modules). `UI/Font.hpp`: `IFont`, `BuiltInFont` (the engine's own 5 x 7
+glyphs of the 95 printable ASCII characters, built into a texture: text with
+no file at all; others draw as '?') and `SpriteFontText` (a content
+SpriteFont). `UI/Painter.hpp`: a virtual resolution (720 units tall by
+default), anchors, panels, text with a shadow, `Toasts`. `UI/Menu.hpp`:
+`Menu` (buttons, choices, sliders, labels; selection skips labels and
+wraps; the pointer selects and clicks), `MenuStack`, `MenuActions`
+(declared, rebindable actions with keys and pad buttons), `ReadMenuInput`.
+`UI/SettingsMenu.hpp`: `AddQualitySettings` (preset choice, on/off and
+bounded sliders writing a `QualitySelection`) and `RebindRows` (a row
+listens through `BindingCapture`; the captured key, still held, does not
+act -- the ActionMap's focus-loss suppression). `EngineGame::CurrentInput`
+for menus and capture. Tests: glyph pixels where the text is placed,
+measuring, anchors, toasts, navigation, choices, sliders, pointer, stack,
+quality rows, rebinding with a cancel. The template has a crosshair, a hint,
+messages and a pause menu (resume, settings with the volume and the Jump
+and Run keys saved in the preferences, quit). Czech or other non-ASCII text
+needs a SpriteFont (content): the built-in font is ASCII.
 
 ### Part C — later in the same phase
 

@@ -69,7 +69,7 @@ function(cna_engine_add_game target)
     else()
         set(cna CNA)
     endif()
-    target_link_libraries(${target} PRIVATE CnaEngine::App CnaEngine::Audio ${cna} ${GAME_LIBRARIES})
+    target_link_libraries(${target} PRIVATE CnaEngine::App CnaEngine::Audio CnaEngine::UI ${cna} ${GAME_LIBRARIES})
     if(GAME_PROFILE STREQUAL "enhanced")
         if(NOT TARGET CnaEngine::EnhancedGraphics)
             message(FATAL_ERROR

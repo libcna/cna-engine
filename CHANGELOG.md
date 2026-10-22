@@ -213,6 +213,11 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 - Strict target `CnaEngine::Audio` (GAME-040): `Audio/SoundSystem.hpp`
   (`SoundSystem`, `VoiceOptions`, `SoundBank`, `Falloff`, `Spatialize`,
   `Listener`, `ListenerFrom`, `AudioState`).
+- Strict target `CnaEngine::UI` (GAME-050): `UI/Font.hpp` (`IFont`,
+  `BuiltInFont`, `SpriteFontText`), `UI/Painter.hpp` (`Painter`, `Anchor`,
+  `Box`, `TextStyle`, `Toasts`), `UI/Menu.hpp` (`Menu`, `MenuStack`,
+  `MenuInput`, `MenuActions`, `ReadMenuInput`), `UI/SettingsMenu.hpp`
+  (`AddQualitySettings`, `RebindRows`). `EngineGame::CurrentInput`.
 
 ### Other API additions (experimental headers)
 

@@ -115,7 +115,16 @@ cna_engine_add_library(cna_engine_audio Audio
 target_link_libraries(cna_engine_audio PUBLIC cna_engine_graphics)
 cna_engine_link_external(cna_engine_audio CNA::Audio)
 
-set(CNA_ENGINE_EXPORTED_TARGETS cna_engine_core cna_engine_graphics cna_engine_app cna_engine_audio)
+# Text, HUD and menus (plan.md GAME-050).
+cna_engine_add_library(cna_engine_ui UI
+    src/UI/Font.cpp
+    src/UI/Painter.cpp
+    src/UI/Menu.cpp
+    src/UI/SettingsMenu.cpp
+)
+target_link_libraries(cna_engine_ui PUBLIC cna_engine_graphics)
+
+set(CNA_ENGINE_EXPORTED_TARGETS cna_engine_core cna_engine_graphics cna_engine_app cna_engine_audio cna_engine_ui)
 
 # ---------------------------------------------------------------------------
 # Enhanced graphics: CNA extension APIs (PbrEffect, ...), never cna-extended.
@@ -150,7 +159,8 @@ endif()
 add_library(cna_engine INTERFACE)
 add_library(CnaEngine::Engine ALIAS cna_engine)
 set_target_properties(cna_engine PROPERTIES EXPORT_NAME Engine)
-target_link_libraries(cna_engine INTERFACE cna_engine_core cna_engine_graphics cna_engine_app cna_engine_audio)
+target_link_libraries(cna_engine INTERFACE cna_engine_core cna_engine_graphics cna_engine_app cna_engine_audio
+    cna_engine_ui)
 if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     target_link_libraries(cna_engine INTERFACE cna_engine_enhanced)
 endif()

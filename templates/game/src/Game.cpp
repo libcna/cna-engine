@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 using namespace CnaEngine;
 using Microsoft::Xna::Framework::BoundingBox;
@@ -123,6 +124,75 @@ void @GAME_CLASS@::LoadGame()
     Enhanced::EnableShadows(*this, {.size = 1024, .radius = 25.0f});
 
     body_.Teleport(world_, Vector3(0.0f, 0.0f, 2.0f));
+
+    // The 2D layer and the menus; the volume as the player last left it.
+    font_ = std::make_unique<UI::BuiltInFont>(device);
+    painter_ = std::make_unique<UI::Painter>(device);
+    menuActions_ = UI::MenuActions::Declare(actions);
+    sound_.SetMasterVolume(Preferences().GetFloat("sound.volume", 1.0f, 0.0f, 1.0f));
+    BuildMenus();
+}
+
+void @GAME_CLASS@::BuildMenus()
+{
+    pauseMenu_ = std::make_shared<UI::Menu>("@GAME_NAME@");
+    settingsMenu_ = std::make_shared<UI::Menu>("Settings");
+    pauseMenu_->Button("Resume", [this] {
+        menus_.Clear();
+        CaptureMouse(true);
+    });
+    pauseMenu_->Button("Settings", [this] { menus_.Push(settingsMenu_); });
+    pauseMenu_->Button("Quit", [this] { Exit(); });
+
+    settingsMenu_->Label("Sound");
+    settingsMenu_->Slider("Volume", 0.0f, 1.0f, 0.1f, sound_.MasterVolume(), [this](const float volume) {
+        sound_.SetMasterVolume(volume);
+        Preferences().SetFloat("sound.volume", volume, 2);
+    });
+    settingsMenu_->Label("Controls");
+    rebind_ = std::make_unique<UI::RebindRows>(*settingsMenu_, Actions(),
+                                               std::vector<Input::ActionId>{jump_, *axes_.fast});
+    settingsMenu_->Button("Back", [this] {
+        menus_.Pop();
+        // The preferences file keeps the volume and the bindings.
+        if (std::string error; !SavePreferences(&error)) {
+            toasts_.Show("Settings not saved: " + error);
+        }
+    });
+}
+
+void @GAME_CLASS@::OnQuit()
+{
+    // Escape opens the pause menu (and frees the mouse); in the menu, Escape goes back.
+    if (menus_.Empty()) {
+        CaptureMouse(false);
+        menus_.Push(pauseMenu_);
+        menuJustOpened_ = true;
+    }
+}
+
+void @GAME_CLASS@::UpdateMenus()
+{
+    if (menus_.Empty() || menuJustOpened_) {
+        menuJustOpened_ = false; // the key that opened the menu does not act in it
+        return;
+    }
+    if (rebind_->Listening()) {
+        (void)rebind_->Update(CurrentInput()); // the next key becomes the binding
+        return;
+    }
+    const auto& mouse = CurrentInput().mouse;
+    const auto pointer = painter_->ToVirtual(Microsoft::Xna::Framework::Vector2(
+        static_cast<float>(mouse.getXProperty()), static_cast<float>(mouse.getYProperty())));
+    menus_.Update(UI::ReadMenuInput(Actions(), menuActions_, pointer, Actions().Pressed(captureMouse_)));
+}
+
+void @GAME_CLASS@::OnScreenshot(const Graphics::CaptureResult& result)
+{
+    EngineGame::OnScreenshot(result);
+    if (result.success && !result.path.empty()) {
+        toasts_.Show("Screenshot saved");
+    }
 }
 
 void @GAME_CLASS@::UpdateSky()
@@ -135,6 +205,9 @@ void @GAME_CLASS@::UpdateSky()
 
 void @GAME_CLASS@::FixedUpdate(const double stepSeconds)
 {
+    if (menus_.PausesWorld()) {
+        return; // the world stands still under the pause menu
+    }
     // Walking in fixed steps: the same input moves the same way at any frame rate.
     const auto input = Graphics::ReadCameraInput(Actions(), axes_, static_cast<float>(stepSeconds));
     const float speed = WalkSpeed * (input.fast ? RunMultiplier : 1.0f);
@@ -153,6 +226,11 @@ void @GAME_CLASS@::FixedUpdate(const double stepSeconds)
 
 void @GAME_CLASS@::UpdateFrame(const double frameSeconds)
 {
+    UpdateMenus();
+    toasts_.Update(static_cast<float>(frameSeconds));
+    if (!menus_.Empty()) {
+        return;
+    }
     if (Actions().Pressed(captureMouse_)) {
         CaptureMouse(true);
     }
@@ -180,4 +258,23 @@ void @GAME_CLASS@::Submit(App::Frame& frame)
     for (const auto& block : blocks_) {
         frame.Add(cube_, *block.material, block.world);
     }
+}
+
+void @GAME_CLASS@::DrawOverlay(Microsoft::Xna::Framework::Graphics::GraphicsDevice&)
+{
+    using Microsoft::Xna::Framework::Color;
+    painter_->Begin();
+    if (!menus_.Empty()) {
+        menus_.Draw(*painter_, *font_);
+    } else {
+        // A small crosshair, and how to start when the mouse is free.
+        const auto middle = painter_->VirtualSize() * 0.5f;
+        painter_->Fill({middle.X - 6.0f, middle.Y - 1.0f, 12.0f, 2.0f}, Color(255, 255, 255, 200));
+        painter_->Fill({middle.X - 1.0f, middle.Y - 6.0f, 2.0f, 12.0f}, Color(255, 255, 255, 200));
+        if (!MouseCaptured()) {
+            painter_->Text(*font_, "Click to look around - Esc: menu", UI::Anchor::Bottom);
+        }
+    }
+    toasts_.Draw(*painter_, *font_, UI::Anchor::Top);
+    painter_->End();
 }
