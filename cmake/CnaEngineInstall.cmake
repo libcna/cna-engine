@@ -37,10 +37,31 @@ install(EXPORT CnaEngineTargets
     DESTINATION "${CNA_ENGINE_INSTALL_CMAKEDIR}")
 
 set(CNA_ENGINE_PACKAGE_HAS_EXTENDED ${CNA_ENGINE_WITH_EXTENDED})
-get_property(CNA_ENGINE_PACKAGE_CORE_LINKS GLOBAL PROPERTY CNA_ENGINE_EXTERNAL_LINKS_cna_engine_core)
-get_property(CNA_ENGINE_PACKAGE_GRAPHICS_LINKS GLOBAL PROPERTY CNA_ENGINE_EXTERNAL_LINKS_cna_engine_graphics)
-get_property(CNA_ENGINE_PACKAGE_EXTENDED_LINKS GLOBAL PROPERTY CNA_ENGINE_EXTERNAL_LINKS_cna_engine_extended)
-get_property(CNA_ENGINE_PACKAGE_ENHANCED_LINKS GLOBAL PROPERTY CNA_ENGINE_EXTERNAL_LINKS_cna_engine_enhanced)
+# CNA and cna-extended targets cannot be exported (UP-001): the package
+# configuration re-attaches each target's links once the consumer defined them.
+set(CNA_ENGINE_PACKAGE_REQUIRED "")
+set(CNA_ENGINE_PACKAGE_LINK_LINES "")
+foreach(_target IN LISTS CNA_ENGINE_EXPORTED_TARGETS)
+    get_property(_links GLOBAL PROPERTY CNA_ENGINE_EXTERNAL_LINKS_${_target})
+    if(NOT _links)
+        continue()
+    endif()
+    get_target_property(_alias ${_target} EXPORT_NAME)
+    set(_condition "TARGET CnaEngine::${_alias}")
+    foreach(_link IN LISTS _links)
+        string(APPEND _condition " AND TARGET ${_link}")
+        if(NOT _link STREQUAL "CNA::Extended")
+            list(APPEND CNA_ENGINE_PACKAGE_REQUIRED ${_link})
+        endif()
+    endforeach()
+    list(JOIN _links " " _joined)
+    string(APPEND CNA_ENGINE_PACKAGE_LINK_LINES
+        "if(${_condition})\n"
+        "    set_property(TARGET CnaEngine::${_alias} APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${_joined})\n"
+        "endif()\n")
+endforeach()
+list(REMOVE_DUPLICATES CNA_ENGINE_PACKAGE_REQUIRED)
+list(JOIN CNA_ENGINE_PACKAGE_REQUIRED " " CNA_ENGINE_PACKAGE_REQUIRED)
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/CnaEngineConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/CnaEngineConfig.cmake"
@@ -54,7 +75,10 @@ write_basic_package_version_file(
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/CnaEngineConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/CnaEngineConfigVersion.cmake"
+    "${PROJECT_SOURCE_DIR}/cmake/CnaEngineGameFunctions.cmake"
+    "${PROJECT_SOURCE_DIR}/cmake/CnaEngineWebPackage.cmake"
     DESTINATION "${CNA_ENGINE_INSTALL_CMAKEDIR}")
+install(FILES "${PROJECT_SOURCE_DIR}/cmake/web/shell.html" DESTINATION "${CNA_ENGINE_INSTALL_CMAKEDIR}/web")
 
 install(FILES "${PROJECT_SOURCE_DIR}/LICENSE" "${PROJECT_SOURCE_DIR}/NOTICE.md" "${PROJECT_SOURCE_DIR}/CHANGELOG.md"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/cna-engine")

@@ -15,6 +15,13 @@ set(CNA_ENGINE_BASELINE_EXTENDED "0061e3e17c30b2a3a302bce617e64765883079aa")
 set(CNA_ENGINE_BASELINE_EXTENDED_BRANCH "develop")
 set(CNA_ENGINE_BASELINE_SHARP_RUNTIME "f2aecfefeac171b331787e5cdc4849507363ef0e")
 set(CNA_ENGINE_BASELINE_SHARP_RUNTIME_BRANCH "next")
+# The GL renderers' siblings, at the releases CNA's DependencyVersions.cmake
+# requires (easy-gl 0.1.1, meta-gl 0.4.1). CNA checks their versions itself;
+# these pins are what tools/fetch_dependencies.sh checks out for a new game.
+set(CNA_ENGINE_BASELINE_EASYGL "f4d6afaf16cdc7e7e73130950bc45e6d865b41bd")
+set(CNA_ENGINE_BASELINE_EASYGL_BRANCH "develop")
+set(CNA_ENGINE_BASELINE_METAGL "dd3b30055d55fdc42240de7af248259338256992")
+set(CNA_ENGINE_BASELINE_METAGL_BRANCH "develop")
 
 function(_cna_engine_check_one name dir expected)
     if(NOT EXISTS "${dir}/.git")

@@ -58,6 +58,15 @@ gtest_discover_tests(cna_engine_tests
     DISCOVERY_MODE PRE_TEST
     PROPERTIES LABELS unit)
 
+# --- The game loop (GAME-003): strict, runs XNA Games on the headless platform. -
+add_executable(cna_engine_app_tests App/AssetDirectoryTests.cpp App/EngineGameTests.cpp)
+target_link_libraries(cna_engine_app_tests PRIVATE cna_engine_app GTest::gtest_main)
+cna_engine_sanitize(cna_engine_app_tests)
+gtest_discover_tests(cna_engine_app_tests
+    TEST_PREFIX "cna_engine.app."
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES LABELS unit)
+
 # --- Performance scaling checks (REL-003): their own label, no budgets. -------
 add_executable(cna_engine_performance_tests Performance/ScalingTests.cpp)
 target_link_libraries(cna_engine_performance_tests PRIVATE cna_engine_core cna_engine_graphics GTest::gtest_main)
@@ -114,6 +123,24 @@ set_tests_properties(cna_engine.baseline_range_descendant PROPERTIES LABELS boun
 set_tests_properties(cna_engine.baseline_range_diverged PROPERTIES LABELS boundary
     PASS_REGULAR_EXPRESSION "CMake Error at[^\n]*\n[^(]*does not contain the[^(]*\\(older or diverged\\)")
 
+# --- The dependency fetcher (GAME-002), dry: clones nothing. -------------------
+if(NOT WIN32)
+    add_test(NAME cna_engine.fetch_dependencies_dry_run
+        COMMAND bash "${PROJECT_SOURCE_DIR}/tools/fetch_dependencies.sh" --dry-run --with-extended
+                "${CMAKE_CURRENT_BINARY_DIR}/fetch_dependencies_dry_run")
+    # Every dependency at its pin (cmake/CnaEngineBaseline.cmake), and nothing created.
+    set(_fetch_expected "")
+    foreach(_pair cna:CNA sharp-runtime:SHARP_RUNTIME easy-gl:EASYGL meta-gl:METAGL cna-extended:EXTENDED)
+        string(REPLACE ":" ";" _pair "${_pair}")
+        list(GET _pair 0 _name)
+        list(GET _pair 1 _variable)
+        string(SUBSTRING "${CNA_ENGINE_BASELINE_${_variable}}" 0 10 _short)
+        string(APPEND _fetch_expected "${_name}: cloning[^\n]*${_short}.*")
+    endforeach()
+    set_tests_properties(cna_engine.fetch_dependencies_dry_run PROPERTIES LABELS boundary
+        PASS_REGULAR_EXPRESSION "${_fetch_expected}done")
+endif()
+
 # --- Public dependency-boundary checks (ENG-011). ------------------------------
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
@@ -142,7 +169,8 @@ file(GLOB_RECURSE _cna_engine_strict_headers CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/Input/*.hpp"
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/Diagnostics/*.hpp"
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/Graphics/*.hpp"
-    "${PROJECT_SOURCE_DIR}/include/CnaEngine/Assets/*.hpp")
+    "${PROJECT_SOURCE_DIR}/include/CnaEngine/Assets/*.hpp"
+    "${PROJECT_SOURCE_DIR}/include/CnaEngine/App/*.hpp")
 set(_cna_engine_header_tus "")
 foreach(_header IN LISTS _cna_engine_strict_headers)
     file(RELATIVE_PATH _rel "${PROJECT_SOURCE_DIR}/include" "${_header}")
@@ -152,4 +180,4 @@ foreach(_header IN LISTS _cna_engine_strict_headers)
     list(APPEND _cna_engine_header_tus "${_tu}")
 endforeach()
 add_library(cna_engine_strict_header_check OBJECT ${_cna_engine_header_tus})
-target_link_libraries(cna_engine_strict_header_check PRIVATE cna_engine_core cna_engine_graphics)
+target_link_libraries(cna_engine_strict_header_check PRIVATE cna_engine_core cna_engine_graphics cna_engine_app)

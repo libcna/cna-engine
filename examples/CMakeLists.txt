@@ -32,6 +32,28 @@ if(CNA_ENGINE_BUILD_TESTS)
     set_tests_properties(cna_engine.example.quick_start PROPERTIES LABELS "example")
 endif()
 
+# The smallest game on EngineGame, built the way a game builds itself
+# (cna_engine_add_game: assets beside the executable, a browser page under
+# Emscripten).
+cna_engine_add_game(cna_engine_hello
+    SOURCES hello_engine/main.cpp
+    ASSETS hello_engine/assets
+    TITLE "Hello, engine"
+    HINT "F3 statistics &middot; F12 screenshot"
+    WEB_PACKAGE "${CMAKE_CURRENT_BINARY_DIR}/hello_engine_web")
+cna_engine_sanitize(cna_engine_hello)
+if(MSVC)
+    target_compile_options(cna_engine_hello PRIVATE /W4 /WX)
+else()
+    target_compile_options(cna_engine_hello PRIVATE -Wall -Wextra -Werror)
+endif()
+if(CNA_ENGINE_BUILD_TESTS AND NOT EMSCRIPTEN)
+    add_test(NAME cna_engine.example.hello_engine
+        COMMAND cna_engine_hello --frames 120 --lockstep
+                --screenshot "${CMAKE_CURRENT_BINARY_DIR}/hello_engine.png")
+    set_tests_properties(cna_engine.example.hello_engine PROPERTIES LABELS "example")
+endif()
+
 # Enhanced-profile vertical slice: PBR through CnaEngine::EnhancedGraphics.
 if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     add_executable(cna_engine_street_slice street_slice/main.cpp)

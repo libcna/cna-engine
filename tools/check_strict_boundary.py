@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Strict-XNA boundary check for cna-engine (ADR-001, plan item ENG-011).
 
-The strict targets (CnaEngine::Core and CnaEngine::Graphics) may depend only on
+The strict targets (CnaEngine::Core, CnaEngine::Graphics and CnaEngine::App) may depend only on
 
   * XNA 4.0-compatible CNA headers (``Microsoft/Xna/Framework/...`` whose type
     is listed in ``tools/xna4_types.txt``),
@@ -29,7 +29,7 @@ import pathlib
 import re
 import sys
 
-STRICT_MODULES = ("Core", "Input", "Diagnostics", "Graphics", "Assets")
+STRICT_MODULES = ("Core", "Input", "Diagnostics", "Graphics", "Assets", "App")
 SOURCE_SUFFIXES = {".hpp", ".cpp", ".h", ".c", ".inl", ".ipp"}
 
 INCLUDE_RE = re.compile(r'^\s*#\s*include\s*([<"])([^>"]+)[>"]', re.MULTILINE)

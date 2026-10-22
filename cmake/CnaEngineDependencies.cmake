@@ -18,7 +18,9 @@ set(CNA_ENGINE_EXTENDED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../cna-extended"
 # Host-independent defaults: the CPU software renderer lets tests read back
 # pixels, the headless platform needs no window, and null audio needs no device.
 # These are the same axes cna-extended's standalone build selects, which keeps
-# the shared ccache warm across both projects.
+# the shared ccache warm across both projects. An empty value leaves the
+# choice to CNA's own default for the host -- what a game wants
+# (cmake/CnaEngineGame.cmake).
 set(CNA_ENGINE_CNA_RENDERER "SOFTWARE"
     CACHE STRING "cna renderer used by a standalone cna-engine build")
 set_property(CACHE CNA_ENGINE_CNA_RENDERER PROPERTY STRINGS
@@ -103,9 +105,15 @@ else()
     set(CNA_DEVICES OFF CACHE BOOL "" FORCE)
     set(CNA_ENABLE_NET OFF CACHE BOOL "" FORCE)
     set(CNA_ENABLE_DRACO OFF CACHE BOOL "" FORCE)
-    set(CNA_GRAPHICS_RENDERER "${CNA_ENGINE_CNA_RENDERER}" CACHE STRING "" FORCE)
-    set(CNA_PLATFORM "${CNA_ENGINE_CNA_PLATFORM}" CACHE STRING "" FORCE)
-    set(CNA_AUDIO_PLATFORM "${CNA_ENGINE_CNA_AUDIO_PLATFORM}" CACHE STRING "" FORCE)
+    if(CNA_ENGINE_CNA_RENDERER)
+        set(CNA_GRAPHICS_RENDERER "${CNA_ENGINE_CNA_RENDERER}" CACHE STRING "" FORCE)
+    endif()
+    if(CNA_ENGINE_CNA_PLATFORM)
+        set(CNA_PLATFORM "${CNA_ENGINE_CNA_PLATFORM}" CACHE STRING "" FORCE)
+    endif()
+    if(CNA_ENGINE_CNA_AUDIO_PLATFORM)
+        set(CNA_AUDIO_PLATFORM "${CNA_ENGINE_CNA_AUDIO_PLATFORM}" CACHE STRING "" FORCE)
+    endif()
     set(CNA_SHARP_RUNTIME_ROOT "${CNA_ENGINE_SHARP_RUNTIME_DIR}" CACHE PATH "" FORCE)
     set(SHARP_RUNTIME_COMPONENTS "${CNA_ENGINE_SHARP_RUNTIME_COMPONENTS}"
         CACHE STRING "Sharp Runtime components required by cna-engine and its CNA module closure" FORCE)
@@ -114,7 +122,7 @@ else()
     message(STATUS
         "cna-engine: adding modular CNA from '${CNA_ENGINE_CNA_DIR}' "
         "(renderer: ${CNA_ENGINE_CNA_RENDERER}, platform: ${CNA_ENGINE_CNA_PLATFORM}, "
-        "audio: ${CNA_ENGINE_CNA_AUDIO_PLATFORM})")
+        "audio: ${CNA_ENGINE_CNA_AUDIO_PLATFORM}; empty: CNA's default)")
     add_subdirectory("${CNA_ENGINE_CNA_DIR}" "${CMAKE_BINARY_DIR}/_cna" EXCLUDE_FROM_ALL)
 endif()
 

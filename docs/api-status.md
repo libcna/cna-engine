@@ -63,3 +63,8 @@ it is recorded in `CHANGELOG.md`.
 | Asset registry | `Assets/AssetRegistry.hpp` | Graphics | stable | Street `Assets/*Library`, house-simulator caches | tests, car-simulator branch, Street branch, school branch |
 | World3D screen driven by engine input/camera | `Extended/EngineWorldScreen.hpp` | ExtendedIntegration | experimental | cna-extended `World3DScreenEXT` | tests, consumer probe |
 | World3D camera sync | `Extended/WorldCameraSync.hpp` | ExtendedIntegration | experimental | cna-extended `Camera3DEXT` | tests |
+| Game build function (desktop and browser) | `cmake/CnaEngineGame.cmake`, `cna_engine_add_game()` | (CMake) | experimental | backrooms-, school- and train-simulator CMake; backrooms, school and house browser builds | example `hello_engine` (desktop and browser) |
+| Dependency fetcher | `tools/fetch_dependencies.sh` | (tool) | experimental | the sibling-checkout layout every game expects | dry-run test |
+| Game loop already wired | `App/EngineGame.hpp` | App | experimental | `examples/quick_start`; backrooms', school's and train's game classes | tests, example `hello_engine` |
+| Asset directory lookup | `App/AssetDirectory.hpp` | App | experimental | backrooms `FindAssetDirectory`, school `AssetPaths`, train's config discovery | tests, `EngineGame` |
+| Mouse capture for mouse look | `App/MouseCapture.hpp`, `Enhanced/RelativeMouseCapture.hpp` | App, EnhancedGraphics | experimental | backrooms (relative mode), school (pointer lock in the browser) | `EngineGame` |

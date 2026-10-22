@@ -44,6 +44,8 @@ include(CnaEngineBaseline)
 cna_engine_check_baseline()
 
 include(CnaEngineTargets)
+# cna_engine_add_game() for whoever added the engine (plan.md GAME-001).
+include(CnaEngineGameFunctions)
 
 # ---------------------------------------------------------------------------
 # Strict targets: XNA-compatible CNA surface, Sharp Runtime and std only.
@@ -89,7 +91,17 @@ cna_engine_add_library(cna_engine_graphics Graphics
 target_link_libraries(cna_engine_graphics PUBLIC cna_engine_core)
 cna_engine_link_external(cna_engine_graphics CNA::GraphicsCore CNA::Content)
 
-set(CNA_ENGINE_EXPORTED_TARGETS cna_engine_core cna_engine_graphics)
+# The game loop already wired (plan.md GAME-003): an XNA Game, so it needs
+# CNA's runtime module.
+cna_engine_add_library(cna_engine_app App
+    src/App/AssetDirectory.cpp
+    src/App/MouseCapture.cpp
+    src/App/EngineGame.cpp
+)
+target_link_libraries(cna_engine_app PUBLIC cna_engine_graphics)
+cna_engine_link_external(cna_engine_app CNA::Runtime)
+
+set(CNA_ENGINE_EXPORTED_TARGETS cna_engine_core cna_engine_graphics cna_engine_app)
 
 # ---------------------------------------------------------------------------
 # Enhanced graphics: CNA extension APIs (PbrEffect, ...), never cna-extended.
@@ -97,8 +109,9 @@ set(CNA_ENGINE_EXPORTED_TARGETS cna_engine_core cna_engine_graphics)
 if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     cna_engine_add_library(cna_engine_enhanced EnhancedGraphics
         src/Enhanced/PbrMaterialBinder.cpp
+        src/Enhanced/RelativeMouseCapture.cpp
     )
-    target_link_libraries(cna_engine_enhanced PUBLIC cna_engine_graphics)
+    target_link_libraries(cna_engine_enhanced PUBLIC cna_engine_graphics cna_engine_app)
     cna_engine_link_external(cna_engine_enhanced CNA::GraphicsCore)
     list(APPEND CNA_ENGINE_EXPORTED_TARGETS cna_engine_enhanced)
 endif()
@@ -121,7 +134,7 @@ endif()
 add_library(cna_engine INTERFACE)
 add_library(CnaEngine::Engine ALIAS cna_engine)
 set_target_properties(cna_engine PROPERTIES EXPORT_NAME Engine)
-target_link_libraries(cna_engine INTERFACE cna_engine_core cna_engine_graphics)
+target_link_libraries(cna_engine INTERFACE cna_engine_core cna_engine_graphics cna_engine_app)
 if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     target_link_libraries(cna_engine INTERFACE cna_engine_enhanced)
 endif()

@@ -161,6 +161,28 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   four bytes; train-simulator keeps screenshot memory bounded for its
   automated captures.
 
+### A new game from the engine (Phase 7, experimental)
+
+- `cmake/CnaEngineGame.cmake` and `cna_engine_add_game()` (GAME-001): a game's
+  CMake adds CNA and the engine with game defaults (CNA's renderer, window
+  and audio for the host; static CNA) and builds its executable with one
+  call: assets beside it on the desktop, and under Emscripten a page
+  (`cmake/web/shell.html`), the assets preloaded, Asyncify, CNA's exception
+  ABI and `web-package/`. An empty `CNA_ENGINE_CNA_RENDERER`, `_PLATFORM` or
+  `_AUDIO_PLATFORM` now leaves the choice to CNA. The installed package
+  provides the function too and re-attaches every exported target's CNA
+  links generically.
+- `tools/fetch_dependencies.sh` (GAME-002): CNA, Sharp Runtime, easy-gl and
+  meta-gl (optionally cna-extended) at the pins, beside the engine; existing
+  checkouts are reported, never changed. easy-gl and meta-gl pins added to
+  `cmake/CnaEngineBaseline.cmake`.
+- Strict target `CnaEngine::App` (GAME-003): `App/EngineGame.hpp`
+  (`EngineGame`, `GameOptions`, `Frame`, `BuiltInActions`, `RunGame`),
+  `App/MouseCapture.hpp` (`IMouseCapture`, `RecenteringMouseCapture`),
+  `App/AssetDirectory.hpp` (`FindAssetDirectory`). Enhanced:
+  `Enhanced/RelativeMouseCapture.hpp` (CNA's relative mouse mode, the
+  browser's pointer lock). Example `hello_engine`.
+
 ### Other API additions (experimental headers)
 
 - `Graphics/TextureAtlas.hpp`: `TextureAtlas`, `AtlasRect`, `UvRect` (named
