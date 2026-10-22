@@ -84,6 +84,59 @@ if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     endif()
 endif()
 
+# Phase 7's examples (GAME-005), each a game built the way a game builds
+# itself and run headless with a script.
+cna_engine_add_game(cna_engine_first_person
+    SOURCES first_person/main.cpp
+    TITLE "First person"
+    WEB_PACKAGE "${CMAKE_CURRENT_BINARY_DIR}/first_person_web")
+cna_engine_sanitize(cna_engine_first_person)
+if(NOT MSVC)
+    target_compile_options(cna_engine_first_person PRIVATE -Wall -Wextra -Werror)
+endif()
+if(CNA_ENGINE_BUILD_TESTS AND NOT EMSCRIPTEN)
+    add_test(NAME cna_engine.example.first_person
+        COMMAND cna_engine_first_person --frames 400 --lockstep
+                --screenshot "${CMAKE_CURRENT_BINARY_DIR}/first_person.png")
+    set_tests_properties(cna_engine.example.first_person PROPERTIES LABELS "example")
+endif()
+
+if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
+    cna_engine_add_game(cna_engine_third_person
+        SOURCES third_person/main.cpp
+        ASSETS third_person/assets
+        TITLE "Third person"
+        PROFILE enhanced
+        WEB_PACKAGE "${CMAKE_CURRENT_BINARY_DIR}/third_person_web")
+    cna_engine_sanitize(cna_engine_third_person)
+    if(NOT MSVC)
+        target_compile_options(cna_engine_third_person PRIVATE -Wall -Wextra -Werror)
+    endif()
+    if(CNA_ENGINE_BUILD_TESTS AND NOT EMSCRIPTEN)
+        add_test(NAME cna_engine.example.third_person
+            COMMAND cna_engine_third_person --frames 400 --lockstep
+                    --screenshot "${CMAKE_CURRENT_BINARY_DIR}/third_person.png")
+        set_tests_properties(cna_engine.example.third_person PROPERTIES LABELS "example")
+    endif()
+endif()
+
+if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
+    cna_engine_add_game(cna_engine_day_night
+        SOURCES day_night/main.cpp
+        TITLE "Day and night"
+        PROFILE enhanced
+        WEB_PACKAGE "${CMAKE_CURRENT_BINARY_DIR}/day_night_web")
+    cna_engine_sanitize(cna_engine_day_night)
+    if(NOT MSVC)
+        target_compile_options(cna_engine_day_night PRIVATE -Wall -Wextra -Werror)
+    endif()
+    if(CNA_ENGINE_BUILD_TESTS AND NOT EMSCRIPTEN)
+        add_test(NAME cna_engine.example.day_night
+            COMMAND cna_engine_day_night "${CMAKE_CURRENT_BINARY_DIR}/day_night_output")
+        set_tests_properties(cna_engine.example.day_night PROPERTIES LABELS "example")
+    endif()
+endif()
+
 # Enhanced-profile vertical slice: PBR through CnaEngine::EnhancedGraphics.
 if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     add_executable(cna_engine_street_slice street_slice/main.cpp)

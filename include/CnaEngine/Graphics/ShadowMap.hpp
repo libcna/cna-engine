@@ -63,10 +63,12 @@ namespace CnaEngine::Graphics
         [[nodiscard]] const Microsoft::Xna::Framework::Matrix& LightViewProjection() const noexcept { return viewProjection_; }
         [[nodiscard]] Microsoft::Xna::Framework::Graphics::SurfaceFormat Format() const noexcept { return format_; }
         [[nodiscard]] int Size() const noexcept { return size_; }
-        /// A depth bias for the receivers: three texels' slope at 45 degrees
-        /// in the map's units, plus one and a half steps of the precision the
-        /// map really keeps (measured when it is created: an 8-bit map needs
-        /// a bias that lifts shadows visibly off the ground).
+        /// A depth bias for the receivers: three texels' slope in the map's
+        /// units, growing as the light sinks towards the horizon (up to eight
+        /// times; level ground falls away steeply across a texel then), plus
+        /// one and a half steps of the precision the map really keeps
+        /// (measured when it is created: an 8-bit map needs a bias that lifts
+        /// shadows visibly off the ground).
         [[nodiscard]] float SuggestedBias() const noexcept;
         /// The bits of depth the map keeps: 23 (float), 11 (half), 8 (colour).
         [[nodiscard]] int PrecisionBits() const noexcept { return precisionBits_; }
@@ -92,6 +94,7 @@ namespace CnaEngine::Graphics
         int precisionBits_ = 8;
         bool upsideDown_ = false;
         float radius_ = 1.0f;
+        float lightHeight_ = 1.0f;
         float depth_ = 1.0f;
         int drawn_ = 0;
     };

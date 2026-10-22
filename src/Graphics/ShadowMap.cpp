@@ -16,6 +16,7 @@
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
@@ -102,6 +103,7 @@ namespace CnaEngine::Graphics
         }
         const Vector3 towards = directionToLight * (1.0f / length);
         radius_ = radius;
+        lightHeight_ = towards.Y;
         // From two radii towards the light to two radii past the focus.
         depth_ = radius * 4.0f;
         const Vector3 up = std::fabs(towards.Y) > 0.99f ? Vector3::Forward : Vector3::Up;
@@ -194,9 +196,13 @@ namespace CnaEngine::Graphics
     float ShadowMap::SuggestedBias() const noexcept
     {
         // Stored depth runs 0.5..1 over depth_: half a unit per depth_. Three
-        // texels of slope, plus one and a half steps of what the map can store.
+        // texels of slope -- more as the light sinks, since level ground then
+        // falls away steeply across a texel (up to eight times at a low sun)
+        // -- plus one and a half steps of what the map can store.
         const float texel = 2.0f * radius_ / static_cast<float>(size_);
-        const float slope = 3.0f * texel / depth_ * 0.5f;
+        const float height = std::clamp(std::fabs(lightHeight_), 0.0f, 1.0f);
+        const float grazing = std::clamp(std::sqrt(1.0f - height * height) / std::max(height, 1e-3f), 1.0f, 8.0f);
+        const float slope = 3.0f * texel * grazing / depth_ * 0.5f;
         const float step = std::ldexp(1.0f, -precisionBits_);
         return slope + 1.5f * step;
     }

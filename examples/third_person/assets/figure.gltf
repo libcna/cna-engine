@@ -1,0 +1,250 @@
+{
+ "asset": {
+  "version": "2.0",
+  "generator": "cna-engine tests/fixtures/models/make_skinned_strip.py"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "nodes": [
+    0,
+    1
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "name": "strip",
+   "mesh": 0,
+   "skin": 0
+  },
+  {
+   "name": "root",
+   "children": [
+    2
+   ]
+  },
+  {
+   "name": "tip",
+   "translation": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  }
+ ],
+ "meshes": [
+  {
+   "name": "strip",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "JOINTS_0": 7,
+      "WEIGHTS_0": 2
+     },
+     "indices": 8,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "materials": [
+  {
+   "name": "orange",
+   "doubleSided": true,
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     1.0,
+     0.5,
+     0.1,
+     1.0
+    ],
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.8
+   }
+  }
+ ],
+ "skins": [
+  {
+   "name": "rig",
+   "joints": [
+    1,
+    2
+   ],
+   "inverseBindMatrices": 3,
+   "skeleton": 1
+  }
+ ],
+ "animations": [
+  {
+   "name": "bend",
+   "samplers": [
+    {
+     "input": 4,
+     "output": 5,
+     "interpolation": "LINEAR"
+    }
+   ],
+   "channels": [
+    {
+     "sampler": 0,
+     "target": {
+      "node": 2,
+      "path": "rotation"
+     }
+    }
+   ]
+  },
+  {
+   "name": "sway",
+   "samplers": [
+    {
+     "input": 4,
+     "output": 6,
+     "interpolation": "LINEAR"
+    }
+   ],
+   "channels": [
+    {
+     "sampler": 0,
+     "target": {
+      "node": 1,
+      "path": "rotation"
+     }
+    }
+   ]
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 120,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 120,
+   "byteLength": 120,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 240,
+   "byteLength": 160,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 400,
+   "byteLength": 128
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 528,
+   "byteLength": 12
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 540,
+   "byteLength": 48
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 588,
+   "byteLength": 48
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 636,
+   "byteLength": 80,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 716,
+   "byteLength": 48,
+   "target": 34963
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 10,
+   "type": "VEC3",
+   "min": [
+    -0.25,
+    0.0,
+    0.0
+   ],
+   "max": [
+    0.25,
+    2.0,
+    0.0
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 10,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 10,
+   "type": "VEC4"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5126,
+   "count": 2,
+   "type": "MAT4"
+  },
+  {
+   "bufferView": 4,
+   "componentType": 5126,
+   "count": 3,
+   "type": "SCALAR",
+   "min": [
+    0.0
+   ],
+   "max": [
+    2.0
+   ]
+  },
+  {
+   "bufferView": 5,
+   "componentType": 5126,
+   "count": 3,
+   "type": "VEC4"
+  },
+  {
+   "bufferView": 6,
+   "componentType": 5126,
+   "count": 3,
+   "type": "VEC4"
+  },
+  {
+   "bufferView": 7,
+   "componentType": 5123,
+   "count": 10,
+   "type": "VEC4"
+  },
+  {
+   "bufferView": 8,
+   "componentType": 5123,
+   "count": 24,
+   "type": "SCALAR"
+  }
+ ],
+ "buffers": [
+  {
+   "byteLength": 764,
+   "uri": "data:application/octet-stream;base64,AACAvgAAAAAAAAAAAACAPgAAAAAAAAAAAACAvgAAAD8AAAAAAACAPgAAAD8AAAAAAACAvgAAgD8AAAAAAACAPgAAgD8AAAAAAACAvgAAwD8AAAAAAACAPgAAwD8AAAAAAACAvgAAAEAAAAAAAACAPgAAAEAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAD8AAAA/AAAAAAAAAAAAAAA/AAAAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAACAvwAAAAAAAIA/AAAAAAAAgD8AAABAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAP9ezXT8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAADU0DG+XBx8PwAAAAAAAAAA1NAxPlwcfD8AAAAAAAAAANTQMb5cHHw/AAABAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAEAAwAAAAMAAgACAAMABQACAAUABAAEAAUABwAEAAcABgAGAAcACQAGAAkACAA="
+  }
+ ]
+}
