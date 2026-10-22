@@ -47,7 +47,7 @@ set(CNA_EXTENDED_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory("${PROBE_EXTENDED_DIR}" "${CMAKE_BINARY_DIR}/_cna_extended" EXCLUDE_FROM_ALL)
 
 # --- The engine, from its installed package only. ----------------------------
-find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics EnhancedGraphics ExtendedIntegration)
+find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics App Audio UI EnhancedGraphics ExtendedIntegration)
 
 add_executable(strict_consumer strict_consumer.cpp)
 target_link_libraries(strict_consumer PRIVATE CnaEngine::Core CnaEngine::Graphics)
@@ -89,6 +89,14 @@ foreach(_forbidden IN ITEMS CNA::Extended CNA_EXTENDED CnaEngine::ExtendedIntegr
 endforeach()
 message(STATUS "strict consumer probe: link closure of CnaEngine::Graphics has no enhanced or cna-extended target")
 
+# A game the way a game builds itself, from the installed package's
+# cna_engine_add_game() (plan.md GAME-001): the engine's hello example.
+cna_engine_add_game(installed_game
+    SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../../examples/hello_engine/main.cpp"
+    ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/../../examples/hello_engine/assets")
+
 enable_testing()
 add_test(NAME consumer.strict COMMAND strict_consumer)
 add_test(NAME consumer.enhanced COMMAND enhanced_consumer)
+add_test(NAME consumer.game COMMAND installed_game --frames 20 --lockstep
+         --screenshot "${CMAKE_CURRENT_BINARY_DIR}/installed_game.png")

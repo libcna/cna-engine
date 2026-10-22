@@ -43,9 +43,11 @@ Pilots: `libcnalab/street-simulator` (enhanced profile) and
 
 | Directory | Content |
 | --- | --- |
-| `build/` | day-to-day engine build against the shared `../cna` worktree (which other agents edit; not baseline evidence) |
+| `build/` | day-to-day engine build; since 2026-10-22 against the baseline clones `~/deps/cna-baseline` and `~/deps/sharp-runtime-baseline` (the shared `../cna` is being edited by another agent), `CNA_ENABLE_SDL=OFF`, `CNA_ENABLE_VIDEO=OFF`, GoogleTest from `../cna-extended/vendor/googletest` (the baseline Sharp Runtime clone has no submodules) |
 | `build-probe/` | baseline build against `~/deps/cna-baseline` and `~/deps/sharp-runtime-baseline` (clean clones at the pins) with `CNA_ENGINE_ENFORCE_BASELINE=ON`, `CNA_ENGINE_CNA_CNAEXT=ON` and `CNA_ENGINE_PILOT_SUITES=ON`; the only tree that builds the Street scene comparison and runs both pilots' own suites (the car-simulator suite alone takes ~15 min; `-E "carsim_suite"` skips it) |
 | `build-consumer/` | installed-package consumer probes (`tools/run_consumer_probes.sh`); `build-consumer/cna-extended/` is cna-extended's own suite against the pinned clones (CI's lane configuration, 2.0 GB, kept for the next pin move) |
+| `build-probe/` (2026-10-22) | an Emscripten build of the engine's examples (WebGL 2, the CNA checkout's `.sdl-prebuilt-emscripten` read-only) for the browser path of `cna_engine_add_game` |
+| `build-consumer/new_game/` (2026-10-22) | a game written by `tools/new_game.sh` and built on its own (`build/` OpenGL ES 3 with the CNA checkout's Linux SDL prebuilt, `build-web/` Emscripten) -- a new user's path |
 | `build-asan/` | `CNA_ENGINE_SANITIZE=address,undefined`, pilot probes off, shared CNA worktree; engine targets instrumented only |
 
 `~/deps/cna-baseline` and `~/deps/sharp-runtime-baseline` are local clones of
@@ -55,6 +57,24 @@ shared worktree is still clean at its pin); move them with
 (ADR-002 "Local reproduction").
 
 ## State
+
+**Phase 7 (2026-10-22, `plan.md`): a new game from CNA and the engine
+alone.** Asked by the owner after the SHARE-001 work: everything is built,
+tested and committed on `develop` (not pushed). Part A: `cna_engine_add_game`
+and `cmake/CnaEngineGame.cmake` (desktop and browser), `tools/fetch_dependencies.sh`,
+`App/EngineGame`, `templates/game` with `tools/new_game.sh`, `docs/tutorial.md`
+and three examples run as tests. Part B: models (`Graphics/ModelView`,
+`Enhanced/ModelImport`), animation (`Animation/`), collision and a character
+controller (`Collision/`), sky and time of day (`Graphics/Sky`), a sun
+shadow map (`Graphics/ShadowMap`, reception in `Enhanced/ShadowReception`,
+calibrated per device: UP-019), sound (`Audio/`), text, HUD and menus
+(`UI/`). Part C: post-processing, local lights, cna-extended particles,
+save slots. New strict targets `CnaEngine::App`, `CnaEngine::Audio`,
+`CnaEngine::UI`; the boundary checker's strict modules grew by App,
+Collision, Animation, Audio and UI. The evidence from the games is in
+`docs/game-facilities-survey.md`; new upstream findings UP-018 and UP-019.
+No game was changed: adopting any of this in a game needs the owner's
+request.
 
 All work is committed on `develop`. Latest evidence (`docs/verification.md`):
 213 tests pass in `build/` (21:40, with the easy-3d facilities and their
