@@ -472,7 +472,7 @@ when its floats come back as NaN (`tests/Graphics/ShadowMapTests.cpp`), with an
 
 - Repository: `libcna/cna` (baseline `900d0db3b`), software and EasyGL
   (OpenGL ES 3) renderers
-- Status: worked around (calibration); reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
+- Status: fixed in CNA `144d9f909` (2026-10-22, by the Codex session `cna-demos`: directional shadows aligned with render-target rows; four producer/receiver regressions pass on SOFTWARE, GLES, GL33, WEBGPU, SDL_GPU and FNA3D). Not published yet. When the engine's CNA pin moves past it, `CalibrateShadowMap` stays (it measures), but `ShadowReceptionTest.CalibrationFindsTheSoftwareRenderersOrientation` must then expect the software renderer not to be upside down
 - Found: 2026-10-22, GAME-031
 
 `IShadowReceiverEXT` receivers look the map up at `v = y * 0.5 + 0.5` of the
