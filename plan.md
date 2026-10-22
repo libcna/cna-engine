@@ -1237,8 +1237,12 @@ Tests: the stored depths of a floor and a box; a box's shadow on the floor
 on the side away from the light, through the stock and the PBR binder, with
 mirrored places unshadowed. The template casts shadows. Not built: planar
 (stencil) and blob shadows for strict games; strict games can draw blob
-discs with ordinary blended items. Still to check: the receivers' `v`
-convention on the GL renderers (verified on the software renderer).
+discs with ordinary blended items. The receivers read the map the other
+way up on the software renderer than on EasyGL (UP-019): the producer's
+orientation is a setting, measured once by `Enhanced::CalibrateShadowMap`;
+checked on the software renderer (tests) and on the GPU (OpenGL ES 3, Mesa
+radeonsi: the template's crates and platform cast their shadows away from
+the sun).
 
 ### GAME-040 — 3D sound `[ ]`
 

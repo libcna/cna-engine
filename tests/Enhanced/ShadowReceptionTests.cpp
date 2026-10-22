@@ -128,6 +128,16 @@ namespace CnaEngine::Enhanced
         }
     }
 
+    // UP-019: the software renderer's receivers read a render target the
+    // other way up from EasyGL's; the calibration measures it.
+    TEST(ShadowReceptionTest, CalibrationFindsTheSoftwareRenderersOrientation)
+    {
+        Microsoft::Xna::Framework::Graphics::GraphicsDevice device;
+        Graphics::ShadowMap map(device, 32);
+        EXPECT_TRUE(CalibrateShadowMap(device, map));
+        EXPECT_TRUE(map.DrawnUpsideDown());
+    }
+
     TEST(ShadowReceptionTest, TheBoxShadowsTheFloorAwayFromTheLight)
     {
         for (const bool pbr : {false, true}) {

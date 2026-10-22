@@ -27,9 +27,17 @@ namespace CnaEngine::Enhanced
     void ApplyShadowReception(Graphics::ForwardRenderer& renderer, Graphics::ShadowMap* map,
                               ShadowReceptionSettings settings = {});
 
+    /// Finds which way up this device's shadow receivers read a map
+    /// (upstream-issues.md UP-019): draws a small shadow through a receiving
+    /// BasicEffect into a scratch target and looks at where it fell. Sets
+    /// `map`'s orientation and returns whether it is drawn upside down; does
+    /// nothing (false) on a device that cannot sample shadow maps.
+    bool CalibrateShadowMap(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device, Graphics::ShadowMap& map);
+
     /// Shadows for an EngineGame: the game renders a shadow map of each
     /// frame's opaque items (EngineGame::EnableShadowMap) and the renderer's
-    /// effects receive it. Call once the renderer exists (in LoadGame).
+    /// effects receive it, calibrated for the device (CalibrateShadowMap).
+    /// Call once the renderer exists (in LoadGame).
     /// Devices that cannot sample shadow maps (WebGPU, headless) get no map:
     /// returns false then.
     bool EnableShadows(App::EngineGame& game, App::ShadowSettings settings = {},

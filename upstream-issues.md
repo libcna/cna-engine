@@ -465,8 +465,25 @@ precision behind `Single`; the shadow tests read a `Single` map as colour
 when its floats come back as NaN (`tests/Graphics/ShadowMapTests.cpp`), with an
 8-bit tolerance.
 
-Related, not a defect but undocumented: `IShadowReceiverEXT` receivers read
-the map at `v = y * 0.5 + 0.5` (v = 0 at the bottom of the light's view),
-while a render target's first row is the top of the view, so a producer draws
-the map upside down (`ShadowMap::DrawingProjection`). Found on the software
-renderer; the GL renderers are not yet checked against it.
+## UP-019 — Shadow receivers read a render-target shadow map the other way up on the software renderer than on EasyGL
+
+- Repository: `libcna/cna` (baseline `900d0db3b`), software and EasyGL
+  (OpenGL ES 3) renderers
+- Status: open
+- Found: 2026-10-22, GAME-031
+
+`IShadowReceiverEXT` receivers look the map up at `v = y * 0.5 + 0.5` of the
+light's clip space. A shadow map drawn into a `RenderTarget2D` with the
+light's own view-projection is received correctly on EasyGL (Mesa radeonsi,
+`SDL_VIDEODRIVER=offscreen`), but on the software renderer the shadows land
+mirrored across the light's view and half the ground darkens; drawn with the
+projection's Y negated, it is the other way round. One of the two renderers
+disagrees with the other about which row of a render target `v = 0` is (XNA:
+row 0 is the top of the picture, and texture coordinate 0 its first row). A
+producer cannot know which without asking.
+
+Engine handling: `Enhanced::CalibrateShadowMap` draws a small shadow through
+a receiving BasicEffect once and sets `ShadowMap::SetDrawnUpsideDown` from
+where it fell; `Enhanced::EnableShadows` does this. Test
+`ShadowReceptionTest.CalibrationFindsTheSoftwareRenderersOrientation` pins
+the software renderer's current answer.

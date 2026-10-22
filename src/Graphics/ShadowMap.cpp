@@ -120,10 +120,11 @@ namespace CnaEngine::Graphics
 
     Matrix ShadowMap::DrawingProjection() const
     {
-        // Receivers read the map at v = y * 0.5 + 0.5, v = 0 at the bottom of
-        // the light's view, while a render target's first row is the top of
-        // the view (XNA): the map is drawn upside down.
-        return projection_ * Matrix::CreateScale(1.0f, -1.0f, 1.0f);
+        // Receivers read the map at v = y * 0.5 + 0.5. Whether a render
+        // target's first row is then the bottom of the light's view (EasyGL)
+        // or its top (the software renderer) depends on the renderer
+        // (upstream-issues.md UP-019); Enhanced::CalibrateShadowMap finds out.
+        return upsideDown_ ? projection_ * Matrix::CreateScale(1.0f, -1.0f, 1.0f) : projection_;
     }
 
     bool ShadowMap::Casts(const RenderItem& item) noexcept

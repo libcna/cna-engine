@@ -22,7 +22,9 @@ namespace CnaEngine::Graphics
     /// receivers sample (IShadowReceiverEXT, implemented by BasicEffect,
     /// SkinnedEffect, PbrEffect and SkinnedPbrEffect): an orthographic light
     /// view, and per texel in the red channel the nearest caster's light-space
-    /// depth z/w * 0.5 + 0.5, cleared to 1 where nothing casts.
+    /// depth z/w * 0.5 + 0.5, cleared to 1 where nothing casts. Which way up
+    /// the receivers read the map differs between CNA's renderers (UP-019):
+    /// SetDrawnUpsideDown, measured by Enhanced::CalibrateShadowMap.
     ///
     /// It is drawn with XNA's own effects only -- the depth is the linear fog
     /// of a BasicEffect (SkinnedEffect for skinned casters) from the light's
@@ -70,6 +72,11 @@ namespace CnaEngine::Graphics
         [[nodiscard]] int PrecisionBits() const noexcept { return precisionBits_; }
         /// Casters drawn by the last Render.
         [[nodiscard]] int CastersDrawn() const noexcept { return drawn_; }
+        /// Draws the map with its rows reversed, for renderers whose shadow
+        /// receivers read render targets the other way up (UP-019; measured
+        /// by Enhanced::CalibrateShadowMap). Off by default.
+        void SetDrawnUpsideDown(bool upsideDown) noexcept { upsideDown_ = upsideDown; }
+        [[nodiscard]] bool DrawnUpsideDown() const noexcept { return upsideDown_; }
 
     private:
         [[nodiscard]] Microsoft::Xna::Framework::Matrix DrawingProjection() const;
@@ -83,6 +90,7 @@ namespace CnaEngine::Graphics
         Microsoft::Xna::Framework::Matrix projection_;
         Microsoft::Xna::Framework::Matrix viewProjection_;
         int precisionBits_ = 8;
+        bool upsideDown_ = false;
         float radius_ = 1.0f;
         float depth_ = 1.0f;
         int drawn_ = 0;

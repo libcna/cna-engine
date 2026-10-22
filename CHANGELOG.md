@@ -209,7 +209,7 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 - `Graphics/ShadowMap.hpp` (GAME-031): `ShadowMap`; `App::ShadowSettings`,
   `EngineGame::EnableShadowMap`, `DisableShadowMap`, `Shadows`;
   `Enhanced/ShadowReception.hpp`: `ApplyShadowReception`, `EnableShadows`,
-  `ShadowReceptionSettings`.
+  `CalibrateShadowMap`, `ShadowReceptionSettings`.
 
 ### Other API additions (experimental headers)
 
