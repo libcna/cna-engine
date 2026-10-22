@@ -42,6 +42,14 @@ the local `develop` at `86870ad`, not pushed).
   XNA, and the engine kept the requested format; `ShadowMap` now takes the
   target's own format. `ShadowMapTest`, `ShadowReceptionTest`, the sky,
   EngineGame and example tests: 19 of 19.
+- CNA pin trial (evening): CNA published `next` at `08c1387ec` with UP-006's
+  and UP-019's fixes, but it does not compile against the published Sharp
+  Runtime `f2aecfef` (UP-020: it needs the unpublished `c26614e8`). Against
+  CNA `08c1387ec` and Sharp Runtime `c26614e8` (clean local clones, baseline
+  enforced for those revisions) the engine builds and passes 338 of 339; the
+  one failure is `ShadowReceptionTest.CalibrationFindsTheSoftwareRenderersOrientation`,
+  as expected once UP-019 is fixed (the software renderer is no longer upside
+  down). The pin stays at `900d0db3b`/`f2aecfef` and the clones went back.
 - Pin move (ADR-002): cna-extended `develop` pushed (`0061e3e..86870ad`);
   `cmake/CnaEngineBaseline.cmake`, CI and the ADR table name `86870ad`; the
   engine's `build/` configured with `CNA_ENGINE_ENFORCE_BASELINE=ON` reports

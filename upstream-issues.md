@@ -491,3 +491,29 @@ a receiving BasicEffect once and sets `ShadowMap::SetDrawnUpsideDown` from
 where it fell; `Enhanced::EnableShadows` does this. Test
 `ShadowReceptionTest.CalibrationFindsTheSoftwareRenderersOrientation` pins
 the software renderer's current answer.
+
+## UP-020 — CNA's published `next` needs an unpublished Sharp Runtime commit
+
+- Repositories: `libcna/cna` (`origin/next` at `08c1387ec`, 2026-10-22),
+  `libcna/sharp-runtime` (`origin/next` at `f2aecfef`)
+- Status: open (publication only; nothing to change in either code base)
+- Found: 2026-10-22, moving the engine's CNA pin to the published revision
+  that contains the fixes for UP-006 and UP-019
+
+CNA `abbd8a4ea` (2026-10-21, "Fix CNA-DEMOS-ISSUE-099/100/101 video contracts
+and frame lifetime") calls `System::Uri::getIsFileProperty()` and
+`getLocalPathProperty()` in `modules/media/src/Xna/Video/Video.cpp`. Those
+members come from Sharp Runtime `c26614e8` ("Fix CNA-DEMOS-ISSUE-101 URI local
+paths and NUL file existence"), which is on the local `next` of the shared
+Sharp Runtime worktree, five commits after the published `f2aecfef`, but not
+on GitHub. Every published CNA revision from `abbd8a4ea` on, among them all
+that contain UP-019's fix `144d9f909`, therefore fails to compile against the
+published Sharp Runtime (both declare version 0.1.0, so CNA's version check
+passes). CI, which fetches published revisions only, cannot build them.
+
+Suggestion: push Sharp Runtime's `next` (up to `c26614e8`), or raise the
+version CNA requires when it needs newer Sharp Runtime members.
+
+Engine handling: the CNA pin stays at `900d0db3b` until Sharp Runtime is
+published; the engine was built and tested locally against CNA `08c1387ec`
+with Sharp Runtime `c26614e8` (`docs/verification.md`).
