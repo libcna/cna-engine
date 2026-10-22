@@ -1093,12 +1093,25 @@ creates the device when `Run()` starts, before `Initialize`, so the window's
 settings are applied in the constructor and `ParseCommandLine` (preferences
 read in `Initialize` are applied with `ApplyChanges`).
 
-### GAME-004 — A project template and `tools/new_game.sh` `[ ]`
+### GAME-004 — A project template and `tools/new_game.sh` `[x]`
 
 Acceptance: `tools/new_game.sh <dir> <Name>` writes a working game project
 (CMake through GAME-001, a game class on `EngineGame`, assets, README,
 `tools/build_web.sh`); the template's game is also built and run by the
 engine's tests, so it cannot rot.
+
+Result (2026-10-22): `templates/game/` (a first-person walk among crates on
+`EngineGame`, PROFILE enhanced for the browser's pointer lock; CC0 asset)
+and `tools/new_game.sh` (target, class and engine path from the name;
+refuses a non-empty directory and names with `"` or `\`). Tests:
+`cna_engine.new_game` writes a project and checks it;
+`cna_engine.example.template_game` builds and runs the template's sources.
+Verified as a new user would: a project written into `build-consumer/new_game`
+built on its own through `CnaEngineGame.cmake` (CNA's default OpenGL ES 3,
+SDL3), ran on the GPU offscreen (Mesa radeonsi), and its `tools/build_web.sh`
+build walked in headless Chrome. That run found that the function's
+directory variable was invisible from a game's own directory (now a global
+property).
 
 ### GAME-005 — Tutorial and examples `[ ]`
 

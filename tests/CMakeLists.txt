@@ -141,6 +141,16 @@ if(NOT WIN32)
         PASS_REGULAR_EXPRESSION "${_fetch_expected}done")
 endif()
 
+# --- A new game from the template (GAME-004); the template's game itself is
+# --- built and run by examples/ (cna_engine.example.template_game). -----------
+if(NOT WIN32)
+    add_test(NAME cna_engine.new_game
+        COMMAND "${CMAKE_COMMAND}" -DENGINE=${PROJECT_SOURCE_DIR}
+                -DWORK=${CMAKE_CURRENT_BINARY_DIR}/new_game_project
+                -P "${CMAKE_CURRENT_SOURCE_DIR}/tools/NewGameCheck.cmake")
+    set_tests_properties(cna_engine.new_game PROPERTIES LABELS boundary)
+endif()
+
 # --- Public dependency-boundary checks (ENG-011). ------------------------------
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)

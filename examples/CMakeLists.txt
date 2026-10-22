@@ -54,6 +54,36 @@ if(CNA_ENGINE_BUILD_TESTS AND NOT EMSCRIPTEN)
     set_tests_properties(cna_engine.example.hello_engine PROPERTIES LABELS "example")
 endif()
 
+# The game template (templates/game, tools/new_game.sh) built and run as
+# tools/new_game.sh would write it, so the template cannot rot (GAME-004).
+if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
+    set(GAME_NAME "Template Game")
+    set(GAME_TARGET "cna_engine_template_game")
+    set(GAME_CLASS "TemplateGame")
+    set(_template_sources "")
+    foreach(_file Game.hpp Game.cpp main.cpp)
+        configure_file("${PROJECT_SOURCE_DIR}/templates/game/src/${_file}"
+                       "${CMAKE_CURRENT_BINARY_DIR}/template_game/src/${_file}" @ONLY)
+        list(APPEND _template_sources "${CMAKE_CURRENT_BINARY_DIR}/template_game/src/${_file}")
+    endforeach()
+    cna_engine_add_game(cna_engine_template_game
+        SOURCES ${_template_sources}
+        ASSETS "${PROJECT_SOURCE_DIR}/templates/game/assets"
+        TITLE "${GAME_NAME}"
+        PROFILE enhanced
+        WEB_PACKAGE "${CMAKE_CURRENT_BINARY_DIR}/template_game_web")
+    cna_engine_sanitize(cna_engine_template_game)
+    if(NOT MSVC)
+        target_compile_options(cna_engine_template_game PRIVATE -Wall -Wextra -Werror)
+    endif()
+    if(CNA_ENGINE_BUILD_TESTS AND NOT EMSCRIPTEN)
+        add_test(NAME cna_engine.example.template_game
+            COMMAND cna_engine_template_game --frames 90 --lockstep
+                    --screenshot "${CMAKE_CURRENT_BINARY_DIR}/template_game.png")
+        set_tests_properties(cna_engine.example.template_game PROPERTIES LABELS "example")
+    endif()
+endif()
+
 # Enhanced-profile vertical slice: PBR through CnaEngine::EnhancedGraphics.
 if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     add_executable(cna_engine_street_slice street_slice/main.cpp)

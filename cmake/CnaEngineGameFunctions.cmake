@@ -22,11 +22,14 @@
 # page with the wasm, the assets as a single upfront preload, the blocking
 # Game::Run loop through Asyncify and CNA's JS-lowered exception ABI.
 
-set(CNA_ENGINE_GAME_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+# A global property, not a variable: the function is called from the game's
+# own directory, where variables of the engine's directory are not visible.
+set_property(GLOBAL PROPERTY CNA_ENGINE_GAME_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 function(cna_engine_add_game target)
     cmake_parse_arguments(PARSE_ARGV 1 GAME ""
         "ASSETS;ASSETS_NAME;TITLE;HINT;WEB_SHELL;WEB_PACKAGE;PROFILE" "SOURCES;LIBRARIES")
+    get_property(cmake_dir GLOBAL PROPERTY CNA_ENGINE_GAME_CMAKE_DIR)
     if(GAME_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "cna_engine_add_game(${target}): unknown arguments '${GAME_UNPARSED_ARGUMENTS}'")
     endif()
@@ -86,7 +89,7 @@ function(cna_engine_add_game target)
             set(CNA_ENGINE_GAME_TITLE "${GAME_TITLE}")
             set(CNA_ENGINE_GAME_HINT "${GAME_HINT}")
             set(shell "${CMAKE_CURRENT_BINARY_DIR}/${target}.shell.html")
-            configure_file("${CNA_ENGINE_GAME_CMAKE_DIR}/web/shell.html" "${shell}" @ONLY)
+            configure_file("${cmake_dir}/web/shell.html" "${shell}" @ONLY)
         endif()
         target_link_libraries(${target} PRIVATE CNA::EmscriptenExceptionAbi CNA::EmscriptenAsyncify)
         target_link_options(${target} PRIVATE
@@ -106,7 +109,7 @@ function(cna_engine_add_game target)
         cna_apply_emscripten_renderer_link_contract(${target})
         add_custom_command(TARGET ${target} POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -DGAME=${target} "-DFROM=$<TARGET_FILE_DIR:${target}>"
-                    "-DTO=${GAME_WEB_PACKAGE}" -P "${CNA_ENGINE_GAME_CMAKE_DIR}/CnaEngineWebPackage.cmake"
+                    "-DTO=${GAME_WEB_PACKAGE}" -P "${cmake_dir}/CnaEngineWebPackage.cmake"
             COMMENT "Gathering ${target}'s browser files in ${GAME_WEB_PACKAGE}"
             VERBATIM)
     else()
