@@ -25,6 +25,7 @@ add_executable(cna_engine_tests
     Core/NoiseTests.cpp
     Core/SunPositionTests.cpp
     Core/SettingsFileTests.cpp
+    Core/SaveSlotsTests.cpp
     Collision/StaticWorldTests.cpp
     Collision/CharacterControllerTests.cpp
     Animation/AnimatorTests.cpp

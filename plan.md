@@ -1341,9 +1341,22 @@ the GPU stride). Tests: one particle's colour and place, ten particles as
 twenty triangles. Skeletal animation is the engine's own `Animator`
 (GAME-011) rather than cna-extended's ECS component; its `Tweener` works on
 plain values and needs no adapter.
-### GAME-063 — Save slots `[ ]`
+### GAME-063 — Save slots `[x]`
 
-Acceptance for each is written when its part B evidence is in.
+Acceptance: named saves of a game's own text that a crash cannot destroy,
+with the game's format version and a summary for a load menu, damaged saves
+detected and recovered from the one before.
+
+Result (2026-10-22): strict `Core/SaveSlots.hpp`: `SaveSlots` (a header with
+the version, summary, length and FNV-1a checksum; write `.tmp`, previous
+save to `.bak`, rename; `Load` falls back to the backup when the save is
+missing, cut short or changed; `List` for a menu; slot names checked so no
+path escapes the directory) and `UserDataPath` (XDG data home, else
+`~/.local/share`, `%APPDATA%` on Windows). Tests: round trips (empty,
+header-like content), a truncated save, a changed byte, the moment between
+the renames, listing past a junk file, removing, bad names. XNA's
+`StorageContainer` (house, island) is not wrapped: it has no rename, and
+`std::filesystem` covers the desktop and the browser's virtual file system.
 
 ## Deferred work and non-goals for 1.0
 

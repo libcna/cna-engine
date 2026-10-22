@@ -55,6 +55,7 @@ cna_engine_add_library(cna_engine_core Core
     src/Core/FixedStepClock.cpp
     src/Core/SunPosition.cpp
     src/Core/SettingsFile.cpp
+    src/Core/SaveSlots.cpp
     src/Input/InputSnapshot.cpp
     src/Input/InputNames.cpp
     src/Input/ActionMap.cpp

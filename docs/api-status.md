@@ -80,3 +80,4 @@ it is recorded in `CHANGELOG.md`.
 | Post-processing chain (grade, fade, vignette, custom passes) | `Graphics/PostProcess.hpp`, `EngineGame::EnablePostProcessing` | Graphics, App | experimental | island's time-of-day grade, room's post chain (shader passes) | tests |
 | Local lights: reach, strongest lamp, light pools (strict); punctual lights per item (enhanced) | `Graphics/LocalLights.hpp`, `Enhanced/LocalLightBinder.hpp` | Graphics, EnhancedGraphics | experimental | car lamp pools and wet-road glow, island lamp glow, museum `LightingLab`, room point lights | tests |
 | cna-extended 3D particles as render items | `Extended/ParticleBillboards.hpp` | ExtendedIntegration | experimental | cna-extended `ParticleRenderSystem3DEXT` | tests |
+| Save slots (versioned, checksummed, backup recovery) | `Core/SaveSlots.hpp` | Core | experimental | car `SaveData`, house `DesktopSaveStore`, island `UserSettingsStore`, galaxy-eggbert `SaveData` | tests |
