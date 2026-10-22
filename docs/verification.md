@@ -37,6 +37,11 @@ the local `develop` at `86870ad`, not pushed).
   BasicEffect draw into a Single target with Depth24) was sent; UP-019
   reproduced there; UP-006 may be fixed by CNA `470b12a5d` (not in the pin);
   UP-001 accepted as a gap. Nothing is pushed in CNA yet.
+- Pin move (ADR-002): cna-extended `develop` pushed (`0061e3e..86870ad`);
+  `cmake/CnaEngineBaseline.cmake`, CI and the ADR table name `86870ad`; the
+  engine's `build/` configured with `CNA_ENGINE_ENFORCE_BASELINE=ON` reports
+  CNA, Sharp Runtime and cna-extended matching their pins; the 339 tests and
+  3 consumer probes above ran against exactly these revisions.
 
 ## 2026-10-22 — GAME-064/065: shadows on baked light, shadows and menus in backrooms and school
 

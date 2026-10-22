@@ -17,7 +17,7 @@ entry for provenance).
 ## UP-001 — CNA and cna-extended install no CMake package
 
 - Repositories: `libcna/cna` (`next`), `libcna/cna-extended` (`develop`)
-- Status: worked around; cna-extended installs a package since 0.2.0 (`86870ad`, local `develop`, not pushed yet), the CNA part was reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
+- Status: worked around; cna-extended installs a package since 0.2.0 (`86870ad`, published, pinned), the CNA part was reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
 - Found: 2026-10-19, ENG-010
 
 Neither project has `install(EXPORT ...)` or a `<Name>Config.cmake`; the only
@@ -123,7 +123,7 @@ containment, so it is unaffected; no workaround is added.
 - Repository: `libcna/cna-extended` (`develop` at `0061e3e1`), test
   `tests/CNA/Extended/World3DEXT/AnimationSystem3DEXTTests.cpp`
   (`MakeMovingTriangleModel`, line ~104)
-- Status: fixed in cna-extended `6925fa3` (the test) and `59f179f` (the four production buffers and the World3D demo), local `develop`, not pushed yet; the owner delegated cna-extended work on 2026-10-22
+- Status: resolved in cna-extended `6925fa3` (the test) and `59f179f` (the four production buffers and the World3D demo), published in `86870ad` (2026-10-22, the owner delegated cna-extended work); the engine pins it
 - Found: 2026-10-19, ADR-002 rerun of the cna-extended suite against CNA
   `5a44d2c5`
 
@@ -271,7 +271,7 @@ Engine handling: none (the engine compiles Street's tests without `-Werror`).
 
 - Repository: `libcna/cna-extended` (`develop`),
   `tests/CNA/Extended/BitmapFonts/BitmapFontFileReaderTests.cpp` (`FixturePath`)
-- Status: fixed in cna-extended `f70b669` (local `develop`, not pushed yet)
+- Status: resolved in cna-extended `f70b669`, published in `86870ad`; the engine pins it
 - Found: 2026-10-20, rerunning the cna-extended suite against CNA `688f3f23`
 
 `FixturePath` builds `std::filesystem::path(__FILE__).parent_path() / "files"
@@ -390,7 +390,7 @@ outlines as lines and works on every context.
 - Repository: `libcna/cna-extended` (`develop`),
   `include/CNA/Extended/Size.hpp` (`class SizeF;`) and
   `include/CNA/Extended/SizeF.hpp` (`struct SizeF`)
-- Status: fixed in cna-extended `a6b0c56` (local `develop`, not pushed yet)
+- Status: resolved in cna-extended `a6b0c56`, published in `86870ad`; the engine pins it
 - Found: 2026-10-20, compiling every engine translation unit with Clang
 
 Clang warns (`-Wmismatched-tags`) in every translation unit that includes

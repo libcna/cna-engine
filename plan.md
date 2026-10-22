@@ -127,7 +127,7 @@ prefixes, namespaces, versioning, car-simulator checker contract). Strict and
 enhanced consumer probes configure (`tests/consumer`); the strict boundary test
 fails deliberately on `tests/boundary/violations/LeakyHeader.hpp`.
 
-### ADR-002 — Select and pin the CNA compatibility baseline `[~]`
+### ADR-002 — Select and pin the CNA compatibility baseline `[x]`
 
 Acceptance:
 
@@ -146,9 +146,10 @@ Result: policy and pin accepted in `docs/adr/0002-compatibility-baseline.md`;
 cna-extended suite was rerun against the pin (one new test-defect failure,
 UP-005). street-simulator's and car-simulator's own suites were run against the
 pin on 2026-10-20 (`CNA_ENGINE_PILOT_SUITES`): 13/13 and 320/321, the one
-failure a Release-only load budget (UP-009). Open: CI cannot fetch the pinned
-CNA revision until it is pushed (UP-007), so the last acceptance point waits
-for the owner.
+failure a Release-only load budget (UP-009). The last acceptance point (CI
+reproduces the baseline without a developer worktree) holds since the pins
+are published revisions (UP-007): CNA `900d0db3b` since 2026-10-20, and
+cna-extended `86870ad` since 2026-10-22; CI fetches all three and runs green.
 
 ### EXT-001 — Correct read-only asset loading in `cna-extended` `[x]`
 
@@ -171,7 +172,7 @@ known skips; and the minimal, tiled, and World3D examples all ran successfully.
 This fix was verified against the observed CNA working tree and does not replace
 the reproducible baseline work in ADR-002.
 
-### EXT-002 — Resolve the orthographic-camera test disposition `[ ]`
+### EXT-002 — Resolve the orthographic-camera test disposition `[x]`
 
 Determine whether each containment case is an implementation defect, a floating
 point boundary ambiguity, or an invalid expectation.
@@ -199,9 +200,10 @@ cna-extended `0fae0ee` (branch `engine-upstream`, fast-forwarded into its
 local `develop`, not pushed) removes both skips and pins its CI to CNA
 `900d0db3b` and Sharp Runtime `f2aecfef`; both tests pass unmodified, the
 whole suite runs 2371 of 2371 with no skips (2372 with the version test of
-`86870ad`). The same branch fixes UP-005, UP-011 and UP-015. Open: pushing
-cna-extended and moving the engine's cna-extended pin (then the CI lane's
-`KNOWN_FAILURE` list empties).
+`86870ad`). The same branch fixes UP-005, UP-011 and UP-015. Pushed at the
+owner's request; the engine's cna-extended pin moved to `86870ad` the same
+day, and the CI lane now fails on any cna-extended failure or skip (it had
+excused two skips and five failures by name).
 
 ### EXT-003 — Establish an upstream compatibility lane `[x]`
 

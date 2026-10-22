@@ -15,7 +15,7 @@ on:
 # the build instead of silently testing another revision.
 env:
   CNA_REF: 900d0db3b52d76d3115ebda0a0e04a25fefad1a5
-  CNA_EXTENDED_REF: 0061e3e17c30b2a3a302bce617e64765883079aa
+  CNA_EXTENDED_REF: 86870ad2bf6b3d9a947edc359a5819c83f56f6dc
   SHARP_RUNTIME_REF: f2aecfefeac171b331787e5cdc4849507363ef0e
   # Workspace convention: at most three parallel compile and test jobs.
   JOBS: 3
@@ -107,20 +107,13 @@ jobs:
 
   # EXT-003: the upstream compatibility lane. cna-extended's own tests and
   # examples, built standalone against the pinned CNA, reported as separate
-  # steps. Known upstream defects are allowed by exact name only and are
-  # reported when they disappear (upstream-issues.md).
+  # steps. Since cna-extended 86870ad nothing fails or is skipped (UP-004,
+  # UP-005 and UP-011 are fixed), so any failure or skip fails the lane.
   cna-extended:
     name: Upstream lane - cna-extended at the pinned CNA
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    env:
-      # UP-005: the test builds a skinned mesh from an undeclared vertex buffer.
-      # UP-011: the bitmap-font tests find their fixtures through __FILE__, which is
-      # relative here, from a working directory it does not resolve against.
-      KNOWN_FAILURE: '^(AnimationSystem3DEXTTest\.DifferentAnimationTimes_ProduceDifferentPixelOutput|BitmapFontFileReaderTests\.Read(BinaryFile|XmlFile|XmlFileWithUtf8Bom|TextFile))$'
-      # UP-004: CNA's BoundingFrustum::Contains(Vector3) deviates from XNA.
-      KNOWN_SKIPS: 'OrthographicCameraTest\.Contains(Point|Vector2)_WithDefaultCamera_ReturnsCorrectContainment'
     steps:
       - name: Check out cna
         uses: actions/checkout@v4
@@ -161,24 +154,13 @@ jobs:
       - name: Build examples
         run: cmake --build cna-extended-build --parallel "$JOBS"
 
-      - name: Tests (known upstream defects excluded by name)
+      - name: Tests (none may fail or be skipped)
         shell: bash
         run: |
-          ctest --test-dir cna-extended-build --parallel "$JOBS" --output-on-failure -E "$KNOWN_FAILURE" 2>&1 | tee ctest.log
+          ctest --test-dir cna-extended-build --parallel "$JOBS" --output-on-failure 2>&1 | tee ctest.log
           test "${PIPESTATUS[0]}" -eq 0
-          unexpected=$(grep -E "\*\*\*(Skipped|Not Run)" ctest.log | grep -Ev "$KNOWN_SKIPS" || true)
-          if [ -n "$unexpected" ]; then
-            echo "::error::unexpected skipped tests:"; echo "$unexpected"; exit 1
-          fi
-          if [ "$(grep -Ec "$KNOWN_SKIPS" ctest.log)" -eq 0 ]; then
-            echo "::notice::the UP-004 skips are gone; update KNOWN_SKIPS and upstream-issues.md"
-          fi
-
-      - name: Known failures still failing (UP-005, UP-011)
-        shell: bash
-        run: |
-          if ctest --test-dir cna-extended-build -R "$KNOWN_FAILURE" --output-on-failure; then
-            echo "::notice::UP-005 and UP-011 pass now; remove KNOWN_FAILURE and update upstream-issues.md"
+          if grep -E "\*\*\*(Skipped|Not Run)" ctest.log; then
+            echo "::error::a cna-extended test was skipped or disabled"; exit 1
           fi
 
   # EXT-003 early warning: the engine against the upstream development heads

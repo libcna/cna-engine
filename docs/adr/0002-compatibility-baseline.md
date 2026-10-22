@@ -47,11 +47,14 @@ throwaway repositories.
 | Dependency | Branch | Commit | Committed |
 | --- | --- | --- | --- |
 | CNA | `next` | `900d0db3b52d76d3115ebda0a0e04a25fefad1a5` | 2026-10-20 |
-| cna-extended | `develop` | `0061e3e17c30b2a3a302bce617e64765883079aa` | 2026-10-14 |
+| cna-extended | `develop` | `86870ad2bf6b3d9a947edc359a5819c83f56f6dc` | 2026-10-22 |
 | Sharp Runtime | `next` | `f2aecfefeac171b331787e5cdc4849507363ef0e` | 2026-10-14 |
 
-cna-extended's pin is the read-only loader fix (EXT-001) and matches
-`origin/develop`.
+cna-extended's pin matches `origin/develop`: on 2026-10-22 it moved from
+`0061e3e1` (the read-only loader fix, EXT-001) to `86870ad`, where the
+owner-delegated fixes run every cna-extended test with no failure or skip
+(UP-004's skips, UP-005, UP-011, UP-015) and cna-extended 0.2.0 installs a
+CMake package.
 
 History: the first pin (`705ea232`, 2026-10-19) was replaced the same day by
 `5a44d2c5` after CNA `next` advanced by five math-conformance commits; the
