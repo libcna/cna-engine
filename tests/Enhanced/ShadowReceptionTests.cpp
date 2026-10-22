@@ -141,13 +141,16 @@ namespace CnaEngine::Enhanced
     }
 
     // UP-019: the software renderer's receivers read a render target the
-    // other way up from EasyGL's; the calibration measures it.
+    // other way up from EasyGL's until CNA 144d9f909; since then every
+    // renderer reads it as XNA does, and the calibration, which still
+    // measures, finds the map the right way up.
     TEST(ShadowReceptionTest, CalibrationFindsTheSoftwareRenderersOrientation)
     {
         Microsoft::Xna::Framework::Graphics::GraphicsDevice device;
+        ASSERT_TRUE(device.SupportsShadowSamplingEXT()); // false would also mean "cannot calibrate"
         Graphics::ShadowMap map(device, 32);
-        EXPECT_TRUE(CalibrateShadowMap(device, map));
-        EXPECT_TRUE(map.DrawnUpsideDown());
+        EXPECT_FALSE(CalibrateShadowMap(device, map));
+        EXPECT_FALSE(map.DrawnUpsideDown());
     }
 
     TEST(ShadowReceptionTest, TheBoxShadowsTheFloorAwayFromTheLight)

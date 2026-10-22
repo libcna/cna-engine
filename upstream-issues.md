@@ -17,7 +17,7 @@ entry for provenance).
 ## UP-001 — CNA and cna-extended install no CMake package
 
 - Repositories: `libcna/cna` (`next`), `libcna/cna-extended` (`develop`)
-- Status: worked around; cna-extended installs a package since 0.2.0 (`86870ad`, published, pinned), the CNA part was reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
+- Status: worked around; cna-extended installs a package since 0.2.0 (`86870ad`, published, pinned), the CNA part was reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue; Sharp Runtime published a relocatable package for it on 2026-10-22 (`42847935`, `1dc8785b`, in the engine's pin), CNA's C++ module package is still open
 - Found: 2026-10-19, ENG-010
 
 Neither project has `install(EXPORT ...)` or a `<Name>Config.cmake`; the only
@@ -159,7 +159,7 @@ Engine handling: engine GPU meshes always pass a `VertexDeclaration`
 ## UP-006 — The `CNA` umbrella and CNA's module targets give two runtimes in one process
 
 - Repository: `libcna/cna` (`CNA_SHARED_LIBRARY`, default ON on Linux/GCC/Clang)
-- Status: fixed in CNA `470b12a5d` (2026-10-20, ISSUE-016: mixed umbrella and static module consumers no longer duplicate the runtime), confirmed on 2026-10-22 by the Codex session `cna-demos` with an engine-style regression test (`a2f0378cf`: a module-only static library plus umbrella consumers, both link orders, no duplicate strong symbols). Not in the engine's pin `900d0db3b` and not yet published; until the pin moves the engine and the games keep CNA static
+- Status: resolved upstream in CNA `470b12a5d` (2026-10-20, ISSUE-016), confirmed on 2026-10-22 by the Codex session `cna-demos` with an engine-style regression test (`a2f0378cf`), published and in the engine's pin `08c1387ec` since 2026-10-22. The engine's guidance to build CNA statically stays until the engine checks a mixed consumer itself
 - Found: 2026-10-19, MILESTONE-2 Street scene comparison
 
 With `CNA_SHARED_LIBRARY=ON`, the `CNA` umbrella target links `libcna.so`,
@@ -473,7 +473,7 @@ when its floats come back as NaN (`tests/Graphics/ShadowMapTests.cpp`), with an
 
 - Repository: `libcna/cna` (baseline `900d0db3b`), software and EasyGL
   (OpenGL ES 3) renderers
-- Status: fixed in CNA `144d9f909` (2026-10-22, by the Codex session `cna-demos`: directional shadows aligned with render-target rows; four producer/receiver regressions pass on SOFTWARE, GLES, GL33, WEBGPU, SDL_GPU and FNA3D). Not published yet. When the engine's CNA pin moves past it, `CalibrateShadowMap` stays (it measures), but `ShadowReceptionTest.CalibrationFindsTheSoftwareRenderersOrientation` must then expect the software renderer not to be upside down
+- Status: resolved upstream in CNA `144d9f909` (2026-10-22, by the Codex session `cna-demos`; four producer/receiver regressions on SOFTWARE, GLES, GL33, WEBGPU, SDL_GPU and FNA3D), in the engine's pin `08c1387ec` since 2026-10-22. `CalibrateShadowMap` stays (it measures); its test now expects the software renderer the right way up
 - Found: 2026-10-22, GAME-031
 
 `IShadowReceiverEXT` receivers look the map up at `v = y * 0.5 + 0.5` of the
@@ -496,7 +496,7 @@ the software renderer's current answer.
 
 - Repositories: `libcna/cna` (`origin/next` at `08c1387ec`, 2026-10-22),
   `libcna/sharp-runtime` (`origin/next` at `f2aecfef`)
-- Status: open (publication only; nothing to change in either code base)
+- Status: resolved on 2026-10-22: Sharp Runtime published `next` at `1dc8785b` (with `c26614e8`), and the engine's pins moved to CNA `08c1387ec` and Sharp Runtime `1dc8785b`
 - Found: 2026-10-22, moving the engine's CNA pin to the published revision
   that contains the fixes for UP-006 and UP-019
 

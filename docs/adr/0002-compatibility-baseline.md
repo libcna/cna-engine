@@ -46,9 +46,9 @@ throwaway repositories.
 
 | Dependency | Branch | Commit | Committed |
 | --- | --- | --- | --- |
-| CNA | `next` | `900d0db3b52d76d3115ebda0a0e04a25fefad1a5` | 2026-10-20 |
+| CNA | `next` | `08c1387eca7f9707d6180ff57d07f0360e059672` | 2026-10-22 |
 | cna-extended | `develop` | `86870ad2bf6b3d9a947edc359a5819c83f56f6dc` | 2026-10-22 |
-| Sharp Runtime | `next` | `f2aecfefeac171b331787e5cdc4849507363ef0e` | 2026-10-14 |
+| Sharp Runtime | `next` | `1dc8785b35284b5cf50f3aec361703bfaf090b72` | 2026-10-22 |
 
 cna-extended's pin matches `origin/develop`: on 2026-10-22 it moved from
 `0061e3e1` (the read-only loader fix, EXT-001) to `86870ad`, where the
@@ -66,8 +66,15 @@ so CI could not fetch it (UP-007). All three pins are now published heads.
 Later on 2026-10-20 CNA published `next` at `900d0db3b` (142 commits after
 `688f3f23`), which contains UP-004's fix (`5ab1c7729`) and a regression test
 for it, and the pin moved there with the full evidence rerun
-(`docs/verification.md`). Sharp Runtime stays at `f2aecfef`, still its
+(`docs/verification.md`). Sharp Runtime stayed at `f2aecfef`, then its
 published `next`; CNA `900d0db3b` builds and passes against it.
+On 2026-10-22 both moved to their published `next`: CNA `08c1387ec` (123
+commits after `900d0db3b`) contains the fixes for UP-006 (`470b12a5d`) and
+UP-019 (`144d9f909`) made at the owner's request by the Codex session
+`cna-demos`; since `abbd8a4ea` its video module needs Uri members of Sharp
+Runtime `c26614e8` (UP-020), so Sharp Runtime moved with it to `1dc8785b`,
+which also begins a Sharp Runtime package for UP-001. The engine's
+calibration test now expects the software renderer the right way up.
 
 ### Updating the pin
 

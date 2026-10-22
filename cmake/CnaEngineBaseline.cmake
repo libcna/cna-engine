@@ -9,11 +9,11 @@
 # range: newer revisions of the same line) or older/diverged;
 # -DCNA_ENGINE_REQUIRE_BASELINE_DESCENDANT=ON makes the latter an error.
 
-set(CNA_ENGINE_BASELINE_CNA "900d0db3b52d76d3115ebda0a0e04a25fefad1a5")
+set(CNA_ENGINE_BASELINE_CNA "08c1387eca7f9707d6180ff57d07f0360e059672")
 set(CNA_ENGINE_BASELINE_CNA_BRANCH "next")
 set(CNA_ENGINE_BASELINE_EXTENDED "86870ad2bf6b3d9a947edc359a5819c83f56f6dc")
 set(CNA_ENGINE_BASELINE_EXTENDED_BRANCH "develop")
-set(CNA_ENGINE_BASELINE_SHARP_RUNTIME "f2aecfefeac171b331787e5cdc4849507363ef0e")
+set(CNA_ENGINE_BASELINE_SHARP_RUNTIME "1dc8785b35284b5cf50f3aec361703bfaf090b72")
 set(CNA_ENGINE_BASELINE_SHARP_RUNTIME_BRANCH "next")
 # The GL renderers' siblings, at the releases CNA's DependencyVersions.cmake
 # requires (easy-gl 0.1.1, meta-gl 0.4.1). CNA checks their versions itself;

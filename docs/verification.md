@@ -4,6 +4,29 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-22 — Baseline move: CNA `08c1387ec`, Sharp Runtime `1dc8785b` (ADR-002)
+
+CNA's published `next` `08c1387ec` carries the fixes for UP-006 and UP-019;
+Sharp Runtime's published `next` `1dc8785b` carries the Uri members CNA needs
+since `abbd8a4ea` (UP-020). Clean local clones `~/deps/cna-baseline` and
+`~/deps/sharp-runtime-baseline` at those revisions; cna-extended `86870ad`.
+
+- `build/` (Debug, SOFTWARE/HEADLESS/NULL, SDL and video off) configured with
+  `CNA_ENGINE_ENFORCE_BASELINE=ON` (all three dependencies match):
+  **339 of 339** (`ctest -E carsim_suite`), with
+  `ShadowReceptionTest.CalibrationFindsTheSoftwareRenderersOrientation` now
+  expecting the software renderer the right way up (UP-019 fixed).
+- `tools/run_consumer_probes.sh`: **3 of 3**, cna-extended from its installed
+  package 0.2.0.
+- cna-extended's suite (its `build/`, Debug, against the same clones):
+  **2372 of 2372**, nothing skipped.
+- `build-probe/` reconfigured natively (it had held an Emscripten build) with
+  the baseline enforced, `CNA_ENGINE_CNA_CNAEXT=ON` and
+  `CNA_ENGINE_PILOT_SUITES=ON`: the 50 `pilot` tests pass, among them
+  car-simulator's own suite (`main` `3a34c80`, UP-009's load-budget test
+  excluded by name in Debug as before) and street-simulator's 13 test
+  programs (`develop` `14145cd`).
+
 ## 2026-10-22 — cna-extended fixes (EXT-002, UP-005/011/015), its package (REL-001), CNA reports
 
 The owner of cna-extended delegated its fixes; CNA defects went to the Codex
