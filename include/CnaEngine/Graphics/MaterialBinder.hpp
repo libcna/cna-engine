@@ -137,6 +137,8 @@ namespace CnaEngine::Graphics
         /// The BasicEffect used for non-alpha-tested items (escape hatch for
         /// custom light setups; per-item parameters are overwritten).
         [[nodiscard]] Microsoft::Xna::Framework::Graphics::BasicEffect& LitEffect() noexcept { return *basic_; }
+        /// The SkinnedEffect used for skinned items (escape hatch, as LitEffect).
+        [[nodiscard]] Microsoft::Xna::Framework::Graphics::SkinnedEffect& SkinnedLitEffect() noexcept { return *skinned_; }
 
     private:
         bool ApplySkinned(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device, const RenderItem& item,

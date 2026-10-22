@@ -53,6 +53,7 @@ add_executable(cna_engine_tests
     Graphics/DiagnosticsReportTests.cpp
     Graphics/GpuMemoryTests.cpp
     Graphics/SkyTests.cpp
+    Graphics/ShadowMapTests.cpp
     Assets/AssetRegistryTests.cpp
 )
 target_link_libraries(cna_engine_tests PRIVATE cna_engine_core cna_engine_graphics GTest::gtest_main)
@@ -100,6 +101,7 @@ if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     add_executable(cna_engine_enhanced_tests
         Enhanced/PbrMaterialBinderTests.cpp
         Enhanced/ModelImportTests.cpp
+        Enhanced/ShadowReceptionTests.cpp
     )
     target_link_libraries(cna_engine_enhanced_tests PRIVATE cna_engine_enhanced GTest::gtest_main)
     target_compile_definitions(cna_engine_enhanced_tests PRIVATE

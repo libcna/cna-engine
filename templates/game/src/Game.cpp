@@ -1,6 +1,7 @@
 #include "Game.hpp"
 
 #include "CnaEngine/Enhanced/RelativeMouseCapture.hpp"
+#include "CnaEngine/Enhanced/ShadowReception.hpp"
 #include "CnaEngine/Graphics/MeshBuilder.hpp"
 
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
@@ -109,6 +110,9 @@ void @GAME_CLASS@::LoadGame()
     sky_ = std::make_unique<Graphics::SkyDome>(device);
     sky_->AttachTo(Renderer());
     UpdateSky();
+    // Shadows from the sun over 25 m around the player (where the device can
+    // sample a shadow map; elsewhere none).
+    Enhanced::EnableShadows(*this, {.size = 1024, .radius = 25.0f});
 
     body_.Teleport(world_, Vector3(0.0f, 0.0f, 2.0f));
 }

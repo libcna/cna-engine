@@ -201,6 +201,22 @@ namespace CnaEngine::App
         mouse_->SetCaptured(*this, captured);
     }
 
+    void EngineGame::EnableShadowMap(const ShadowSettings settings, std::function<void(Graphics::ShadowMap&)> receiver)
+    {
+        if (!(settings.radius > 0.0f)) {
+            throw std::invalid_argument("EngineGame::EnableShadowMap: the radius must be positive");
+        }
+        shadows_ = std::make_unique<Graphics::ShadowMap>(getGraphicsDeviceProperty(), settings.size);
+        shadowSettings_ = settings;
+        shadowReceiver_ = std::move(receiver);
+    }
+
+    void EngineGame::DisableShadowMap() noexcept
+    {
+        shadows_.reset();
+        shadowReceiver_ = {};
+    }
+
     Input::InputSnapshot EngineGame::ReadInput()
     {
         return Input::InputSnapshot::Capture(getIsActiveProperty());
@@ -394,13 +410,35 @@ namespace CnaEngine::App
             }
         }
 
-        device.Clear(options_.clearColor);
+        rendered_ = {};
         frame_.Clear();
         Submit(frame_);
 
+        // The shadow map first: switching back from its target discards the back buffer.
+        if (shadows_ && renderer_) {
+            const auto& lighting = renderer_->Lighting();
+            const Microsoft::Xna::Framework::Vector3 towardsLight = -lighting.lightDirection;
+            shadows_->Fit(towardsLight,
+                          camera_.Position() + camera_.Forward() * (shadowSettings_.radius * shadowSettings_.ahead),
+                          shadowSettings_.radius);
+            casters_.assign(frame_.Items().begin(), frame_.Items().end());
+            for (const auto& entry : frame_.instanced_) {
+                Graphics::RenderItem item;
+                item.mesh = entry.mesh;
+                item.material = entry.material;
+                item.instances = entry.instances;
+                casters_.push_back(item);
+            }
+            shadows_->Render(device, casters_, &rendered_);
+            if (shadowReceiver_) {
+                shadowReceiver_(*shadows_);
+            }
+        }
+
+        device.Clear(options_.clearColor);
+
         queue_.Clear();
         culled_ = {};
-        rendered_ = {};
         Graphics::CullInto(frame_.Items(), camera_, visibility_, queue_, culled_);
         for (const auto& entry : frame_.instanced_) {
             entry.instances->Cull(camera_, visibility_, culled_);

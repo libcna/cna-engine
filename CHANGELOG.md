@@ -37,6 +37,12 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 
 ### Pilot-validated API changes
 
+- `Graphics/MaterialBinder.hpp`, additive: `StockMaterialBinder::SkinnedLitEffect()`
+  and `Enhanced/PbrMaterialBinder.hpp`, additive: `PbrMaterialBinder::SkinnedEffect()`
+  -- the skinned effects, so shadow reception (GAME-031,
+  `Enhanced/ShadowReception.hpp`) reaches every effect the binders draw lit
+  materials with.
+
 - `Graphics/QualitySchema.hpp`, additive: `PresetValues(name)` — the values
   a preset was defined with, nothing else. Reason: street-simulator's presets
   are overlays (a preset leaves the settings it does not list as they are),
@@ -200,6 +206,10 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 - `EngineGame::OnScreenshot` (screenshots of the queue go to the game).
 - `Graphics/Sky.hpp` (GAME-030): `SkyColors`, `DayNightPalette`, `TimeOfDay`,
   `ApplySkyLighting`, `SkyDome`.
+- `Graphics/ShadowMap.hpp` (GAME-031): `ShadowMap`; `App::ShadowSettings`,
+  `EngineGame::EnableShadowMap`, `DisableShadowMap`, `Shadows`;
+  `Enhanced/ShadowReception.hpp`: `ApplyShadowReception`, `EnableShadows`,
+  `ShadowReceptionSettings`.
 
 ### Other API additions (experimental headers)
 

@@ -96,6 +96,8 @@ namespace CnaEngine::Enhanced
         void SetEnvironmentSelector(EnvironmentSelector selector) { selector_ = std::move(selector); }
         /// The effect, for setups the binder does not manage (IBL, shadows).
         [[nodiscard]] Microsoft::Xna::Framework::Graphics::PbrEffect& Effect() noexcept { return *effect_; }
+        /// The SkinnedPbrEffect of skinned items (escape hatch, as Effect).
+        [[nodiscard]] Microsoft::Xna::Framework::Graphics::SkinnedPbrEffect& SkinnedEffect() noexcept { return *skinned_; }
 
     private:
         /// Items the stock binder draws instead (unlit, vertex-colored, no normals).

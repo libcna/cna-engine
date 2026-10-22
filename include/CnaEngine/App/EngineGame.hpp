@@ -15,6 +15,7 @@
 #include "CnaEngine/Graphics/RenderQueue.hpp"
 #include "CnaEngine/Graphics/RenderStatistics.hpp"
 #include "CnaEngine/Graphics/ScreenCapture.hpp"
+#include "CnaEngine/Graphics/ShadowMap.hpp"
 #include "CnaEngine/Graphics/Visibility.hpp"
 #include "CnaEngine/Input/ActionMap.hpp"
 #include "CnaEngine/Input/InputSnapshot.hpp"
@@ -31,6 +32,7 @@
 #include <cstdint>
 #include <exception>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <span>
 #include <stdexcept>
@@ -105,6 +107,17 @@ namespace CnaEngine::App
         };
         std::vector<Graphics::RenderItem> items_;
         std::vector<Instanced> instanced_;
+    };
+
+    /// The sun's shadow map of an EngineGame (EnableShadowMap).
+    struct ShadowSettings
+    {
+        /// Texels along each side.
+        int size = 2048;
+        /// The shadowed area's radius around its centre, which sits
+        /// `ahead * radius` in front of the camera.
+        float radius = 30.0f;
+        float ahead = 0.5f;
     };
 
     /// The actions every EngineGame has; their keys can be rebound like any other.
@@ -213,6 +226,16 @@ namespace CnaEngine::App
         /// Replaces how the mouse is captured (null restores the default).
         void SetMouseCapture(std::unique_ptr<IMouseCapture> capture);
 
+        /// Renders a shadow map of each frame's opaque items, from the key
+        /// light (ForwardLighting::lightDirection), before the frame is
+        /// drawn; `receiver` is then called with it (Enhanced/ShadowReception
+        /// makes the effects sample it). Call once the device exists (in
+        /// LoadGame). A device without a render target format for it throws.
+        void EnableShadowMap(ShadowSettings settings, std::function<void(Graphics::ShadowMap&)> receiver = {});
+        void DisableShadowMap() noexcept;
+        /// The shadow map, or null when shadows are off.
+        [[nodiscard]] Graphics::ShadowMap* Shadows() noexcept { return shadows_.get(); }
+
     protected:
         /// The device, the renderer and the asset directory are ready; load
         /// the game's content here.
@@ -278,6 +301,10 @@ namespace CnaEngine::App
         std::filesystem::path preferencesPath_;
         std::filesystem::path assetDirectory_;
         std::unique_ptr<IMouseCapture> mouse_;
+        std::unique_ptr<Graphics::ShadowMap> shadows_;
+        ShadowSettings shadowSettings_;
+        std::function<void(Graphics::ShadowMap&)> shadowReceiver_;
+        std::vector<Graphics::RenderItem> casters_;
         Microsoft::Xna::Framework::Vector2 mouseDelta_ = Microsoft::Xna::Framework::Vector2::Zero;
         std::uint64_t updates_ = 0;
         double statisticsAge_ = 0.0;

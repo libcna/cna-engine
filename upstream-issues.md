@@ -445,3 +445,28 @@ among them); which of them grows the import is not known.
 
 Engine handling: none needed for the engine; SHARE-001 checked Street's noise
 with `bake-assets --content` (215 surfaces, 85 MB peak) instead of a capture.
+
+## UP-018 — The software renderer keeps a `Single` render target as 8-bit colour
+
+- Repository: `libcna/cna` (baseline `900d0db3b`), software renderer
+- Status: open
+- Found: 2026-10-22, GAME-031 (the engine's shadow map)
+
+A `RenderTarget2D` created with `SurfaceFormat::Single` on the software
+renderer accepts the format, but stores what is drawn into it as 8-bit RGBA:
+reading it with `GetData(float*)` returns the four colour bytes of each texel
+as one float (a white texel is `0xFFFFFFFF`, a NaN), and `GetData(Color*)`
+returns the 8-bit values. The shadow receivers sample the same 8-bit red, so a
+shadow map on the software renderer has 256 depth steps, not a float's. XNA
+would either keep a float surface or refuse the format.
+
+Engine handling: `ShadowMap::SuggestedBias` assumes nothing about the
+precision behind `Single`; the shadow tests read a `Single` map as colour
+when its floats come back as NaN (`tests/Graphics/ShadowMapTests.cpp`), with an
+8-bit tolerance.
+
+Related, not a defect but undocumented: `IShadowReceiverEXT` receivers read
+the map at `v = y * 0.5 + 0.5` (v = 0 at the bottom of the light's view),
+while a render target's first row is the top of the view, so a producer draws
+the map upside down (`ShadowMap::DrawingProjection`). Found on the software
+renderer; the GL renderers are not yet checked against it.

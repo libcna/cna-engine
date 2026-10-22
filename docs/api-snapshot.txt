@@ -15,12 +15,12 @@ CnaEngine/Graphics/QualitySchema.hpp b443359f740e0a6b
 CnaEngine/Assets/AssetRegistry.hpp bb84cc840d5c174d
 CnaEngine/Core/FixedStepClock.hpp 7d8301690ba6b541
 CnaEngine/Graphics/Material.hpp 5e5f5304a37324b1
-CnaEngine/Graphics/MaterialBinder.hpp 1fd7e558c4d16784
+CnaEngine/Graphics/MaterialBinder.hpp 4827d112999c6741
 CnaEngine/Graphics/RenderQueue.hpp cde48274684fedf2
 CnaEngine/Graphics/Visibility.hpp aab30c7a3179c144
 CnaEngine/Graphics/ForwardRenderer.hpp 474a90abeb2dcefa
 CnaEngine/Graphics/Instancing.hpp 50caf56545e60a04
-CnaEngine/Enhanced/PbrMaterialBinder.hpp 629d2f81a3648489
+CnaEngine/Enhanced/PbrMaterialBinder.hpp e7d44f6e5f23bf3e
 CnaEngine/Graphics/RenderStatistics.hpp 89b259ce46724a4e
 CnaEngine/Graphics/MeshBuilder.hpp 473a8434a1c8972a
 CnaEngine/Graphics/TextureAtlas.hpp 4fa26a81db7e94eb

@@ -1212,11 +1212,33 @@ interpolation, overcast, the noon sun at 50 degrees north, sun and moon
 lighting, and pixels of the dome (gradient, disc, stars). The template's
 day passes in 48 minutes.
 
-### GAME-031 — Shadows `[ ]`
+### GAME-031 — Shadows `[x]`
 
 Acceptance: decided by what CNA offers at the baseline: shadow maps where
 the effects can receive them, otherwise planar and contact shadows for
 strict games; the choice and fallbacks documented.
+
+Result (2026-10-22): CNA at the baseline keeps only the receiving side
+(`IShadowReceiverEXT` on BasicEffect, SkinnedEffect, PbrEffect and
+SkinnedPbrEffect; `SupportsShadowSamplingEXT`); its producers were removed
+upstream. The engine's producer is strict: `Graphics/ShadowMap.hpp` draws
+the light-space depth with XNA's own BasicEffect (SkinnedEffect for skinned
+casters) -- the linear fog of an orthographic light view is exactly the
+receivers' `z/w * 0.5 + 0.5` -- into a Single target (else HalfSingle, else
+Color), drawn upside down because the receivers read `v = y * 0.5 + 0.5`;
+the view moves in whole texels of a world-fixed grid; the bias follows the
+precision the target really keeps, measured when it is made (UP-018: the
+software renderer stores Single as 8-bit). `EngineGame::EnableShadowMap`
+renders it from each frame's opaque items before the frame; reception is
+enhanced: `Enhanced/ShadowReception.hpp` (`ApplyShadowReception`,
+`EnableShadows`), through the binders' effects (additive accessors
+`StockMaterialBinder::SkinnedLitEffect`, `PbrMaterialBinder::SkinnedEffect`).
+Tests: the stored depths of a floor and a box; a box's shadow on the floor
+on the side away from the light, through the stock and the PBR binder, with
+mirrored places unshadowed. The template casts shadows. Not built: planar
+(stencil) and blob shadows for strict games; strict games can draw blob
+discs with ordinary blended items. Still to check: the receivers' `v`
+convention on the GL renderers (verified on the software renderer).
 
 ### GAME-040 — 3D sound `[ ]`
 
