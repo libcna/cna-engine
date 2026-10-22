@@ -174,7 +174,11 @@ namespace CnaEngine::UI
 
     bool Menu::Update(const MenuInput& input)
     {
-        if (input.pointer) {
+        // Only a pointer that moved or clicks selects: one resting over an
+        // item would otherwise take every key press back.
+        const bool moved = input.pointer && lastPointer_ && *input.pointer != *lastPointer_;
+        lastPointer_ = input.pointer;
+        if (input.pointer && (moved || input.click)) {
             for (std::size_t i = 0; i < boxes_.size() && i < items_.size(); ++i) {
                 if (Selectable(i) && boxes_[i].Contains(*input.pointer)) {
                     selected_ = i;
@@ -292,6 +296,7 @@ namespace CnaEngine::UI
         if (!menu) {
             throw std::invalid_argument("MenuStack::Push: no menu");
         }
+        menu->ForgetPointer();
         menus_.push_back(std::move(menu));
     }
 
@@ -299,6 +304,9 @@ namespace CnaEngine::UI
     {
         if (!menus_.empty()) {
             menus_.pop_back();
+        }
+        if (!menus_.empty()) {
+            menus_.back()->ForgetPointer();
         }
     }
 

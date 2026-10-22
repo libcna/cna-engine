@@ -90,8 +90,19 @@ namespace CnaEngine::UI
         MenuInput hover;
         hover.pointer = Vector2(middle.X, middle.Y + 22.0f);
         menu.Update(hover);
+        EXPECT_EQ(menu.Selected(), 0u) << "where the pointer rests when the menu opens selects nothing";
+        hover.pointer = Vector2(middle.X + 1.0f, middle.Y + 22.0f);
+        menu.Update(hover);
         const auto over = menu.Selected();
-        EXPECT_NE(over, 0u);
+        EXPECT_NE(over, 0u) << "moved onto an item";
+        // Resting there, it leaves the keys in charge.
+        MenuInput down = hover;
+        down.down = true;
+        menu.Update(down);
+        EXPECT_EQ(menu.Selected(), over + 1);
+        menu.Update(hover);
+        EXPECT_EQ(menu.Selected(), over + 1);
+        menu.Select(over);
         MenuInput click;
         click.pointer = Vector2(middle.X, middle.Y - 200.0f); // nothing there
         click.click = true;

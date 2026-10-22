@@ -54,7 +54,8 @@ namespace CnaEngine::UI
     /// by a Painter: house-simulator's menu screens, train's start menu with
     /// mouse hits, galaxy-eggbert's pause menu. Selection skips labels and
     /// wraps; left and right change choices and sliders; the pointer selects
-    /// what it is over and a click accepts it.
+    /// what it moves onto and a click accepts what it is over. A pointer that
+    /// rests leaves the selection to the keys and the pad.
     class Menu
     {
     public:
@@ -86,6 +87,10 @@ namespace CnaEngine::UI
         [[nodiscard]] int ChoiceValue(std::size_t item) const;
         [[nodiscard]] float SliderValue(std::size_t item) const;
 
+        /// The next update only notes where the pointer is: a menu that opens
+        /// (or comes back to the top) under a resting pointer keeps its
+        /// selection. MenuStack calls it.
+        void ForgetPointer() noexcept { lastPointer_.reset(); }
         /// Whether the world stands still while this menu is open.
         bool pausesWorld = true;
 
@@ -114,6 +119,7 @@ namespace CnaEngine::UI
         std::vector<Item> items_;
         std::size_t selected_ = 0;
         std::vector<Box> boxes_;
+        std::optional<Microsoft::Xna::Framework::Vector2> lastPointer_;
     };
 
     /// Menus on top of one another (main, then settings, then a
