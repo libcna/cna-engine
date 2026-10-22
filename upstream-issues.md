@@ -159,7 +159,7 @@ Engine handling: engine GPU meshes always pass a `VertexDeclaration`
 ## UP-006 — The `CNA` umbrella and CNA's module targets give two runtimes in one process
 
 - Repository: `libcna/cna` (`CNA_SHARED_LIBRARY`, default ON on Linux/GCC/Clang)
-- Status: worked around in the engine's probes and the games (CNA built statically); reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
+- Status: fixed in CNA `470b12a5d` (2026-10-20, ISSUE-016: mixed umbrella and static module consumers no longer duplicate the runtime), confirmed on 2026-10-22 by the Codex session `cna-demos` with an engine-style regression test (`a2f0378cf`: a module-only static library plus umbrella consumers, both link orders, no duplicate strong symbols). Not in the engine's pin `900d0db3b` and not yet published; until the pin moves the engine and the games keep CNA static
 - Found: 2026-10-19, MILESTONE-2 Street scene comparison
 
 With `CNA_SHARED_LIBRARY=ON`, the `CNA` umbrella target links `libcna.so`,
