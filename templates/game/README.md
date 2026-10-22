@@ -40,6 +40,7 @@ then open <http://localhost:8080/>. Desktop options go in the address:
 | Mouse, right stick | Look |
 | W A S D, left stick | Walk |
 | Shift | Run |
+| Space, A button | Jump |
 | Esc | Release the mouse; again: quit (not in a browser) |
 | F3 | Statistics in the window's title |
 | F11 | Full screen |
@@ -50,7 +51,9 @@ Key bindings can be changed in `bindings.ini` beside the preferences
 
 ## Where things are
 
-- `src/Game.cpp` — the game: input, world, light, movement, drawing.
+- `src/Game.cpp` — the game: input, the world (each block is a box to
+  collide with and a cube to draw), light, the body (`CharacterController`:
+  walls, stairs, gravity, jumps), drawing.
 - `assets/` — copied beside the executable (preloaded in the browser);
   loaded through XNA's content manager, e.g. `Load<Texture2D>("crate")`.
 - `CMakeLists.txt` — one `cna_engine_add_game()` call.

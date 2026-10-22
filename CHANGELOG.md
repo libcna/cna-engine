@@ -182,6 +182,13 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   `App/AssetDirectory.hpp` (`FindAssetDirectory`). Enhanced:
   `Enhanced/RelativeMouseCapture.hpp` (CNA's relative mouse mode, the
   browser's pointer lock). Example `hello_engine`.
+- `templates/game/` and `tools/new_game.sh` (GAME-004): a new game project
+  in one command, built and run by the engine's tests.
+- `Collision/StaticWorld.hpp` (GAME-020, in `CnaEngine::Core`): `StaticWorld`
+  (boxes, triangles, vertical cylinders, a `HeightField`; a uniform grid;
+  `Raycast`, `Contacts`, `Overlaps`; layers and tags), `Capsule`, `RayHit`,
+  `Contact`. `Collision/CharacterController.hpp` (GAME-021):
+  `CharacterController`, `CharacterSettings`, `WishVelocity`.
 
 ### Other API additions (experimental headers)
 

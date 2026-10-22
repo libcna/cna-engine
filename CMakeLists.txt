@@ -61,6 +61,8 @@ cna_engine_add_library(cna_engine_core Core
     src/Input/BindingCapture.cpp
     src/Diagnostics/FrameStatistics.cpp
     src/Diagnostics/ScopedTimer.cpp
+    src/Collision/StaticWorld.cpp
+    src/Collision/CharacterController.cpp
 )
 cna_engine_link_external(cna_engine_core CNA::Math CNA::Input)
 

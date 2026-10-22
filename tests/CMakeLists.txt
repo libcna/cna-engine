@@ -25,6 +25,8 @@ add_executable(cna_engine_tests
     Core/NoiseTests.cpp
     Core/SunPositionTests.cpp
     Core/SettingsFileTests.cpp
+    Collision/StaticWorldTests.cpp
+    Collision/CharacterControllerTests.cpp
     Input/InputNamesTests.cpp
     Input/ActionMapTests.cpp
     Input/BindingCaptureTests.cpp
@@ -180,7 +182,8 @@ file(GLOB_RECURSE _cna_engine_strict_headers CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/Diagnostics/*.hpp"
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/Graphics/*.hpp"
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/Assets/*.hpp"
-    "${PROJECT_SOURCE_DIR}/include/CnaEngine/App/*.hpp")
+    "${PROJECT_SOURCE_DIR}/include/CnaEngine/App/*.hpp"
+    "${PROJECT_SOURCE_DIR}/include/CnaEngine/Collision/*.hpp")
 set(_cna_engine_header_tus "")
 foreach(_header IN LISTS _cna_engine_strict_headers)
     file(RELATIVE_PATH _rel "${PROJECT_SOURCE_DIR}/include" "${_header}")

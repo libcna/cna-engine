@@ -1135,16 +1135,41 @@ Acceptance: an animation player samples clips (interpolated keyframes,
 bone hierarchy, cross-fade), fills the bone palette that skinned render
 items already take, and is tested against hand-computed poses.
 
-### GAME-020 — Static collision world and raycasts `[ ]`
+### GAME-020 — Static collision world and raycasts `[x]`
 
 Acceptance: boxes, triangles and height fields in a spatial grid; ray,
 sphere and capsule queries with hit point, normal and distance; strict.
 
-### GAME-021 — Character controller `[ ]`
+Result (2026-10-22): `Collision/StaticWorld.hpp` in `CnaEngine::Core`
+(`Collision` added to the strict modules): boxes, two-sided triangles
+(`AddTriangles` for meshes), vertical cylinders and one height field; a
+uniform grid over X and Z, so floors above one another share cells; rays
+walk the grid nearest cell first; capsule contacts give the way out
+(normal and depth, deepest first). Closest points after Ericson (cited in
+the private `CollisionMath.hpp`). Not a physics engine: no moving or
+reacting shapes. 12 unit tests, the games' cases among them (nearest hit,
+eye inside a wall, ray in a triangle's plane, an upper floor that does not
+touch the floor below).
+
+### GAME-021 — Character controller `[x]`
 
 Acceptance: a capsule that walks, slides along walls, climbs steps, keeps
 to slopes up to a limit, falls under gravity and jumps, deterministic for
 a fixed step; drives the walk camera.
+
+Result (2026-10-22): `Collision/CharacterController.hpp`: collide and slide
+in substeps of half the radius; steep ground acts as a wall (pushes stay
+horizontal); a grounded body rides up edges below its lower sphere's
+centre when walkable ground lies behind them (a short ray decides: kerbs,
+stair treads, low posts), and lifts by the step height and on by at least
+its radius for ledges above that centre; it follows the ground down by
+`stepDown`, falls, jumps, counts strides (footsteps) and gives a head bob.
+`WishVelocity` turns camera-relative input into a velocity on
+`WalkCameraController`'s basis. 13 tests: walls and sliding, a kerb but
+not a block, stairs up (0.17 m risers) and down, a 0.33 m step, a ledge
+fallen off, 20 degree ramp walked and 60 degree ramp refused, jump height,
+bit-identical positions at 30, 60 and 144 fps, strides, height fields. The
+template game walks on it (stairs to a platform, jumping).
 
 ### GAME-030 — Sky, fog and time of day `[ ]`
 
