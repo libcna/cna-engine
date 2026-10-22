@@ -80,6 +80,12 @@ namespace CnaEngine::App
         return items_.emplace_back(item);
     }
 
+    void Frame::Add(const Graphics::ModelView& model, const Microsoft::Xna::Framework::Matrix& world,
+                    const std::vector<Microsoft::Xna::Framework::Matrix>* palette)
+    {
+        model.AppendItems(items_, world, palette);
+    }
+
     void Frame::AddInstances(const Graphics::GpuMesh& mesh, const Graphics::Material& material,
                              Graphics::InstanceSet& instances)
     {
@@ -210,6 +216,15 @@ namespace CnaEngine::App
         // A page in a browser has nothing to quit to.
         Exit();
 #endif
+    }
+
+    void EngineGame::OnScreenshot(const Graphics::CaptureResult& result)
+    {
+        if (!result.success) {
+            std::fprintf(stderr, "screenshot failed: %s\n", result.error.c_str());
+        } else if (!result.path.empty()) {
+            std::printf("screenshot: %s\n", result.path.c_str());
+        }
     }
 
     void EngineGame::ApplyWindowOptions()
@@ -409,11 +424,7 @@ namespace CnaEngine::App
 
         DrawOverlay(device);
         for (const auto& shot : screenshots_.Process(device)) {
-            if (shot.success) {
-                std::printf("screenshot: %s\n", shot.path.c_str());
-            } else {
-                std::fprintf(stderr, "screenshot failed: %s\n", shot.error.c_str());
-            }
+            OnScreenshot(shot);
         }
         automation_.EndDraw(ReadyForCapture());
         Game::Draw(gameTime);

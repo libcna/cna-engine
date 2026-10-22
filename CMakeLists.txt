@@ -63,6 +63,8 @@ cna_engine_add_library(cna_engine_core Core
     src/Diagnostics/ScopedTimer.cpp
     src/Collision/StaticWorld.cpp
     src/Collision/CharacterController.cpp
+    src/Animation/Skeleton.cpp
+    src/Animation/Animator.cpp
 )
 cna_engine_link_external(cna_engine_core CNA::Math CNA::Input)
 
@@ -88,6 +90,7 @@ cna_engine_add_library(cna_engine_graphics Graphics
     src/Graphics/DiagnosticsReport.cpp
     src/Graphics/GpuMemory.cpp
     src/Graphics/MaterialBinder.cpp
+    src/Graphics/ModelView.cpp
     src/Assets/AssetRegistry.cpp
 )
 target_link_libraries(cna_engine_graphics PUBLIC cna_engine_core)
@@ -112,6 +115,7 @@ if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     cna_engine_add_library(cna_engine_enhanced EnhancedGraphics
         src/Enhanced/PbrMaterialBinder.cpp
         src/Enhanced/RelativeMouseCapture.cpp
+        src/Enhanced/ModelImport.cpp
     )
     target_link_libraries(cna_engine_enhanced PUBLIC cna_engine_graphics cna_engine_app)
     cna_engine_link_external(cna_engine_enhanced CNA::GraphicsCore)

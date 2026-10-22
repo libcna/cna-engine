@@ -1122,18 +1122,40 @@ run headless as tests.
 
 ### Part B — what every game wrote itself
 
-### GAME-010 — Models into render items `[ ]`
+### GAME-010 — Models into render items `[x]`
 
 Acceptance: an XNA `Model` (from the content manager or CNA's runtime glTF
 import) becomes render items with materials and bone transforms in a few
 lines; strict for XNA `Model`, enhanced where CNA's importer is an
 extension.
 
-### GAME-011 — Skeletal animation `[ ]`
+Result (2026-10-22): strict `Graphics/ModelView.hpp` (every part borrowed,
+its material read from the effect -- `StockMaterialFromEffect` for
+BasicEffect, SkinnedEffect and AlphaTestEffect, or a game's reader; rigid
+parts on their bone chain, `SetBoneTransforms` for node animation; skinned
+parts posed by a palette) and `Frame::Add(ModelView, world, palette)`.
+Enhanced `Enhanced/ModelImport.hpp`: `PbrMaterialFromEffect` (street's and
+room's PbrEffect translation), `FindSkinningData` (skins, else Tag). Fixture
+`tests/fixtures/models/skinned_strip.gltf`, made by the engine's own
+`make_skinned_strip.py` (MIT): CNA imports it at run time and the PBR
+binder draws its skinned part, bent and straight (the risk street's
+imported figure showed -- nothing drawn -- does not occur here).
+
+### GAME-011 — Skeletal animation `[x]`
 
 Acceptance: an animation player samples clips (interpolated keyframes,
 bone hierarchy, cross-fade), fills the bone palette that skinned render
 items already take, and is tested against hand-computed poses.
+
+Result (2026-10-22): strict `Animation/Skeleton.hpp` (`BonePose`,
+`Skeleton` with `FromBindPose`, `BoneTrack`, `AnimationClip`) and
+`Animation/Animator.hpp` (play, loop or once, speed, cross-fade, stop to
+the bind pose, palette, bone transforms for attachments); `Animation` added
+to the strict modules. Enhanced `SkeletonFromSkinningData` and
+`ClipsFromSkinningData`. Tests: hand-computed poses (a 90 degree bend, the
+45 degree midpoint, a cross-fade that cancels two opposite bends) and a
+probe against CNA's own `AnimationPlayer` on the imported fixture: every
+palette element of both clips at six times within 2e-4.
 
 ### GAME-020 — Static collision world and raycasts `[x]`
 

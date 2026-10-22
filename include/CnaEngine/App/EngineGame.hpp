@@ -11,6 +11,7 @@
 #include "CnaEngine/Graphics/GpuMesh.hpp"
 #include "CnaEngine/Graphics/Instancing.hpp"
 #include "CnaEngine/Graphics/Material.hpp"
+#include "CnaEngine/Graphics/ModelView.hpp"
 #include "CnaEngine/Graphics/RenderQueue.hpp"
 #include "CnaEngine/Graphics/RenderStatistics.hpp"
 #include "CnaEngine/Graphics/ScreenCapture.hpp"
@@ -81,6 +82,10 @@ namespace CnaEngine::App
         Graphics::RenderItem& Add(const Graphics::GpuMesh& mesh, const Graphics::Material& material,
                                   const Microsoft::Xna::Framework::Matrix& world);
         Graphics::RenderItem& Add(const Graphics::RenderItem& item);
+        /// Every part of a model at `world`; skinned parts take `palette`
+        /// (Animation::Animator::SkinPalette), which must outlive the frame.
+        void Add(const Graphics::ModelView& model, const Microsoft::Xna::Framework::Matrix& world,
+                 const std::vector<Microsoft::Xna::Framework::Matrix>* palette = nullptr);
         /// Every instance of `instances` with one mesh and material; the set
         /// culls its instances per camera, so it is not culled as a whole.
         void AddInstances(const Graphics::GpuMesh& mesh, const Graphics::Material& material,
@@ -239,6 +244,9 @@ namespace CnaEngine::App
         /// The built-in quit action; by default releases a captured mouse or
         /// quits (only releases in the browser).
         virtual void OnQuit();
+        /// A screenshot of the queue (F12, or one the game requested) was
+        /// taken; by default its path or error is printed.
+        virtual void OnScreenshot(const Graphics::CaptureResult& result);
 
         void Initialize() override;
         void LoadContent() override;

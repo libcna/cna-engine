@@ -189,6 +189,15 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   `Raycast`, `Contacts`, `Overlaps`; layers and tags), `Capsule`, `RayHit`,
   `Contact`. `Collision/CharacterController.hpp` (GAME-021):
   `CharacterController`, `CharacterSettings`, `WishVelocity`.
+- `Graphics/ModelView.hpp` (GAME-010): `ModelView`, `ModelPart`,
+  `PartMaterial`, `EffectMaterialReader`, `StockMaterialFromEffect`;
+  `App::Frame::Add(ModelView, ...)`. `Enhanced/ModelImport.hpp`:
+  `PbrMaterialFromEffect`, `FindSkinningData`, `SkeletonFromSkinningData`,
+  `ClipsFromSkinningData`.
+- `Animation/Skeleton.hpp`, `Animation/Animator.hpp` (GAME-011, in
+  `CnaEngine::Core`): `BonePose`, `Skeleton`, `BoneKey`, `BoneTrack`,
+  `AnimationClip`, `Animator`, `PlayOptions`.
+- `EngineGame::OnScreenshot` (screenshots of the queue go to the game).
 
 ### Other API additions (experimental headers)
 

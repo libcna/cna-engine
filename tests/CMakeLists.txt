@@ -27,6 +27,7 @@ add_executable(cna_engine_tests
     Core/SettingsFileTests.cpp
     Collision/StaticWorldTests.cpp
     Collision/CharacterControllerTests.cpp
+    Animation/AnimatorTests.cpp
     Input/InputNamesTests.cpp
     Input/ActionMapTests.cpp
     Input/BindingCaptureTests.cpp
@@ -97,8 +98,11 @@ endif()
 if(CNA_ENGINE_WITH_ENHANCED_GRAPHICS)
     add_executable(cna_engine_enhanced_tests
         Enhanced/PbrMaterialBinderTests.cpp
+        Enhanced/ModelImportTests.cpp
     )
     target_link_libraries(cna_engine_enhanced_tests PRIVATE cna_engine_enhanced GTest::gtest_main)
+    target_compile_definitions(cna_engine_enhanced_tests PRIVATE
+        CNA_ENGINE_TEST_MODELS="${CMAKE_CURRENT_SOURCE_DIR}/fixtures/models")
     cna_engine_sanitize(cna_engine_enhanced_tests)
     gtest_discover_tests(cna_engine_enhanced_tests
         TEST_PREFIX "cna_engine_enhanced."
@@ -183,7 +187,8 @@ file(GLOB_RECURSE _cna_engine_strict_headers CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/Graphics/*.hpp"
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/Assets/*.hpp"
     "${PROJECT_SOURCE_DIR}/include/CnaEngine/App/*.hpp"
-    "${PROJECT_SOURCE_DIR}/include/CnaEngine/Collision/*.hpp")
+    "${PROJECT_SOURCE_DIR}/include/CnaEngine/Collision/*.hpp"
+    "${PROJECT_SOURCE_DIR}/include/CnaEngine/Animation/*.hpp")
 set(_cna_engine_header_tus "")
 foreach(_header IN LISTS _cna_engine_strict_headers)
     file(RELATIVE_PATH _rel "${PROJECT_SOURCE_DIR}/include" "${_header}")
