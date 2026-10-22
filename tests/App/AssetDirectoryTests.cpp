@@ -5,17 +5,22 @@
 
 #include <filesystem>
 #include <fstream>
+#include <string>
 #include <vector>
 
 namespace CnaEngine::App
 {
     namespace
     {
-        // A scratch tree in the test's working directory (the build tree).
+        // A scratch tree in the test's working directory (the build tree), one
+        // per test: CTest runs this fixture's tests as parallel processes.
         class AssetDirectoryTest : public ::testing::Test
         {
         protected:
-            AssetDirectoryTest() : base(std::filesystem::current_path() / "asset_directory_test")
+            AssetDirectoryTest()
+                : base(std::filesystem::current_path()
+                       / (std::string("asset_directory_test_")
+                          + ::testing::UnitTest::GetInstance()->current_test_info()->name()))
             {
                 std::filesystem::remove_all(base);
                 std::filesystem::create_directories(base / "first");
@@ -50,7 +55,7 @@ namespace CnaEngine::App
     {
         const auto roots = DefaultAssetSearchRoots();
         ASSERT_FALSE(roots.empty());
-        const auto found = FindAssetDirectory("asset_directory_test");
+        const auto found = FindAssetDirectory(base.filename().string());
         ASSERT_TRUE(found.has_value());
         EXPECT_EQ(std::filesystem::weakly_canonical(*found), std::filesystem::weakly_canonical(base));
     }

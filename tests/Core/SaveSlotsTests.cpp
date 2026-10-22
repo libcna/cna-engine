@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
+#include <string>
 
 namespace CnaEngine
 {
@@ -15,7 +16,12 @@ namespace CnaEngine
         class SaveSlotsTest : public ::testing::Test
         {
         protected:
-            SaveSlotsTest() : directory(std::filesystem::current_path() / "save_slots_test")
+            // One directory per test: CTest runs the tests of this fixture as
+            // parallel processes in the same working directory.
+            SaveSlotsTest()
+                : directory(std::filesystem::current_path()
+                            / (std::string("save_slots_test_")
+                               + ::testing::UnitTest::GetInstance()->current_test_info()->name()))
             {
                 std::filesystem::remove_all(directory);
             }
@@ -38,8 +44,10 @@ namespace CnaEngine
         EXPECT_FALSE(slots.Load("slot-2").has_value());
         // Empty content and text that looks like a header both survive.
         slots.Save("empty", "", 1);
+        ASSERT_TRUE(slots.Load("empty").has_value());
         EXPECT_EQ(slots.Load("empty")->content, "");
         slots.Save("tricky", "version: 99\n\nchecksum: 0\n", 1);
+        ASSERT_TRUE(slots.Load("tricky").has_value());
         EXPECT_EQ(slots.Load("tricky")->content, "version: 99\n\nchecksum: 0\n");
     }
 
@@ -49,6 +57,7 @@ namespace CnaEngine
         slots.Save("main", "first", 1);
         slots.Save("main", "second", 1);
         EXPECT_TRUE(std::filesystem::exists(directory / "main.bak"));
+        ASSERT_TRUE(slots.Load("main").has_value());
         EXPECT_EQ(slots.Load("main")->content, "second");
 
         // Cut short, as by a crash while writing in place.
@@ -66,10 +75,12 @@ namespace CnaEngine
             file.seekp(-2, std::ios::end);
             file.put('X');
         }
+        ASSERT_TRUE(slots.Load("other").has_value());
         EXPECT_EQ(slots.Load("other")->content, "abcdef");
 
         // Between the two renames of a save there is only the backup.
         std::filesystem::remove(directory / "other.save");
+        ASSERT_TRUE(slots.Load("other").has_value());
         EXPECT_EQ(slots.Load("other")->content, "abcdef");
     }
 
