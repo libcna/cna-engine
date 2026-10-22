@@ -1114,12 +1114,24 @@ build walked in headless Chrome. That run found that the function's
 directory variable was invisible from a game's own directory (now a global
 property).
 
-### GAME-005 — Tutorial and examples `[ ]`
+### GAME-005 — Tutorial and examples `[x]`
 
 Acceptance: `docs/tutorial.md` builds a small 3D game step by step with
 the facilities of this phase; examples for a first-person walk (collision,
 interaction), a third-person animated character and the sky and lights
 run headless as tests.
+
+Result (2026-10-22): `docs/tutorial.md` (from `fetch_dependencies.sh` and
+`new_game.sh` through the game class, drawing, input, walking, sky, shadows
+and lamps, models and animation, sound, HUD and menus, post-processing,
+saving, particles) and three examples built with `cna_engine_add_game` and
+run as tests with a script: `first_person` (strict: up six steps onto a
+platform, a crate taken with a ray, checked), `third_person` (enhanced: the
+glTF figure walks 3.9 m with "bend", stands with "sway", the follow camera
+sees it), `day_night` (enhanced: four hours, mean brightness noon > morning
+> evening > night, the lamp lighting the night four times as bright as
+away from it; writes the four pictures). The README has a "Start a game"
+section.
 
 ### Part B — what every game wrote itself
 

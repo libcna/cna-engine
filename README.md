@@ -16,15 +16,34 @@ pilots' real scenes render through the engine practically identically
 
 | Target | Profile | What it offers |
 | --- | --- | --- |
-| `CnaEngine::Core` | strict | named input actions and axes, rebinding, binding capture and display names, fixed-step clock, frame statistics, CPU profiler |
-| `CnaEngine::Graphics` | strict | camera state and fly/walk controllers, CPU mesh data and builders, vertex layouts (skinned included), RAII GPU meshes, materials, render queues, culling and LOD, instancing, skinned items, a forward renderer over XNA's stock effects, render statistics and GPU memory estimates, screenshots, typed asset registry, quality schemas |
-| `CnaEngine::EnhancedGraphics` | enhanced | PBR material binder over CNA's `PbrEffect` and `SkinnedPbrEffect`: image-based lighting, exposure, per-item reflection probes (no cna-extended) |
-| `CnaEngine::ExtendedIntegration` | enhanced | adapters to cna-extended (`EngineWorldScreen`, World3D camera sync) |
+| `CnaEngine::Core` | strict | named input actions and axes, rebinding, binding capture and display names, fixed-step clock, frame statistics, CPU profiler, settings files, save slots; static collision world, character controller; skeletons, clips and an animator |
+| `CnaEngine::Graphics` | strict | camera state and fly/walk/orbit/follow controllers, CPU mesh data and builders, vertex layouts (skinned included), RAII GPU meshes, materials, render queues, culling and LOD, instancing, skinned items, a forward renderer over XNA's stock effects, models as render items, sky dome and time of day, a sun shadow map, local lights and light pools, post-processing, render statistics and GPU memory estimates, screenshots, typed asset registry, quality schemas |
+| `CnaEngine::App` | strict | `EngineGame`: an XNA Game with the engine wired (input, fixed steps, camera, renderer, statistics, screenshots, automated runs, preferences, asset directory, mouse capture, shadows, post-processing) |
+| `CnaEngine::Audio` | strict | positional voices, mix categories, a voice budget, sound banks; silent without a device |
+| `CnaEngine::UI` | strict | a built-in font, a HUD painter on a virtual screen, toasts, menus and a menu stack, settings and rebinding rows |
+| `CnaEngine::EnhancedGraphics` | enhanced | PBR material binder over CNA's `PbrEffect` and `SkinnedPbrEffect` (image-based lighting, exposure, reflection probes); glTF model materials and skins; shadow reception; punctual lights per item; the browser's pointer lock (no cna-extended) |
+| `CnaEngine::ExtendedIntegration` | enhanced | adapters to cna-extended (`EngineWorldScreen`, World3D camera sync, 3D particles as billboards) |
 | `CnaEngine::Engine` | enhanced | everything above |
 
 *Strict* code uses only XNA 4.0 types of CNA, Sharp Runtime and the standard
 library, so strict-XNA games (car-simulator) can use it; the rule is enforced
 by `tools/check_strict_boundary.py` (ADR-001, `docs/adr/`).
+
+## Start a game
+
+```sh
+git clone https://github.com/libcna/cna-engine.git
+cna-engine/tools/fetch_dependencies.sh            # CNA, Sharp Runtime, easy-gl, meta-gl beside it
+cna-engine/tools/new_game.sh my-game "My Game"    # a first-person game to grow from
+cd my-game && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --parallel 8
+./build/my-game                                   # tools/build_web.sh --serve: the same in a browser
+```
+
+`docs/tutorial.md` goes on from there: the game class, drawing, input,
+walking and collisions, the sky, shadows and lamps, glTF models and
+animation, sound, HUD and menus, post-processing, saving, particles.
+`examples/first_person`, `examples/third_person` and `examples/day_night`
+are complete games that run headless as tests.
 
 ## Quick look
 
@@ -112,6 +131,7 @@ then calls `find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics)`.
 
 ## Documents
 
+- `docs/tutorial.md` — a 3D game from an empty directory
 - `plan.md` — task plan and status; `handoff.md` — context for the next agent
 - `docs/adr/` — architecture decisions (boundary, baseline, material/binder contract)
 - `docs/guide-strict.md`, `docs/guide-enhanced.md` — how to use each profile
@@ -123,3 +143,4 @@ then calls `find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics)`.
 - `docs/verification.md` — what was built and tested, with which revisions
 - `upstream-issues.md` — defects found in sibling repositories (recorded, not fixed here)
 - `analysis.md`, `gap-audit.md` — the feasibility study and audit that led here
+- `docs/game-facilities-survey.md` — how the simulators did what Phase 7 made into facilities
