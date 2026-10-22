@@ -126,9 +126,10 @@ Done (see `plan.md` for per-task results):
    surfaces identical to those from before the adoption (apart from the
    train's two avatar views, which vary between runs anyway); the probes
    now compare frozen copies of the
-   replaced code (`tests/fixtures/simulator_oracles`). Open: merging and
-   pushing those branches, on the owner's word; UP-017 (street's capture
-   runs out of memory).
+   replaced code (`tests/fixtures/simulator_oracles`). The branches were
+   fast-forwarded into car's and school's `main` and train's and street's
+   `develop` and pushed on 2026-10-22. Open: UP-017 (street's capture runs
+   out of memory).
 1. Pilot adoption (PILOT-001/002/003) is done: both `engine-adoption`
    branches are merged into car-simulator's `main` and street-simulator's
    `develop` (2026-10-20). car-simulator:

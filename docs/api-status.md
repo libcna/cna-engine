@@ -16,7 +16,7 @@ games' `main` and pushed on 2026-10-21). "train branch" marks
 train-simulator's `engine-adoption` branch (PILOT-006, merged into its
 `develop` and pushed on 2026-10-21). "car shared", "school shared", "train
 shared" and "street shared" mark those games' `engine-shared` branches
-(SHARE-001 adoption, 2026-10-21, not merged). The nine
+(SHARE-001 adoption, 2026-10-21, merged and pushed on 2026-10-22). The nine
 facilities both pilots use — camera (`SetMatrices`), GPU mesh (`Borrow`),
 render statistics, materials, render queue, visibility and LOD, forward
 renderer, quality schema and asset registry — are `stable`; their headers are

@@ -889,7 +889,8 @@ Result (2026-10-21), four experimental facilities:
 
 Adoption (2026-10-21, the owner: "převeď je: vlak, škola, car a street"),
 each game on a branch `engine-shared` in its `libcnalab/*-engine` worktree,
-not merged:
+fast-forwarded into car's and school's `main` and train's and street's
+`develop` and pushed on 2026-10-22:
 
 - car-simulator (`eec91c2`, `77c36ee`): `Image::Downsampled`,
   `UploadTexture` and `UpdateTexture` delegate to the engine; the road-shadow
@@ -922,8 +923,6 @@ same frame, and read the screenshot before Present; its options are parsed
 in `carsim_core`, which links only `CnaEngine::Core`, while
 `ParseAutomatedRunOption` is in Graphics). room and house, which also compute
 the sun, were not part of the request.
-
-Open: merging the four branches, on the owner's word.
 
 ## Phase 6 — release readiness
 
