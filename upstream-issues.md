@@ -51,7 +51,7 @@ semantics rather than extensions.
 
 - Scope: workspace build rules (`../CLAUDE.md` / `../AGENTS.md`) and the shared
   cache configuration (`/rv/cnaccache/ccache.conf`)
-- Status: worked around in cna-engine scripts; workspace decision needed
+- Status: resolved on 2026-10-22 by the owner's decision: the shared cache's `ccache.conf` sets `hash_dir = false`, and rule 1 of the workspace rules (`CLAUDE.md`/`AGENTS.md`) says so
 - Found: 2026-10-19, ENG-012
 
 The rules expect "77 of 78 builds of the same engine to be almost entirely
@@ -210,7 +210,7 @@ local worktree at the pin). The weekly canary job checks out the remote
 - Repository: `libcnalab/street-simulator`, `street/src/Render/GpuMesh.cpp`
   (`gpuBytes_`), reported through `CityScene::BuildStats::meshBytes` and the
   benchmark's `meshBytes`
-- Status: open (accounting only; rendering is unaffected)
+- Status: open (accounting only; rendering is unaffected); recorded in street-simulator's `docs/known-issues.md` (`14145cd`, 2026-10-22, not pushed)
 - Found: 2026-10-20, MILESTONE-2 GPU resource comparison
 
 `gpuBytes_ = vertices × sizeof(Geometry::Vertex) + indices × 4`, where
@@ -231,7 +231,7 @@ Engine handling: none needed; the engine estimates from the declared stride.
 
 - Repository: `libcnalab/car-simulator`, `tests/Map/SampleMapTests.cpp`
   (`SampleMap.LipovaLoadsAndIsFullyConnected`, around line 73)
-- Status: open (test design; the engine excludes it by name in Debug probes)
+- Status: open (test design; the engine excludes it by name in Debug probes); recorded in car-simulator's `docs/known-issues.md` (`3a34c80`, 2026-10-22, not pushed)
 - Found: 2026-10-20, running car-simulator's suite against the pinned CNA
   (ADR-002 consumer check)
 
@@ -253,7 +253,7 @@ in non-Release configurations (`tests/pilots/CMakeLists.txt`).
 
 - Repository: `libcnalab/street-simulator`, `tests/LayoutTests.cpp` (around
   line 202, `collector.builder(&b); collector.builder(&c);`)
-- Status: open (latent: breaks the build only with `-DCNA_STREET_WERROR=ON`)
+- Status: open (latent: breaks the build only with `-DCNA_STREET_WERROR=ON`); recorded in street-simulator's `docs/known-issues.md` (`14145cd`, not pushed)
 - Found: 2026-10-20, compiling Street's suite read-only for ADR-002
 
 `GeometryCollector::builder()` is declared `[[nodiscard]]`; the test calls it
@@ -300,8 +300,9 @@ passing when run from the build root (`docs/verification.md`).
 
 - Repository: `libcnalab/street-simulator` (`develop`),
   `street/src/Render/SceneRenderer.cpp`, `drawTransparent`
-- Status: open (statistics only; the frame is drawn correctly). On the
-  adoption branch the engine counts them, so the issue is gone there.
+- Status: resolved: street-simulator's renderer runs on the engine since the
+  adoption was merged into `develop` (2026-10-20), and the engine counts blended
+  instance groups (checked on `develop` at `2e40f0c`, 2026-10-22).
 - Found: 2026-10-20, comparing Street's benchmark output before and after
   its renderer moved onto the engine
 
@@ -321,7 +322,7 @@ Engine handling: none needed.
 
 - Repository: `libcnalab/street-simulator` (`develop`), `assets/external/manifest.json`,
   `scripts/blender-tree-lod.py`, `scripts/blender-people.py`
-- Status: open (the application runs without these assets; they decide how
+- Status: open, recorded in street-simulator's `docs/known-issues.md` (`14145cd`, not pushed) (the application runs without these assets; they decide how
   close it looks to its reference screenshots)
 - Found: 2026-10-20, preparing a full-content build of the adoption branch
 
@@ -363,7 +364,7 @@ of pixels visibly — inside the agreed tolerance.
 
 - Repository: `openeggbert/galaxy-eggbert` (`develop`),
   `src/GalaxyEggbert/Editor/EditorHighlightRenderer.cpp`, `Draw`
-- Status: open (independent of the easy-3d migration)
+- Status: open (independent of the easy-3d migration); recorded in galaxy-eggbert's `editor-wireframe-gles-bug.md` and `NEXT.md` (`5adf55b`, 2026-10-22, not pushed)
 - Found: 2026-10-20, driving the migrated editor under Xvfb with the native
   default renderer (`OPENGLES3`)
 
@@ -407,7 +408,7 @@ warnings no longer fail the engine's `-Werror` build.
 
 - Repository: `libcnalab/car-simulator` (`main`, `9bbfefc`),
   `simulator/src/Render/LightingRig.cpp` (`LightingRig::SetTimeOfDay`)
-- Status: open
+- Status: open; recorded in car-simulator's `docs/known-issues.md` (`3a34c80`, 2026-10-22, not pushed)
 - Found: 2026-10-21, comparing `CnaEngine::SunAnglesFor` with the rig
 
 The hour angle is `(hours - 13) * 15` degrees and is not wrapped, so before
@@ -433,7 +434,7 @@ outside that hour and the mirror inside it.
 - Repository: `libcnalab/street-simulator` (`develop`, `3611348`), built
   against the live `libcna/cna` checkout (`926db4ac9`) and cna-engine
   `develop`: Release, CNA's software renderer, headless platform
-- Status: open, cause not investigated
+- Status: open, cause not investigated; recorded in street-simulator's `docs/known-issues.md` (`14145cd`, not pushed)
 - Found: 2026-10-21, preparing the SHARE-001 noise comparison
 
 `cna-street --capture DIR --width 640 --height 360 --no-overlay` grew to
