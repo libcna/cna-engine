@@ -37,6 +37,10 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 
 ### Pilot-validated API changes
 
+- `Graphics/ForwardRenderer.hpp`, additive: `SharedMaterialBinder()` -- the
+  binder as a shared pointer, so a binder that wraps it
+  (`Enhanced::LocalLightBinder`, GAME-061) keeps it alive.
+
 - `Graphics/MaterialBinder.hpp`, additive: `StockMaterialBinder::SkinnedLitEffect()`
   and `Enhanced/PbrMaterialBinder.hpp`, additive: `PbrMaterialBinder::SkinnedEffect()`
   -- the skinned effects, so shadow reception (GAME-031,
@@ -221,6 +225,9 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 - `Graphics/PostProcess.hpp` (GAME-060): `PostProcessChain`, `PostPass`,
   `ColorGradePass`, `FadePass`, `VignettePass`; `EngineGame::EnablePostProcessing`,
   `DisablePostProcessing`, `PostProcessing`.
+- `Graphics/LocalLights.hpp` (GAME-061): `LocalLight`, `LightReach`,
+  `StrongestLight`, `LightPools`; `Enhanced/LocalLightBinder.hpp`:
+  `LocalLightBinder`, `InstallLocalLights`.
 
 ### Other API additions (experimental headers)
 

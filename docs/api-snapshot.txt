@@ -18,7 +18,7 @@ CnaEngine/Graphics/Material.hpp 5e5f5304a37324b1
 CnaEngine/Graphics/MaterialBinder.hpp 4827d112999c6741
 CnaEngine/Graphics/RenderQueue.hpp cde48274684fedf2
 CnaEngine/Graphics/Visibility.hpp aab30c7a3179c144
-CnaEngine/Graphics/ForwardRenderer.hpp 474a90abeb2dcefa
+CnaEngine/Graphics/ForwardRenderer.hpp 0701691b7292c9ea
 CnaEngine/Graphics/Instancing.hpp 50caf56545e60a04
 CnaEngine/Enhanced/PbrMaterialBinder.hpp e7d44f6e5f23bf3e
 CnaEngine/Graphics/RenderStatistics.hpp 89b259ce46724a4e

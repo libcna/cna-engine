@@ -67,6 +67,8 @@ namespace CnaEngine::Graphics
         /// Replaces the material binder; null restores the stock binder.
         void SetMaterialBinder(std::shared_ptr<IMaterialBinder> binder);
         [[nodiscard]] IMaterialBinder& MaterialBinder() noexcept { return *binder_; }
+        /// The binder as shared, for a binder that wraps it (Enhanced::LocalLightBinder).
+        [[nodiscard]] const std::shared_ptr<IMaterialBinder>& SharedMaterialBinder() const noexcept { return binder_; }
         /// The built-in stock binder (also when another binder is active);
         /// enhanced binders delegate unsupported materials to it.
         [[nodiscard]] const std::shared_ptr<StockMaterialBinder>& StockBinder() const noexcept { return stock_; }

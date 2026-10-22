@@ -1308,7 +1308,23 @@ time-of-day multiply), `FadePass`, `VignettePass` through SpriteBatch only;
 copy, a grade and a vignette chained, a fade, a pass removed. Bloom,
 tonemapping and FXAA need custom shaders (room's vendored chain); a game
 adds them as its own passes.
-### GAME-061 — Local lights `[ ]`
+### GAME-061 — Local lights `[x]`
+
+Acceptance: lamps (point and spot) that light lit materials where CNA can
+(its effects take one punctual light per draw), and light on the ground for
+strict games whose stock effects take none.
+
+Result (2026-10-22): strict `Graphics/LocalLights.hpp`: `LocalLight`,
+`LightReach` (brightness faded over the range, a spot's cone),
+`StrongestLight`, and `LightPools` (an additive unlit disc under each lamp:
+car's lamp pools, island's glow). Enhanced `Enhanced/LocalLightBinder.hpp`:
+`LocalLightBinder` wraps the renderer's binder and gives the stock and PBR
+effects the strongest lamp per item (`PunctualLightEXT`);
+`InstallLocalLights`; `ForwardRenderer::SharedMaterialBinder` (additive) so
+the wrapped binder stays alive. Several lamps on one item are not added up
+(museum draws extra passes for that). Tests: reach and cone, the strongest
+lamp, a pool's pixels, a lamp lighting a dark floor through the stock and
+the PBR binders.
 ### GAME-062 — cna-extended particles and animation adapters `[ ]` (ENG-030)
 ### GAME-063 — Save slots `[ ]`
 
