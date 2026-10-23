@@ -178,7 +178,8 @@ SwiftShader) behind a static server; hold keys ~0.9 s there (slow frames).
    memory) remains, the game owner's. Never retry that capture on this
    machine; verify street with `bake-assets --content`.
 4. Upstream records still open, all recorded in the games' own files:
-   UP-008, 010, 013, 017 (street), UP-009, 016 (car), UP-014 (galaxy-eggbert).
+   UP-008, 010, 013, 017 (street), UP-009, 016 (car). UP-014 (galaxy-eggbert) was
+   fixed there on 2026-10-23 (`2d59be1`).
    Every report sent to `cna-demos` is closed.
 
 ## Gotchas learned the hard way

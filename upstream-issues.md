@@ -364,7 +364,7 @@ of pixels visibly — inside the agreed tolerance.
 
 - Repository: `openeggbert/galaxy-eggbert` (`develop`),
   `src/GalaxyEggbert/Editor/EditorHighlightRenderer.cpp`, `Draw`
-- Status: open (independent of the easy-3d migration); recorded in galaxy-eggbert's `editor-wireframe-gles-bug.md` and `NEXT.md` (`5adf55b`, 2026-10-22, not pushed)
+- Status: resolved in galaxy-eggbert `2d59be1` (2026-10-23, not pushed): without `GraphicsCapability::WireFrame` the highlight box's edges are drawn as lines through `CnaEngine::Graphics::DebugDraw`; verified live on an `OPENGLES3` build under Xvfb (OpenGL ES 3.2, Mesa 25.0.7). Originally recorded in galaxy-eggbert's `editor-wireframe-gles-bug.md` and `NEXT.md` (`5adf55b`)
 - Found: 2026-10-20, driving the migrated editor under Xvfb with the native
   default renderer (`OPENGLES3`)
 
