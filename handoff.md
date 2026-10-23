@@ -73,12 +73,11 @@ CI is green for all of it: engine `cfab224` and `5872f2b`, cna-extended
 consumer probes, so it runs longer than it used to (15 to 25 minutes before).
 Nothing runs in the background; no task is half done.
 
-Cleanup the owner may still ask for (offered, not done): the two merged game
-worktrees `libcnalab/backrooms-simulator-engine` and
-`libcnalab/school-simulator-engine` (branch `engine-shadows-menu`, ~0.7 GB
-with their `build/` and `build-consumer/`), and this repository's build trees
-(`build-consumer/` 5.5 GB, `build-probe/` 3.6 GB, `build/` 3 GB), which ccache
-rebuilds cheaply. Check for live processes before deleting any of them.
+Cleaned up on 2026-10-23 at the owner's request: the merged game worktrees
+`libcnalab/backrooms-simulator-engine` and `libcnalab/school-simulator-engine`
+(and their local `engine-shadows-menu` branches) and this repository's build
+trees `build/`, `build-probe/` and `build-consumer/` are gone. Rebuild them
+as below; the shared ccache holds most objects.
 
 ## Dependency pins (ADR-002)
 
@@ -106,14 +105,17 @@ cna-extended's suite against the clones, (4) the pilot suites in
 
 ## Build trees
 
-| Directory | Content |
-| --- | --- |
-| `build/` (3 GB) | day-to-day Debug build against the clones: `-DCNA_ENGINE_CNA_DIR=$HOME/deps/cna-baseline -DCNA_ENGINE_SHARP_RUNTIME_DIR=$HOME/deps/sharp-runtime-baseline -DCNA_ENABLE_SDL=OFF -DCNA_ENABLE_VIDEO=OFF -DCNA_ENGINE_GOOGLETEST_DIR=../cna-extended/vendor/googletest`; SOFTWARE renderer, headless, null audio |
-| `build-probe/` (3.6 GB) | the same plus `-DCNA_ENGINE_ENFORCE_BASELINE=ON -DCNA_ENGINE_CNA_CNAEXT=ON -DCNA_ENGINE_PILOT_SUITES=ON`: the pilots' own suites (`ctest -L pilot`, 50 tests; car's suite alone ~15 min) |
-| `build-consumer/` (5.5 GB) | `tools/run_consumer_probes.sh build build-consumer`: `cna-sdk/` (CNA's SDK build), `extended-package/` (cna-extended's), `install/` (the prefix), the three consumers; `new_game/` is a game written by `tools/new_game.sh` |
+None exists at handoff (removed 2026-10-23). Recreate only the ones a task
+needs, with these names (the closed list):
 
-`../cna-extended/build/` is cna-extended's own suite (Debug, against the
-clones; `ctest --test-dir build`: 2372 tests, none may fail or skip).
+| Directory | Configure with |
+| --- | --- |
+| `build/` | `cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCNA_ENGINE_CNA_DIR=$HOME/deps/cna-baseline -DCNA_ENGINE_SHARP_RUNTIME_DIR=$HOME/deps/sharp-runtime-baseline -DCNA_ENABLE_SDL=OFF -DCNA_ENABLE_VIDEO=OFF -DCNA_ENGINE_GOOGLETEST_DIR=$PWD/../cna-extended/vendor/googletest -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache` (SOFTWARE renderer, headless, null audio by default) |
+| `build-probe/` | the same plus `-DCNA_ENGINE_ENFORCE_BASELINE=ON -DCNA_ENGINE_CNA_CNAEXT=ON -DCNA_ENGINE_PILOT_SUITES=ON`: the pilots' own suites (`ctest -L pilot`, 50 tests; car's suite alone ~15 min) |
+| `build-consumer/` | made by `tools/run_consumer_probes.sh build build-consumer`: `cna-sdk/` (CNA's SDK build), `extended-package/` (cna-extended's), `install/` (the prefix), the three consumers |
+
+`../cna-extended/build/` (kept) is cna-extended's own suite (Debug, against
+the clones; `ctest --test-dir build`: 2372 tests, none may fail or skip).
 
 ## Common commands
 
