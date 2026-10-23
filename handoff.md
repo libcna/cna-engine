@@ -6,7 +6,7 @@ Supersedes the earlier handoffs (they are in git history).
 Read this file first, then `plan.md` (tasks and their results),
 `upstream-issues.md` (defects found elsewhere) and `docs/verification.md`
 (evidence, newest first). Everything below is true as of `develop` at
-`cfab224`.
+`5872f2b` plus this update.
 
 ## Mission
 
@@ -68,15 +68,17 @@ From the owner (Robert Vokac) and the workspace (`../CLAUDE.md`,
 | `libcnalab/train-simulator` | `develop` | `2fd191d` | yes |
 | `openeggbert/galaxy-eggbert` | `develop` | `5adf55b` (editor bug note) | yes |
 
-CI for `cfab224` (engine) and `c19c6e5` (cna-extended) was still running at
-handoff; check `gh run list -R libcna/cna-engine --branch develop` first. The
-engine job now also builds CNA's C++ SDK in the consumer probes, so it runs
-longer than before (it had taken 15 to 25 minutes).
+CI is green for all of it: engine `cfab224` and `5872f2b`, cna-extended
+`c19c6e5` (2026-10-23). The engine job also builds CNA's C++ SDK in the
+consumer probes, so it runs longer than it used to (15 to 25 minutes before).
+Nothing runs in the background; no task is half done.
 
-Two game worktrees remain, merged and pushed, removable when the owner agrees:
-`libcnalab/backrooms-simulator-engine` and `libcnalab/school-simulator-engine`
-(branch `engine-shadows-menu`; desktop `build/` and browser `build-consumer/`
-inside).
+Cleanup the owner may still ask for (offered, not done): the two merged game
+worktrees `libcnalab/backrooms-simulator-engine` and
+`libcnalab/school-simulator-engine` (branch `engine-shadows-menu`, ~0.7 GB
+with their `build/` and `build-consumer/`), and this repository's build trees
+(`build-consumer/` 5.5 GB, `build-probe/` 3.6 GB, `build/` 3 GB), which ccache
+rebuilds cheaply. Check for live processes before deleting any of them.
 
 ## Dependency pins (ADR-002)
 
