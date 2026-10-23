@@ -1,248 +1,213 @@
 # CNA Engine Handoff
 
-Date: 2026-10-20 (first written 2026-10-19; supersedes the 2026-10-14
-handoff, which is in git history)
+Date: 2026-10-23. Audience: the next AI agent, starting in a fresh context.
+Supersedes the earlier handoffs (they are in git history).
 
-Audience: the next AI agent working on `cna-engine`
+Read this file first, then `plan.md` (tasks and their results),
+`upstream-issues.md` (defects found elsewhere) and `docs/verification.md`
+(evidence, newest first). Everything below is true as of `develop` at
+`cfab224`.
 
 ## Mission
 
-Build a higher-level C++23 game-engine library above CNA that makes ordinary
-game development materially easier than CNA's XNA 4.0-compatible API alone,
-without hiding CNA, and reusing `cna-extended` instead of duplicating it.
-Pilots: `libcnalab/street-simulator` (enhanced profile) and
-`libcnalab/car-simulator` (strict-XNA profile). Both moved from
-`libcna/cna-street` and `libcna/cna-car-simulator` after the original audit.
+`cna-engine` is a C++23 game-engine library above CNA (a C++ implementation of
+XNA 4.0) that makes ordinary game development easier than CNA alone, without
+hiding CNA and reusing `cna-extended` instead of duplicating it. It has a
+strict profile (XNA 4.0 types only: `CnaEngine::Core`, `Graphics`, `App`,
+`Audio`, `UI`) and an enhanced profile (CNA extensions: `EnhancedGraphics`;
+cna-extended: `ExtendedIntegration`). Seven games use it.
 
-## Owner constraints (binding)
+## Binding rules
 
-- **Modify only this repository.** Do not edit `cna`, `sharp-runtime`,
-  `cna-extended`, the simulators or any other app — with one exception granted
-  on 2026-10-20: car-simulator and street-simulator may be changed **on new
-  branches** to adopt the engine (one revertible commit per step of
-  `docs/pilots/migration.md`; the branches were pushed at the owner's
-  request on 2026-10-20). A second exception the same day: galaxy-eggbert
-  moves from easy-3d to the engine on a new branch (PILOT-004; merged and
-  pushed at the owner's request). On 2026-10-21 the owner allowed the same
-  for backrooms-simulator and school-simulator (PILOT-005; branches
-  `engine-adoption`, merged into both games' `main` and pushed at the
-  owner's request), and later for train-simulator (PILOT-006; branch
-  `engine-adoption`, merged into its `develop` and pushed at the owner's
-  request); island, museum, house and room
-  were only surveyed and stay untouched. Defects found elsewhere are
-  written to `upstream-issues.md` (UP-001 … UP-015 so far). Pilot code may be
-  *read and compiled read-only* (that is what `tests/pilots/` does).
-- Commit regularly on branch `develop`; do not push unless asked.
-- At most 3 parallel compile/test jobs. Shared ccache only:
-  `CCACHE_DIR=/rv/cnaccache CCACHE_BASEDIR=/rv`, plus `CCACHE_NOHASHDIR=1`
-  (UP-003). Never a new cache, never `CCACHE_MAXSIZE`, never build in `/tmp`
-  or the scratchpad, only the build directory names of `../CLAUDE.md`.
-- Documents stay in English.
+From the owner (Robert Vokac) and the workspace (`../CLAUDE.md`,
+`../AGENTS.md`):
+
+- **Where you may change code.** This repository always. `libcna/cna-extended`
+  too: its owner delegated its fixes on 2026-10-22 (work in a separate git
+  worktree and branch, fast-forward `develop` when done). The games only when
+  the owner asks for a specific change in a specific game, each time on a new
+  branch in a separate worktree (`libcnalab/<game>-engine`), one revertible
+  commit per step, with screenshot comparisons. island-, museum-, house- and
+  room-simulator are never to be changed. **Never edit CNA or Sharp
+  Runtime.**
+- **CNA and Sharp Runtime defects** go to the Codex session `cna-demos`, which
+  works on CNA:
+  `codex queue --thread 01a15506-a40f-7dc0-9c2f-72e9ed1d6f8e --message "..."`.
+  Ask it to name the issue (`cna-engine UP-0NN`) in its commit messages, then
+  watch CNA's history (`git -C ../cna log --all --grep 'UP-0NN'`) and its
+  notes in `../cna/CNA_ENGINE_REPAIR_HANDOFF.md`. Codex may not push; CNA or
+  Sharp Runtime get published only when the owner pushes or authorizes it.
+  Other projects' defects are recorded in `upstream-issues.md` and, if the
+  owner asks, in a known-issues file of the game itself.
+- **Push only when the owner asks**, every time; approval for one push does
+  not cover the next. Commit regularly on `develop`. No attribution lines in
+  commits. Documents in English (the owner writes in Czech; answer in Czech).
+- **Builds.** Shared ccache only: `CCACHE_DIR=/rv/cnaccache CCACHE_BASEDIR=/rv`
+  (plus `CCACHE_NOHASHDIR=1`; the cache sets `hash_dir = false` since
+  2026-10-22). Never a new cache, never `CCACHE_MAXSIZE`, never build in
+  `/tmp` or the scratchpad, build directories only from the closed list
+  `build/`, `build-asan/`, `build-ubsan/`, `build-tsan/`, `build-probe/`,
+  `build-consumer/`. Jobs: at most 3 for this repository, 2 for
+  school-simulator, 4 for train-simulator, 8 anywhere. One heavy job at a
+  time from one session. The machine has 30 GB RAM, no swap, ~10 agents.
+- **Processes.** Never kill by pattern (`pkill -f`, `pgrep -f`), kill by PID.
+  For X11 runs start a private `Xvfb -displayfd` and kill only its PID; never
+  touch other sessions' Xvfb or `/tmp/xvfb-run.*`. Before deleting anything
+  outside your own output, check that no live process uses it.
+
+## Repositories and their state (2026-10-23)
+
+| Repository | Branch | Head | Pushed |
+| --- | --- | --- | --- |
+| `libcna/cna-engine` | `develop` | `cfab224` | yes |
+| `libcna/cna-extended` | `develop` | `c19c6e5` | yes |
+| `libcnalab/backrooms-simulator` | `main` | `12527a7` (shadows, pause menu) | yes |
+| `libcnalab/school-simulator` | `main` | `c1aee2a` (sun shadows, pause menu) | yes |
+| `libcnalab/car-simulator` | `main` | `3a34c80` (`docs/known-issues.md`) | yes |
+| `libcnalab/street-simulator` | `develop` | `14145cd` (`docs/known-issues.md`) | yes |
+| `libcnalab/train-simulator` | `develop` | `2fd191d` | yes |
+| `openeggbert/galaxy-eggbert` | `develop` | `5adf55b` (editor bug note) | yes |
+
+CI for `cfab224` (engine) and `c19c6e5` (cna-extended) was still running at
+handoff; check `gh run list -R libcna/cna-engine --branch develop` first. The
+engine job now also builds CNA's C++ SDK in the consumer probes, so it runs
+longer than before (it had taken 15 to 25 minutes).
+
+Two game worktrees remain, merged and pushed, removable when the owner agrees:
+`libcnalab/backrooms-simulator-engine` and `libcnalab/school-simulator-engine`
+(branch `engine-shadows-menu`; desktop `build/` and browser `build-consumer/`
+inside).
+
+## Dependency pins (ADR-002)
+
+| Dependency | Pin | Notes |
+| --- | --- | --- |
+| CNA | `cb377fa04` (`next`) | installs a relocatable C++ SDK (`CNA_INSTALL_CXX`, UP-001) |
+| Sharp Runtime | `1dc8785b` (`next`) | needed by CNA since `abbd8a4ea` (UP-020) |
+| cna-extended | `c19c6e5` (`develop`) | 0.2.0, installs a `CnaExtended` package |
+| easy-gl / meta-gl | `f4d6afa` / `dd3b300` | CNA requires easy-gl 0.1.1, meta-gl 0.4.1 |
+
+They live in `cmake/CnaEngineBaseline.cmake`, `.github/workflows/ci.yml` (env)
+and `docs/adr/0002-compatibility-baseline.md` (table); change all three in one
+commit. Local runs use clean clones at the pins, never the shared `../cna` or
+`../sharp-runtime` worktrees (other agents edit them):
+`~/deps/cna-baseline` and `~/deps/sharp-runtime-baseline` (their `origin` is
+the local shared worktree: `git -C <clone> fetch && git -C <clone> checkout <rev>`);
+cna-extended is used from `../cna-extended` (keep it clean at the pin).
+
+Moving a pin: check that the candidate is **published** (`git ls-remote
+git@github-libcna:libcna/<repo> refs/heads/next`) and builds against the other
+published pins, then run (1) the engine suite with
+`-DCNA_ENGINE_ENFORCE_BASELINE=ON`, (2) `tools/run_consumer_probes.sh`, (3)
+cna-extended's suite against the clones, (4) the pilot suites in
+`build-probe/`, and record the results in `docs/verification.md`.
 
 ## Build trees
 
 | Directory | Content |
 | --- | --- |
-| `build/` | day-to-day engine build; since 2026-10-22 against the baseline clones `~/deps/cna-baseline` and `~/deps/sharp-runtime-baseline` (the shared `../cna` is being edited by another agent), `CNA_ENABLE_SDL=OFF`, `CNA_ENABLE_VIDEO=OFF`, GoogleTest from `../cna-extended/vendor/googletest` (the baseline Sharp Runtime clone has no submodules) |
-| `build-probe/` | baseline build against `~/deps/cna-baseline` and `~/deps/sharp-runtime-baseline` (clean clones at the pins) with `CNA_ENGINE_ENFORCE_BASELINE=ON`, `CNA_ENGINE_CNA_CNAEXT=ON` and `CNA_ENGINE_PILOT_SUITES=ON`; the only tree that builds the Street scene comparison and runs both pilots' own suites (the car-simulator suite alone takes ~15 min; `-E "carsim_suite"` skips it) |
-| `build-consumer/` | installed-package consumer probes (`tools/run_consumer_probes.sh`); `build-consumer/cna-extended/` is cna-extended's own suite against the pinned clones (CI's lane configuration, 2.0 GB, kept for the next pin move) |
-| `build-probe/` (2026-10-22) | an Emscripten build of the engine's examples (WebGL 2, the CNA checkout's `.sdl-prebuilt-emscripten` read-only) for the browser path of `cna_engine_add_game` |
-| `build-consumer/new_game/` (2026-10-22) | a game written by `tools/new_game.sh` and built on its own (`build/` OpenGL ES 3 with the CNA checkout's Linux SDL prebuilt, `build-web/` Emscripten) -- a new user's path |
-| `build-asan/` | `CNA_ENGINE_SANITIZE=address,undefined`, pilot probes off, shared CNA worktree; engine targets instrumented only |
+| `build/` (3 GB) | day-to-day Debug build against the clones: `-DCNA_ENGINE_CNA_DIR=$HOME/deps/cna-baseline -DCNA_ENGINE_SHARP_RUNTIME_DIR=$HOME/deps/sharp-runtime-baseline -DCNA_ENABLE_SDL=OFF -DCNA_ENABLE_VIDEO=OFF -DCNA_ENGINE_GOOGLETEST_DIR=../cna-extended/vendor/googletest`; SOFTWARE renderer, headless, null audio |
+| `build-probe/` (3.6 GB) | the same plus `-DCNA_ENGINE_ENFORCE_BASELINE=ON -DCNA_ENGINE_CNA_CNAEXT=ON -DCNA_ENGINE_PILOT_SUITES=ON`: the pilots' own suites (`ctest -L pilot`, 50 tests; car's suite alone ~15 min) |
+| `build-consumer/` (5.5 GB) | `tools/run_consumer_probes.sh build build-consumer`: `cna-sdk/` (CNA's SDK build), `extended-package/` (cna-extended's), `install/` (the prefix), the three consumers; `new_game/` is a game written by `tools/new_game.sh` |
 
-`~/deps/cna-baseline` and `~/deps/sharp-runtime-baseline` are local clones of
-CNA and Sharp Runtime at the pins (`build-probe/` uses both; cna-extended's
-shared worktree is still clean at its pin); move them with
-`git -C <clone> fetch && git -C <clone> checkout <rev>` when a pin changes
-(ADR-002 "Local reproduction").
+`../cna-extended/build/` is cna-extended's own suite (Debug, against the
+clones; `ctest --test-dir build`: 2372 tests, none may fail or skip).
 
-## State
+## Common commands
 
-**Shadows and menus in backrooms and school (2026-10-22, GAME-064/065).**
-Asked by the owner after pushing Phase 7: both games bake their light into
-unlit vertex colours, which CNA's shadow receivers do not darken, so the
-engine got `Material::bakedKeyLight` (the key light's share of baked light,
-drawn through the lit BasicEffect). Both games now have shadows and an
-engine pause menu with saved settings on branch `engine-shadows-menu` in
-the worktrees `libcnalab/backrooms-simulator-engine` and
-`libcnalab/school-simulator-engine` (desktop `build/` and browser
-`build-consumer/` there) -- not merged or pushed; that needs the owner's
-word. The engine commits after `172e839` (`2d893cb`, `fd5a478` and the
-records) are not pushed either. Details in `plan.md` GAME-065 and
-`docs/verification.md`.
+```sh
+export CCACHE_DIR=/rv/cnaccache CCACHE_BASEDIR=/rv CCACHE_NOHASHDIR=1
+cmake --build build --parallel 3 && (cd build && ctest -j3 -E carsim_suite)   # 339 tests
+tools/run_consumer_probes.sh build build-consumer                             # 3 probes
+python3 tools/api_snapshot.py --root . --check      # pilot-validated headers; --update after a deliberate change, plus CHANGELOG
+cmake --build build-probe --parallel 3 && (cd build-probe && ctest -j3 -L pilot)
+```
 
-**Phase 7 (2026-10-22, `plan.md`): a new game from CNA and the engine
-alone.** Asked by the owner after the SHARE-001 work: everything is built,
-tested and committed on `develop` (pushed 2026-10-22, `172e839`). Part A: `cna_engine_add_game`
-and `cmake/CnaEngineGame.cmake` (desktop and browser), `tools/fetch_dependencies.sh`,
-`App/EngineGame`, `templates/game` with `tools/new_game.sh`, `docs/tutorial.md`
-and three examples run as tests. Part B: models (`Graphics/ModelView`,
-`Enhanced/ModelImport`), animation (`Animation/`), collision and a character
-controller (`Collision/`), sky and time of day (`Graphics/Sky`), a sun
-shadow map (`Graphics/ShadowMap`, reception in `Enhanced/ShadowReception`,
-calibrated per device: UP-019), sound (`Audio/`), text, HUD and menus
-(`UI/`). Part C: post-processing, local lights, cna-extended particles,
-save slots. New strict targets `CnaEngine::App`, `CnaEngine::Audio`,
-`CnaEngine::UI`; the boundary checker's strict modules grew by App,
-Collision, Animation, Audio and UI. The evidence from the games is in
-`docs/game-facilities-survey.md`; new upstream findings UP-018 and UP-019.
-No game was changed: adopting any of this in a game needs the owner's
-request.
+Games build against the same clones plus
+`-DCNA_EASYGL_ROOT=/rv/data/development/github.com/libcna/easy-gl
+-DCNA_ENABLE_DRACO=OFF -DCNA_USE_SYSTEM_SDL=ON
+-DCMAKE_PREFIX_PATH=/rv/data/development/github.com/libcna/cna/.sdl-prebuilt-Linux-x86_64-wayland/install`
+and `-DCNA_ENGINE_ROOT=<this checkout>` (there is no `libcnalab/cna-engine`).
+Browser builds: Emscripten from `~/emsdk`, SDL from the CNA checkout's
+`.sdl-prebuilt-emscripten/install` (`-DSDL3_DIR=… -DSDL3_mixer_DIR=…`,
+read-only), into the game's `build-consumer/`.
 
-All work is committed on `develop`. Latest evidence (`docs/verification.md`):
-213 tests pass in `build/` (21:40, with the easy-3d facilities and their
-equivalence probe), 213 in the baseline build (17:50, before them; `build-probe/`, which
-also runs the Street scene comparison and both pilots' own suites; the
-car-simulator suite alone takes ~15 min and excludes UP-009's test by name);
-2 consumer probes pass.
+Pictures: the machine's Radeon 780M headless with
+`env -u DISPLAY -u WAYLAND_DISPLAY SDL_VIDEODRIVER=offscreen`; Mesa llvmpipe
+under a private Xvfb. Real input: `xdotool keydown`, wait ~0.15 s, `keyup`
+(the games poll input; a `key` tap between two frames is missed). Browser
+smoke tests: school-simulator's `tools/web_drive.mjs` (headless Chrome,
+SwiftShader) behind a static server; hold keys ~0.9 s there (slow frames).
 
-Both pilots' real scenes render through the engine's `ForwardRenderer`
-practically identically to the pilots' own renderers: Street's procedural
-city with the PBR binder carrying Street's lighting and its sky as a custom
-pass, traffic and pedestrians included (vehicles as dynamic items, people
-as skinned render items; visible items, instances, figures and all 1,284
-draw calls identical; mean image difference 0.01/255) and car-simulator's
-`lipova` map with the strict stock binder (every visibility count and all
-draw calls identical by day, at night, with the headlights on and in a
-rear-view mirror — additive lamp light, the headlight fill as nested
-renderers and the mirrored camera included; 0.05/255 by day). Both
-comparisons enforce the agreed screenshot tolerance. See `docs/pilots/`.
+## What exists (details in `plan.md`)
 
-car-simulator itself now runs on the engine on its branch `engine-adoption`
-(worktree `libcnalab/car-simulator-engine`, build `build/software` there):
-its world renderer draws through `ForwardRenderer` with car-simulator's own
-matrices (`Camera::SetMatrices`), its suite and checker are green and its
-captures stay inside the tolerance. street-simulator does the same on its
-branch `engine-adoption` (worktree `libcnalab/street-simulator-engine`,
-build `build/` there): `SceneRenderer` draws through `ForwardRenderer` and
-the `PbrMaterialBinder`, its suite is green and all its named viewpoints
-stay inside the tolerance.
+- Phases 0–6: strict foundation (input actions, cameras, meshes, materials and
+  binders, render queue, forward renderer, culling, instancing, skinning,
+  quality schemas, screenshots, assets, diagnostics), the PBR binder, the
+  cna-extended adapters, two pilots (car-, street-simulator) adopted and
+  merged, release material (LICENSE, NOTICE, CHANGELOG, API snapshot of 23
+  pilot-validated headers, guides, CI with an upstream lane and a canary).
+- Adoptions: galaxy-eggbert (from easy-3d), backrooms-, school- and
+  train-simulator; SHARE-001 facilities (Image/mips, Noise, SunPosition,
+  SettingsFile, AutomatedRun) in car, school, train, street.
+- Phase 7 (GAME-001…065): a new game from CNA and the engine alone —
+  `cna_engine_add_game` (desktop and browser), `tools/fetch_dependencies.sh`,
+  `tools/new_game.sh` with `templates/game`, `App/EngineGame`, models and
+  animation, collision and a character controller, sky and time of day, a sun
+  shadow map (also on baked light: `Material::bakedKeyLight`), sound, text,
+  HUD and menus, post-processing, local lights, particles, save slots,
+  `docs/tutorial.md`, examples run as tests; shadows and pause menus adopted
+  in backrooms and school.
+- Packages: a game can be built from installed CNA (C++ SDK), cna-extended
+  and engine packages alone; `CnaEngineConfig.cmake` finds CNA's SDK and
+  cna-extended's package when the consumer has not defined their targets.
 
-The shared `../cna` worktree is changed by other agents all the time (on
-2026-10-20 e.g. XNA-exact `BoundingFrustum` containment and GJK
-`Intersects`, CNA `5ab1c7729`, which also resolves UP-004); `build/` results
-move with it, `build-probe/` (pinned) is the evidence.
+## Open
 
-Done (see `plan.md` for per-task results):
+1. **REL-001**: version ranges for CNA and cna-extended, once releases are
+   tagged (e.g. cna-extended `v0.2.0`, engine `v0.1.0`). Tags only with the
+   owner's word.
+2. **REL-003**: enforce the frame-time budget (1.15x, best of five), which
+   waits for a measurement in a Release build on an idle machine
+   (`docs/pilots/performance-budgets.md`).
+3. **SHARE-001**: only UP-017 (street-simulator's `--capture` runs out of
+   memory) remains, the game owner's. Never retry that capture on this
+   machine; verify street with `bake-assets --content`.
+4. Upstream records still open, all recorded in the games' own files:
+   UP-008, 010, 013, 017 (street), UP-009, 016 (car), UP-014 (galaxy-eggbert).
+   Every report sent to `cna-demos` is closed.
 
-- ADR-001 (+ addendum for `EnhancedGraphics`), ADR-002 with a clean,
-  enforced baseline run, ADR-003 (what a material describes and what a binder
-  decides — read it before adding material fields).
-- MILESTONE-1 (strict foundation): ENG-020 … ENG-025 complete, validated
-  against both pilots by read-only equivalence probes (`docs/pilots/`); the
-  pilot's own strict checker accepts the strict surface with the ADR-001
-  allowance.
-- Rendering (ENG-031 … ENG-034 complete): materials with per-material
-  samplers and premultiplied/straight blending chosen by the binder, the
-  stock binder (BasicEffect, AlphaTestEffect, DualTextureEffect,
-  SkinnedEffect) and the PBR binder (PbrEffect, SkinnedPbrEffect, image-based
-  environment, exposure, per-item environment selector for reflection
-  probes), render queue and state contract, culling/LOD with diagnostics,
-  instancing, skinned render items.
-- Enhanced integration: `EngineWorldScreen`, debug overlay, quality schema
-  (ENG-036), `street_slice` example.
-- Release readiness: LICENSE, NOTICE, CHANGELOG, API snapshot of the 21
-  pilot-validated headers, profile guides, `quick_start` game example,
-  verification matrix, CI workflow with the EXT-003 upstream lane and canary
-  (all green on GitHub since 2026-10-20).
+## Gotchas learned the hard way
 
-## Open, in priority order
-
-0. SHARE-001 (2026-10-21): four facilities taken from what the simulators
-   each wrote — `Graphics/Image.hpp` with `Core/Noise.hpp`,
-   `Core/SunPosition.hpp`, `Core/SettingsFile.hpp`, `Graphics/AutomatedRun.hpp`
-   — experimental, with probes against car-, train-, school-, room-, street-
-   and house-simulator (`plan.md`). Adopted on 2026-10-21 in car-, school-,
-   train- and street-simulator, each on a branch `engine-shared` in its
-   `libcnalab/*-engine` worktree (car and school: mips; train: mips,
-   settings, automated runs; street: noise), each game's pictures or baked
-   surfaces identical to those from before the adoption (apart from the
-   train's two avatar views, which vary between runs anyway); the probes
-   now compare frozen copies of the
-   replaced code (`tests/fixtures/simulator_oracles`). The branches were
-   fast-forwarded into car's and school's `main` and train's and street's
-   `develop` and pushed on 2026-10-22. Open: UP-017 (street's capture runs
-   out of memory).
-1. Pilot adoption (PILOT-001/002/003) is done: both `engine-adoption`
-   branches are merged into car-simulator's `main` and street-simulator's
-   `develop` (2026-10-20). car-simulator:
-   done on branch `engine-adoption` in the worktree
-   `libcnalab/car-simulator-engine` (eight commits; the camera stays the
-   game's, see `docs/pilots/migration.md`). street-simulator: done on
-   branch `engine-adoption` in the worktree
-   `libcnalab/street-simulator-engine` (five commits: build, mesh views,
-   `SceneRenderer` through the engine, presets as a `QualitySchema`,
-   derived materials in an `AssetRegistry`). What
-   is left for both: nothing; both are checked on the
-   software renderer, on OpenGL via Mesa llvmpipe and on the machine's AMD
-   GPU (`SDL_VIDEODRIVER=offscreen` reaches it headless).
-   PILOT-004: galaxy-eggbert runs on the engine instead of easy-3d on its
-   branch `engine-adoption` (worktree `openeggbert/galaxy-eggbert-engine`,
-   builds `build/` = `OPENGLES3`, `build-probe/` = `OPENGL33`; eight
-   commits; merged and pushed by the owner). Every step left its suite green
-   and its captures byte-identical. Its minimal equivalence oracle is frozen
-   and MIT-attributed under `tests/fixtures/easy3d_legacy`; no easy-3d checkout
-   is needed. PILOT-004 is complete and easy-3d may be archived or removed.
-   PILOT-005: backrooms-simulator runs on the engine on its branch
-   `engine-adoption` (worktree `libcnalab/backrooms-simulator-engine`, build
-   `build/` = Release `OPENGLES3` against the baseline clones and easy-gl
-   `v0.1.1`; eight commits; 30 captures byte-identical after
-   every step, see `docs/pilots/migration.md`). school-simulator likewise
-   (worktree `libcnalab/school-simulator-engine`, build `build/` = Release
-   `OPENGLES3`, two jobs; nine commits; 19 captures identical
-   after every step). Both branches were fast-forwarded into the games'
-   `main` on 2026-10-21 and pushed at the owner's request, with this
-   repository's `develop`. There is no `libcnalab/cna-engine` sibling, so
-   builds in the games' main worktrees pass
-   `-DCNA_ENGINE_ROOT=/rv/data/development/github.com/libcna/cna-engine`.
-   PILOT-006: train-simulator runs on the engine on its branch
-   `engine-adoption` (worktree `libcnalab/train-simulator-engine`, build
-   `build/` = Release `OPENGL33` against the baseline clones, easy-gl
-   `v0.1.1` and the CNA checkout's system SDL, three jobs; nine commits
-   (the last fixes an avatar crash the game has with any CNA since
-   2026-10-19); 54 `--lockstep` captures pixel-identical after every
-   step, the last also on the GPU). It uses this repository's commits
-   `52ccbf6` (byte captures) and `ece1943` (`RenderBucket::Sequenced`).
-   The branch was fast-forwarded into the game's `develop` and pushed on
-   2026-10-21 at the owner's request, after this repository's `develop`.
-   The game's main worktree `libcnalab/train-simulator` has no `build/`
-   yet and no `libcnalab/cna-engine` sibling: configure it with
-   `-DTRAINSIM_CNA_ENGINE_ROOT=/rv/data/development/github.com/libcna/cna-engine`.
-2. MILESTONE-2 is complete. Its performance budget (1.15 ×, best of five)
-   is recorded but not enforced until it is measured on this machine in a
-   Release build when the machine is idle (`docs/pilots/performance-budgets.md`).
-3. CI: green on GitHub (engine job, cna-extended lane, canary; run
-   39409759296). The known cna-extended failures are named in the lane
-   (UP-005, UP-011) and its UP-004 skips are reported when they disappear.
-4. ENG-035 is done: shadows (GAME-031, on baked light GAME-064) and
-   post-processing (GAME-060) came with Phase 7; cascades wait for a game
-   that needs them. Reflection probes go through the PBR binder's selector.
-5. The pins are CNA `cb377fa04` and Sharp Runtime `1dc8785b` since
-   2026-10-22 (UP-006 and UP-019 fixed upstream, UP-020 resolved by
-   publishing Sharp Runtime, UP-001 by CNA's installed C++ SDK).
-   cna-extended's pin is `c19c6e5` since 2026-10-22 (`86870ad` plus CI pins): its owner
-   delegated the fixes (EXT-002's skips gone, UP-005/011/015 fixed, a CMake
-   package from 0.2.0); its CI lane allows no failure or skip. Every CNA
-   report to the Codex session `cna-demos` is closed; UP-018 was the
-   engine's own error (fixed). A game builds from installed CNA, cna-extended
-   and engine packages alone (consumer probes).
-6. Upstream, for their owners: UP-001 (no CNA package), UP-005 (cna-extended
-   skinned test), UP-006 (CNA umbrella vs module targets), UP-007 (unpushed
-   pin), UP-008 (Street's mesh-memory accounting), UP-009 (car-simulator's
-   load budget in Debug builds), UP-010 (Street test discards a nodiscard
-   result), UP-011 (cna-extended fixture paths under ccache's base
-   directory), UP-012 (Street's blended instance groups missing from its
-   draw statistics), UP-013 (Street's asset pipeline: stale checksums,
-   Blender 4.3 tree export, MPFB first run), UP-014 (galaxy-eggbert's
-   editor draws wireframe on OpenGL ES contexts that cannot), UP-015
-   (cna-extended's `SizeF` class/struct mismatch under Clang); UP-004 is
-   resolved upstream.
+- XNA render-target formats are preferences: CNA's default `GraphicsDevice`
+  is **Reach**, where `Single` becomes `Color`; read
+  `getFormatProperty()` (UP-018 was this mistake in the engine). Games that
+  need float shadow maps set HiDef.
+- CTest runs each GoogleTest test of a fixture as its own process, in
+  parallel: give every test its own scratch directory, and assert an
+  `optional` before dereferencing it.
+- CNA's shadow receivers darken only direct light. For baked (unlit,
+  vertex-coloured) worlds use `Material::bakedKeyLight` with normals in the
+  mesh (`VertexLayout::PositionNormalColorTexture`).
+- `CalibrateShadowMap` still measures the receiver orientation per device
+  (UP-019 is fixed upstream; the test expects "not upside down" now).
+- The first mouse read after switching relative mode on returns the
+  pointer's position, not a motion: skip it (school and backrooms do).
+- Never name a GoogleTest helper `Run` (it hides `testing::Test::Run`).
+- A published CNA revision can depend on unpublished Sharp Runtime commits
+  (UP-020): CNA's version check passes and the build fails at compile time.
+- The strict boundary checker allows private same-directory headers in
+  `src/`; anything public in a strict module may use XNA 4.0 types only.
+- `CNA_SHARED_LIBRARY`: the engine and every game build CNA statically. CNA
+  fixed the mixed-runtime problem (UP-006), but the engine has not checked a
+  mixed consumer itself, so the guidance stays.
 
 ## Pointers
 
-- `README.md`, `docs/guide-strict.md`, `docs/guide-enhanced.md`
-- `plan.md` — tasks with `[x]` / `[~]` / `[ ]` and results
-- `docs/adr/`, `docs/conventions.md`, `docs/api-status.md`,
-  `docs/verification.md`, `docs/verification-matrix.md`, `docs/pilots/`
-- `upstream-issues.md`, `NOTICE.md`, `CHANGELOG.md`
-- `analysis.md`, `gap-audit.md` — the original study and audit
+- `plan.md` — every task with `[x]`/`[~]`/`[ ]` and its result
+- `upstream-issues.md` — UP-001 … UP-020 with status and evidence
+- `docs/verification.md` (evidence, newest first), `docs/verification-matrix.md`
+- `docs/adr/` (ADR-001 profiles, ADR-002 baseline, ADR-003 materials and binders)
+- `README.md`, `docs/tutorial.md`, `docs/guide-strict.md`, `docs/guide-enhanced.md`,
+  `docs/conventions.md`, `docs/api-status.md`, `CHANGELOG.md`, `NOTICE.md`
+- `docs/game-facilities-survey.md`, `docs/pilots/` — evidence from the games
