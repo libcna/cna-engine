@@ -39,9 +39,10 @@ set(CNA_ENGINE_WARNINGS_AS_ERRORS OFF CACHE BOOL "Warnings in cna-engine's targe
 # it turns this on.
 set(CNA_ENGINE_WITH_EXTENDED OFF CACHE BOOL "Build CnaEngine::ExtendedIntegration (needs cna-extended)")
 
-# CNA statically: the engine links CNA's module libraries, and a shared CNA
-# would put a second copy of CNA into the game (upstream-issues.md UP-006).
-set(CNA_SHARED_LIBRARY OFF CACHE BOOL "CNA as one shared library" FORCE)
+# CNA chooses its supported runtime form for the host (shared on native ELF
+# toolchains with recent CMake, static elsewhere). UP-006's mixed umbrella /
+# module link is fixed in the pinned CNA and covered by engine-owned runtime
+# and symbol tests; a game may still select -DCNA_SHARED_LIBRARY=OFF.
 # No video playback (it needs FFmpeg) and none of CNA's developer audits.
 set(CNA_ENABLE_VIDEO OFF CACHE STRING "CNA video playback (FFmpeg)")
 set(CNA_PLATFORM_RATCHET OFF CACHE BOOL "CNA developer SDL-coupling audit")

@@ -825,8 +825,9 @@ allowed both migrations on 2026-10-21.
 
 Acceptance:
 
-- each game builds against the engine's strict modules and a static CNA on
-  a branch `engine-adoption`, one revertible commit per step;
+- each game builds against the engine's strict modules and a single CNA
+  runtime (shared or static) on a branch `engine-adoption`, one revertible
+  commit per step;
 - every step is checked against deterministic captures of the step before
   it (a capture mode is added first where the game has none) and the
   game's own suites;
@@ -1066,8 +1067,9 @@ repeat the same Emscripten recipe and shell page.
 Acceptance:
 
 - `include(<engine>/cmake/CnaEngineGame.cmake)` adds CNA and the engine
-  with game defaults (desktop renderer, SDL3 platform and audio, static
-  CNA, dependency tests off; WebGL 2 under Emscripten);
+  with game defaults (desktop renderer, SDL3 platform and audio, CNA's
+  supported shared/static default for the host, dependency tests off; WebGL 2
+  under Emscripten);
 - `cna_engine_add_game(<target> SOURCES … [ASSETS <dir>] [PROFILE
   strict|enhanced] [WEB_SHELL <file>] [TITLE <text>])` builds the
   executable, copies the assets beside it on the desktop, preloads them
@@ -1085,7 +1087,11 @@ Result (2026-10-22): `cmake/CnaEngineGame.cmake`,
 `build-probe/` ran in headless Chrome: WebGL 2, the preloaded texture, the
 page's hint). An empty renderer/platform/audio value leaves the choice to
 CNA. With a shared CNA (the engine's own default build) the function links
-`CNA::Runtime` instead of the `CNA` umbrella (UP-006).
+the `CNA` umbrella. Since 2026-10-25 the engine owns a UP-006 regression that
+links the real engine graphics library beside a shared umbrella in both orders,
+runs both executables and verifies one `libcna.so` with no duplicate CNA
+implementation symbols. `CnaEngineGame.cmake` therefore no longer forces a
+static CNA.
 
 ### GAME-002 — Fetch the dependencies at the pinned revisions `[x]`
 

@@ -27,8 +27,11 @@ reversibility and known differences.
   only and adds the ADR-001 allowance (`CnaEngine/<module>/` includes) to its
   `scripts/check_xna_only.py`; the pilot's checker already passes the strict
   engine surface with that allowance. street-simulator additionally links
-  `CnaEngine::EnhancedGraphics`, and must link CNA's static module targets
-  rather than the `CNA` umbrella (two CNA runtimes otherwise, UP-006).
+  `CnaEngine::EnhancedGraphics`. The adoption commits used CNA's static module
+  targets because UP-006 was open at the time; CNA `470b12a5d` fixed the mixed
+  umbrella/module runtime, and the engine has owned runtime and ELF regression
+  coverage since 2026-10-25. The historical tables below retain the choices
+  made by each adoption, but static CNA is no longer required.
 
 ## car-simulator (strict)
 

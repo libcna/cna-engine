@@ -122,7 +122,7 @@ the clones; `ctest --test-dir build`: 2372 tests, none may fail or skip).
 
 ```sh
 export CCACHE_DIR=/rv/cnaccache CCACHE_BASEDIR=/rv CCACHE_NOHASHDIR=1
-cmake --build build --parallel 3 && (cd build && ctest -j3 -E carsim_suite)   # 339 tests
+cmake --build build --parallel 3 && (cd build && ctest -j3 -E carsim_suite)   # 343 tests
 tools/run_consumer_probes.sh build build-consumer                             # 3 probes
 python3 tools/api_snapshot.py --root . --check      # pilot-validated headers; --update after a deliberate change, plus CHANGELOG
 cmake --build build-probe --parallel 3 && (cd build-probe && ctest -j3 -L pilot)
@@ -207,9 +207,11 @@ unstarted item.
   (UP-020): CNA's version check passes and the build fails at compile time.
 - The strict boundary checker allows private same-directory headers in
   `src/`; anything public in a strict module may use XNA 4.0 types only.
-- `CNA_SHARED_LIBRARY`: the engine and every game build CNA statically. CNA
-  fixed the mixed-runtime problem (UP-006), but the engine has not checked a
-  mixed consumer itself, so the guidance stays.
+- `CNA_SHARED_LIBRARY`: CNA fixed the mixed-runtime problem in `470b12a5d`
+  (UP-006). Since 2026-10-25 the engine checks its real graphics library next
+  to CNA's shared umbrella in both link orders, at runtime and by ELF
+  inspection. `CnaEngineGame.cmake` follows CNA's supported host default;
+  static CNA is optional, not required.
 
 ## Pointers
 

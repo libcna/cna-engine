@@ -60,16 +60,10 @@ function(cna_engine_add_game target)
     endif()
 
     add_executable(${target} ${GAME_SOURCES})
-    # The `CNA` umbrella is the runtime plus the selected renderer. With a
-    # shared CNA it is libcna.so, a second CNA beside the engine's static
-    # modules (upstream-issues.md UP-006; CnaEngineGame.cmake builds CNA
-    # statically); the runtime module alone then brings what the process needs.
-    if(CNA_SHARED_LIBRARY)
-        set(cna CNA::Runtime)
-    else()
-        set(cna CNA)
-    endif()
-    target_link_libraries(${target} PRIVATE CnaEngine::App CnaEngine::Audio CnaEngine::UI ${cna} ${GAME_LIBRARIES})
+    # The umbrella supplies CNA's runtime, renderer and game-template Sharp
+    # Runtime surface. CNA's UP-006 repair makes it safe beside the module
+    # targets used by the engine, in both static and shared configurations.
+    target_link_libraries(${target} PRIVATE CnaEngine::App CnaEngine::Audio CnaEngine::UI CNA ${GAME_LIBRARIES})
     if(GAME_PROFILE STREQUAL "enhanced")
         if(NOT TARGET CnaEngine::EnhancedGraphics)
             message(FATAL_ERROR

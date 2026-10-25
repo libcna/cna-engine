@@ -95,11 +95,14 @@ effect (instances relative to the effect's World, which is restored).
 
 ## 5. Linking CNA once
 
-Link CNA through its module targets (`CNA::Runtime`, `CNA::GraphicsCore`,
-…), as the engine does. With CNA's default `CNA_SHARED_LIBRARY=ON` the `CNA`
-umbrella is `libcna.so`; linking it together with the engine puts two CNA
-runtimes in one process (`upstream-issues.md` UP-006). Either use the module
-targets or configure CNA with `-DCNA_SHARED_LIBRARY=OFF`.
+Libraries link the CNA module targets they use (`CNA::Runtime`,
+`CNA::GraphicsCore`, …), as the engine does; applications may also link the
+`CNA` umbrella to obtain the selected renderer and game-template surface.
+Since CNA `470b12a5d` the shared umbrella and module consumers resolve to the
+same `libcna.so` runtime (UP-006). The engine tests both link orders and checks
+that the executable contains no duplicate CNA implementation symbols. Static
+CNA remains available with `-DCNA_SHARED_LIBRARY=OFF`, but is no longer an
+engine requirement.
 
 ## 6. Boundaries to keep
 

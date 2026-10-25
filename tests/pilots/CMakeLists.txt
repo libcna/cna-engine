@@ -70,7 +70,9 @@ if(CNA_ENGINE_CARSIM_SCENE_COMPARISON AND EXISTS "${CNA_ENGINE_CAR_SIMULATOR_DIR
     list(FILTER _carsim_sources EXCLUDE REGEX "/src/App/")
     add_library(cna_engine_pilot_carsim_full STATIC ${_carsim_sources})
     target_include_directories(cna_engine_pilot_carsim_full PUBLIC "${CNA_ENGINE_CAR_SIMULATOR_DIR}/simulator/include")
-    # CNA's static modules, never the `CNA` umbrella next to them (UP-006).
+    # Keep the pilot's explicit module closure visible in this comparison.
+    # UP-006 no longer requires this for correctness; the engine-owned mixed
+    # consumer separately verifies the shared `CNA` umbrella beside modules.
     target_link_libraries(cna_engine_pilot_carsim_full PUBLIC
         CNA::Runtime CNA::GraphicsCore CNA::Content CNA::Media CNA::Audio CNA::Input CNA::Storage CNA::Diagnostics
         CNA::Core CNA::Math CNA::Platform SharpRuntime::Text.Json cna_engine_core cna_engine_graphics)
@@ -156,10 +158,9 @@ if(CNA_ENGINE_STREET_SCENE_COMPARISON AND CNA_CNAEXT
     target_compile_definitions(cna_engine_pilot_street_core PUBLIC
         CNA_STREET_VERSION="probe" CNA_STREET_RENDERER_NAME="${CNA_GRAPHICS_RENDERER}"
         CNA_STREET_DEFAULT_ASSET_DIR="${CNA_ENGINE_STREET_SIMULATOR_DIR}/assets")
-    # Street itself links the `CNA` umbrella, which is libcna.so when
-    # CNA_SHARED_LIBRARY is ON (CNA's default), while the engine links CNA's
-    # static modules: both in one process means two CNA runtimes
-    # (upstream-issues.md UP-006). Link the same static modules instead.
+    # Keep Street's explicit module closure visible in the probe. CNA's UP-006
+    # repair now also permits its shared umbrella beside the engine; that link
+    # graph is covered by tests/upstream rather than this large scene fixture.
     target_link_libraries(cna_engine_pilot_street_core PUBLIC
         CNA::Runtime CNA::GraphicsExt CNA::DevicesExt CNA::Storage CNA::Content CNA::Media CNA::Audio CNA::Input
         CNA::GraphicsCore CNA::Diagnostics CNA::Core CNA::Math CNA::Platform SharpRuntime::Text.Json

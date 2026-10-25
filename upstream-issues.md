@@ -163,7 +163,13 @@ Engine handling: engine GPU meshes always pass a `VertexDeclaration`
 ## UP-006 — The `CNA` umbrella and CNA's module targets give two runtimes in one process
 
 - Repository: `libcna/cna` (`CNA_SHARED_LIBRARY`, default ON on Linux/GCC/Clang)
-- Status: resolved upstream in CNA `470b12a5d` (2026-10-20, ISSUE-016), confirmed on 2026-10-22 by the Codex session `cna-demos` with an engine-style regression test (`a2f0378cf`), published and in the engine's pin `08c1387ec` since 2026-10-22. The engine's guidance to build CNA statically stays until the engine checks a mixed consumer itself
+- Status: resolved upstream in CNA `470b12a5d` (2026-10-20,
+  ISSUE-016), confirmed on 2026-10-22 by the Codex session `cna-demos` with an
+  engine-style regression test (`a2f0378cf`), published and in the engine's
+  pin since `08c1387ec`. On 2026-10-25 cna-engine added its own mixed consumer
+  using the real `cna_engine_graphics` target, checks both link orders at
+  runtime and inspects the ELF for one `libcna.so` with no duplicate CNA
+  symbols; all four tests pass at the `cb377fa04` pin
 - Found: 2026-10-19, MILESTONE-2 Street scene comparison
 
 With `CNA_SHARED_LIBRARY=ON`, the `CNA` umbrella target links `libcna.so`,
@@ -180,10 +186,10 @@ Suggestions for CNA: document that the umbrella and the module targets must
 not be mixed, or make the module targets resolve to the shared library too
 when `CNA_SHARED_LIBRARY=ON`, or detect the mix at configure time.
 
-Engine handling: the Street probe links Street's core against CNA's static
-module targets (the same ones the engine uses). A game adopting the engine
-must do the same (or configure `CNA_SHARED_LIBRARY=OFF`); this is recorded in
-`docs/guide-enhanced.md`.
+Engine handling: libraries continue to link the CNA module targets they use;
+applications may link the `CNA` umbrella beside them. `CnaEngineGame.cmake`
+no longer forces a static CNA, and `cna_engine_add_game()` links the umbrella
+in both CNA runtime modes. Static CNA remains an explicit consumer choice.
 
 ## UP-007 — The pinned CNA revision is not published
 

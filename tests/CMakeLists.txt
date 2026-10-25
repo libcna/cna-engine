@@ -154,6 +154,39 @@ set_tests_properties(cna_engine.baseline_range_descendant PROPERTIES LABELS boun
 set_tests_properties(cna_engine.baseline_range_diverged PROPERTIES LABELS boundary
     PASS_REGULAR_EXPRESSION "CMake Error at[^\n]*\n[^(]*does not contain the[^(]*\\(older or diverged\\)")
 
+# --- CNA shared/module interoperability (UP-006). ----------------------------
+# An actual engine library consumes CNA's module targets while the executable
+# also names the CNA umbrella. Exercise both direct-link orders, then inspect
+# the ELF: there must be one libcna.so and no statically duplicated runtime
+# implementation in the executable.
+if(CNA_SHARED_LIBRARY AND TARGET CNA AND CMAKE_NM AND CMAKE_READELF
+   AND CMAKE_EXECUTABLE_FORMAT STREQUAL "ELF" AND NOT CMAKE_CROSSCOMPILING)
+    add_library(cna_engine_mixed_runtime_client STATIC upstream/MixedRuntimeClient.cpp)
+    target_link_libraries(cna_engine_mixed_runtime_client PUBLIC cna_engine_graphics)
+    cna_engine_sanitize(cna_engine_mixed_runtime_client)
+
+    foreach(_order IN ITEMS engine_first umbrella_first)
+        set(_target cna_engine_mixed_runtime_${_order})
+        add_executable(${_target} upstream/MixedRuntimeMain.cpp)
+        if(_order STREQUAL "engine_first")
+            target_link_libraries(${_target} PRIVATE cna_engine_mixed_runtime_client CNA)
+        else()
+            target_link_libraries(${_target} PRIVATE CNA cna_engine_mixed_runtime_client)
+        endif()
+        cna_engine_sanitize(${_target})
+        add_test(NAME cna_engine.upstream.mixed_runtime.${_order} COMMAND ${_target})
+        add_test(NAME cna_engine.upstream.mixed_runtime_symbols.${_order}
+            COMMAND "${CMAKE_COMMAND}" -DCNA_ENGINE_NM=${CMAKE_NM}
+                    -DCNA_ENGINE_READELF=${CMAKE_READELF}
+                    -DCNA_ENGINE_PROBE=$<TARGET_FILE:${_target}>
+                    -P "${CMAKE_CURRENT_SOURCE_DIR}/upstream/MixedRuntimeSymbols.cmake")
+        set_tests_properties(
+            cna_engine.upstream.mixed_runtime.${_order}
+            cna_engine.upstream.mixed_runtime_symbols.${_order}
+            PROPERTIES LABELS "boundary;shared-runtime;upstream" TIMEOUT 30)
+    endforeach()
+endif()
+
 # --- The dependency fetcher (GAME-002), dry: clones nothing. -------------------
 if(NOT WIN32)
     add_test(NAME cna_engine.fetch_dependencies_dry_run

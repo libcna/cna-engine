@@ -182,14 +182,18 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 ### A new game from the engine (Phase 7, experimental)
 
 - `cmake/CnaEngineGame.cmake` and `cna_engine_add_game()` (GAME-001): a game's
-  CMake adds CNA and the engine with game defaults (CNA's renderer, window
-  and audio for the host; static CNA) and builds its executable with one
-  call: assets beside it on the desktop, and under Emscripten a page
+  CMake adds CNA and the engine with game defaults (CNA's renderer, window,
+  audio and supported shared/static runtime form for the host) and builds its
+  executable with one call: assets beside it on the desktop, and under Emscripten a page
   (`cmake/web/shell.html`), the assets preloaded, Asyncify, CNA's exception
   ABI and `web-package/`. An empty `CNA_ENGINE_CNA_RENDERER`, `_PLATFORM` or
   `_AUDIO_PLATFORM` now leaves the choice to CNA. The installed package
   provides the function too and re-attaches every exported target's CNA
   links generically.
+- UP-006 regression coverage: native shared-CNA builds link the real engine
+  graphics library beside CNA's umbrella in both orders, run both consumers
+  and inspect their ELF symbols and dependencies. The pinned CNA fix keeps one
+  `libcna.so`, so game projects no longer have to force static CNA.
 - `tools/fetch_dependencies.sh` (GAME-002): CNA, Sharp Runtime, easy-gl and
   meta-gl (optionally cna-extended) at the pins, beside the engine; existing
   checkouts are reported, never changed. easy-gl and meta-gl pins added to

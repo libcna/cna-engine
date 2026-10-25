@@ -35,6 +35,16 @@ Engine `5ef8f1f` before this documentation update, clean and equal to
   release evidence and not a reason to move the pin.
 - No pin moved. A future candidate still needs the complete clean-clone
   protocol in ADR-002.
+- UP-006 engine-owned mixed consumer: the real `cna_engine_graphics` library
+  was linked beside the shared `CNA` umbrella in engine-first and
+  umbrella-first order. Both executables ran cleanly, and both ELF inspections
+  found exactly one `libcna.so` dependency and no strong CNA
+  Graphics/Input/Vector3 implementation symbols in the executable: **4 of
+  4**. The game helper no longer forces `CNA_SHARED_LIBRARY=OFF`.
+- After that policy change, the complete ordinary suite excluding
+  `carsim_suite` passed **343 of 343**, including all eight examples using the
+  shared CNA default. The installed-package consumer probes were rerun and
+  passed **3 of 3**.
 
 ## 2026-10-22 — Baseline move: CNA `cb377fa04` (UP-001), cna-extended `c19c6e5`
 
