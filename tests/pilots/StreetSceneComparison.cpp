@@ -536,7 +536,7 @@ int main(int argc, char** argv)
                         differingOnFigures);
             std::printf("draw calls:        street %d (instanced %d), engine %llu\n", streetStats.drawCalls,
                         streetStats.instancedDrawCalls, static_cast<unsigned long long>(engineStats.drawCalls));
-            std::printf("cpu frame:         street %.1f ms, engine %.1f ms (software renderer, Debug)\n", streetMs,
+            std::printf("cpu frame:         street %.1f ms, engine %.1f ms (software renderer)\n", streetMs,
                         engineMs);
             std::printf("image difference:  %.2f / 255 mean per channel, %d / 255 largest, %zu of %zu pixels differ,"
                         " %zu visibly (> %d / 255) — %s the agreed tolerance\n",

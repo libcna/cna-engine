@@ -45,6 +45,23 @@ Engine `5ef8f1f` before this documentation update, clean and equal to
   `carsim_suite` passed **343 of 343**, including all eight examples using the
   shared CNA default. The installed-package consumer probes were rerun and
   passed **3 of 3**.
+- REL-003 reference: `build-probe/` was configured Release with the baseline
+  enforced and both real scene comparisons. At measurement start the CPU was
+  98.8 % idle, with no I/O wait or swap. Five sequential paired runs covered
+  all four car and all three Street views; best-of-five engine/pilot ratios
+  ranged from 0.976 to **1.026**, all below the 1.15 budget. The reproducible
+  serial `cna_engine.performance.frame_budget` gate records and enforces the
+  same procedure; its first registered CTest run passed **1 of 1** in 190.10
+  seconds (`docs/pilots/performance-budgets.md`).
+- Reconfiguring the ordinary Debug `build/` left
+  `CNA_ENGINE_FRAME_BUDGET=OFF` and the test inventory at 343; its available
+  car scene-comparison target rebuilt successfully. The Street comparison is
+  intentionally present only when CNAEXT is enabled, as in `build-probe/`.
+- REL-001 tag audit (read-only): the CNA `v0.1.0` tag is 720 commits behind
+  the pinned `cb377fa04`, and Sharp Runtime's `v0.1.0` is 17 commits behind
+  `1dc8785b`; both pins descend from those tags. cna-extended (version 0.2.0)
+  and cna-engine (version 0.1.0) have no tags. No tag was created: release
+  identity and compatibility ranges still require the owner's decision.
 
 ## 2026-10-22 — Baseline move: CNA `cb377fa04` (UP-001), cna-extended `c19c6e5`
 

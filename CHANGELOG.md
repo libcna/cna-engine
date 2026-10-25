@@ -194,6 +194,9 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
   graphics library beside CNA's umbrella in both orders, run both consumers
   and inspect their ELF symbols and dependencies. The pinned CNA fix keeps one
   `libcna.so`, so game projects no longer have to force static CNA.
+- REL-003 Release reference gate: both real pilot scene comparisons run five
+  times serially from an idle start; every engine view must stay within 1.15×
+  the pilot's best time. The first reference run's worst ratio is 1.026.
 - `tools/fetch_dependencies.sh` (GAME-002): CNA, Sharp Runtime, easy-gl and
   meta-gl (optionally cna-extended) at the pins, beside the engine; existing
   checkouts are reported, never changed. easy-gl and meta-gl pins added to

@@ -283,3 +283,35 @@ gtest_discover_tests(cna_engine_settings_equivalence_tests
     TEST_PREFIX "cna_engine.pilot."
     DISCOVERY_MODE PRE_TEST
     PROPERTIES LABELS "pilot")
+
+# REL-003 reference budget. It is deliberately a Release-only, serial test:
+# both comparisons use the software renderer and a loaded machine is rejected
+# before measuring. A Release build with both real pilot scenes enables it by
+# default; builds without those sibling repositories do not gain a fake pass.
+set(_cna_engine_frame_budget_default OFF)
+if(CMAKE_BUILD_TYPE STREQUAL "Release"
+   AND TARGET cna_engine_carsim_scene_comparison
+   AND TARGET cna_engine_street_scene_comparison)
+    set(_cna_engine_frame_budget_default ON)
+endif()
+option(CNA_ENGINE_FRAME_BUDGET
+    "Run the Release best-of-five pilot/engine frame-time budget (REL-003)"
+    ${_cna_engine_frame_budget_default})
+if(CNA_ENGINE_FRAME_BUDGET)
+    if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+        message(FATAL_ERROR "CNA_ENGINE_FRAME_BUDGET requires CMAKE_BUILD_TYPE=Release")
+    endif()
+    if(NOT TARGET cna_engine_carsim_scene_comparison OR NOT TARGET cna_engine_street_scene_comparison)
+        message(FATAL_ERROR "CNA_ENGINE_FRAME_BUDGET requires both car and street scene comparisons")
+    endif()
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    add_test(NAME cna_engine.performance.frame_budget
+        COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/tools/check_frame_budget.py"
+                --car $<TARGET_FILE:cna_engine_carsim_scene_comparison>
+                --street $<TARGET_FILE:cna_engine_street_scene_comparison>
+                --output "${CMAKE_CURRENT_BINARY_DIR}/frame-budget"
+                --runs 5 --max-ratio 1.15 --max-load-per-cpu 0.35)
+    set_tests_properties(cna_engine.performance.frame_budget PROPERTIES
+        LABELS "performance;performance-reference;pilot"
+        RUN_SERIAL TRUE TIMEOUT 1800)
+endif()

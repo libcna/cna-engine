@@ -6,7 +6,7 @@ Supersedes the earlier handoffs (they are in git history).
 Read this file first, then `plan.md` (tasks and their results),
 `upstream-issues.md` (defects found elsewhere) and `docs/verification.md`
 (evidence, newest first). Everything below is true as of this handoff's
-`develop` commit (after `5ef8f1f`).
+`develop` commit (after maintenance commits `4046fdc` and `7bd6b1c`).
 
 ## Mission
 
@@ -59,7 +59,7 @@ From the owner (Robert Vokac) and the workspace (`../CLAUDE.md`,
 
 | Repository | Branch | Head | Pushed |
 | --- | --- | --- | --- |
-| `libcna/cna-engine` | `develop` | this handoff's commit (after `5ef8f1f`) | local until the owner requests a push |
+| `libcna/cna-engine` | `develop` | this handoff's REL-003 commit (after `7bd6b1c`) | local until the owner requests a push |
 | `libcna/cna-extended` | `develop` | `c19c6e5` | yes |
 | `libcnalab/backrooms-simulator` | `main` | `12527a7` (shadows, pause menu) | yes |
 | `libcnalab/school-simulator` | `main` | `c1aee2a` (sun shadows, pause menu) | yes |
@@ -112,7 +112,7 @@ the names are the workspace's closed list:
 | Directory | Configure with |
 | --- | --- |
 | `build/` | `cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCNA_ENGINE_CNA_DIR=$HOME/deps/cna-baseline -DCNA_ENGINE_SHARP_RUNTIME_DIR=$HOME/deps/sharp-runtime-baseline -DCNA_ENABLE_SDL=OFF -DCNA_ENABLE_VIDEO=OFF -DCNA_ENGINE_GOOGLETEST_DIR=$PWD/../cna-extended/vendor/googletest -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache` (SOFTWARE renderer, headless, null audio by default) |
-| `build-probe/` | the same plus `-DCNA_ENGINE_ENFORCE_BASELINE=ON -DCNA_ENGINE_CNA_CNAEXT=ON -DCNA_ENGINE_PILOT_SUITES=ON`: the pilots' own suites (`ctest -L pilot`, 50 tests; car's suite alone ~15 min) |
+| `build-probe/` | the same dependency paths and compiler launchers, but `-DCMAKE_BUILD_TYPE=Release -DCNA_ENGINE_ENFORCE_BASELINE=ON -DCNA_ENGINE_CNA_CNAEXT=ON -DCNA_ENGINE_PILOT_SUITES=OFF -DCNA_ENGINE_FRAME_BUDGET=ON`: current REL-003 reference tree; the serial budget passed 1/1 in 190.10 s |
 | `build-consumer/` | made by `tools/run_consumer_probes.sh build build-consumer`: `cna-sdk/` (CNA's SDK build), `extended-package/` (cna-extended's), `install/` (the prefix), the three consumers |
 
 `../cna-extended/build/` (kept) is cna-extended's own suite (Debug, against
@@ -125,8 +125,14 @@ export CCACHE_DIR=/rv/cnaccache CCACHE_BASEDIR=/rv CCACHE_NOHASHDIR=1
 cmake --build build --parallel 3 && (cd build && ctest -j3 -E carsim_suite)   # 343 tests
 tools/run_consumer_probes.sh build build-consumer                             # 3 probes
 python3 tools/api_snapshot.py --root . --check      # pilot-validated headers; --update after a deliberate change, plus CHANGELOG
-cmake --build build-probe --parallel 3 && (cd build-probe && ctest -j3 -L pilot)
+cmake --build build-probe --parallel 3 --target cna_engine_carsim_scene_comparison cna_engine_street_scene_comparison
+ctest --test-dir build-probe --output-on-failure -R '^cna_engine\.performance\.frame_budget$'
 ```
+
+For a future pin move, reconfigure `build-probe/` with Debug,
+`CNA_ENGINE_FRAME_BUDGET=OFF` and `CNA_ENGINE_PILOT_SUITES=ON`, then run the
+50-test pilot suite described in ADR-002. Restore the Release reference
+configuration before rerunning the frame budget.
 
 Games build against the same clones plus
 `-DCNA_EASYGL_ROOT=/rv/data/development/github.com/libcna/easy-gl
@@ -169,19 +175,18 @@ SwiftShader) behind a static server; hold keys ~0.9 s there (slow frames).
 
 ## Open
 
-The plan contains 54 completed items, three partial items below, and no
+The plan contains 55 completed items, two partial items below, and no
 unstarted item.
 
 1. **REL-001**: version ranges for CNA and cna-extended, once releases are
    tagged (e.g. cna-extended `v0.2.0`, engine `v0.1.0`). Tags only with the
-   owner's word.
-2. **REL-003**: enforce the frame-time budget (1.15x, best of five), which
-   waits for a measurement in a Release build on an idle machine
-   (`docs/pilots/performance-budgets.md`).
-3. **SHARE-001**: only UP-017 (street-simulator's `--capture` runs out of
+   owner's word. The 2026-10-25 read-only audit found CNA's `v0.1.0` 720
+   commits and Sharp Runtime's `v0.1.0` 17 commits behind the pins;
+   cna-extended and the engine have no tags. No tag was created.
+2. **SHARE-001**: only UP-017 (street-simulator's `--capture` runs out of
    memory) remains, the game owner's. Never retry that capture on this
    machine; verify street with `bake-assets --content`.
-4. Upstream records still open, all recorded in the games' own files:
+3. Upstream records still open, all recorded in the games' own files:
    UP-008, 010, 013, 017 (street), UP-009, 016 (car). UP-014 (galaxy-eggbert) was
    fixed there on 2026-10-23 (`2d59be1`).
    Every report sent to `cna-demos` is closed.

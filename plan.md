@@ -984,7 +984,11 @@ with `1dc8785b`); the engine pins CNA `cb377fa04`, its installed configuration
 finds CNA's SDK when the consumer has not defined CNA's targets, and the
 consumer probes (strict, enhanced, a `cna_engine_add_game` game) build from
 the installed CNA, cna-extended and engine packages alone. Open: version
-ranges once the dependencies tag releases.
+ranges once the dependencies tag releases. A read-only tag audit on
+2026-10-25 found CNA's `v0.1.0` 720 commits behind its pin and Sharp
+Runtime's `v0.1.0` 17 commits behind its pin (both pins descend from the
+tags); cna-extended 0.2.0 and cna-engine 0.1.0 have no tags. Per the owner's
+release boundary, no tag was created and this item remains partial.
 
 ### REL-002 — Complete documentation and examples `[x]`
 
@@ -1011,7 +1015,7 @@ enhanced guides. Closed on 2026-10-22: Phase 7 added `docs/tutorial.md`, the
 `first_person`, `third_person` and `day_night` examples, all run headlessly
 as tests; every acceptance point holds.
 
-### REL-003 — Establish the verification matrix `[~]`
+### REL-003 — Establish the verification matrix `[x]`
 
 Acceptance:
 
@@ -1021,16 +1025,16 @@ Acceptance:
 - CI and local documentation cap compilation at three jobs for this workspace;
 - known skips and environmental timeouts cannot appear as silent success.
 
-Blocked by: PILOT-003.
-
 Progress: `docs/verification-matrix.md` separates unit, boundary, example,
 installed-consumer, pilot, baseline, upstream and visual checks and lists the
 verified combinations; CI caps jobs at three and fails on skipped tests.
-Performance scaling checks run under their own label since 2026-10-20 (no
-budgets: they fail on super-linear growth). The pilots' adoption is verified
+Performance scaling checks run under their own label since 2026-10-20 and
+fail on super-linear growth. The pilots' adoption is verified
 on the software renderer, OpenGL on Mesa llvmpipe and the machine's AMD GPU
-(`docs/verification-matrix.md`). Open: enforcing the agreed frame-time
-budget, which waits for its idle-machine measurement
+(`docs/verification-matrix.md`). Closed on 2026-10-25: the agreed Release
+frame-time budget was measured best-of-five from an idle start (worst ratio
+1.026, limit 1.15), and `cna_engine.performance.frame_budget` now repeats the
+measurement serially, rejects a loaded start and enforces every view
 (`docs/pilots/performance-budgets.md`).
 
 ## Phase 7 — a new game from CNA and the engine alone

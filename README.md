@@ -115,6 +115,7 @@ Options:
 | `CNA_ENGINE_ENFORCE_BASELINE` | `OFF` | fail configuration unless CNA, Sharp Runtime and cna-extended are exactly the pinned revisions (CI) |
 | `CNA_ENGINE_REQUIRE_BASELINE_DESCENDANT` | `OFF` | fail configuration when a dependency checkout does not contain its pinned revision (older or diverged) |
 | `CNA_ENGINE_PILOT_SUITES` | `OFF` | also build and run car-simulator's and street-simulator's own test suites (read-only) against this build's dependencies — ADR-002's consumer checks; slow |
+| `CNA_ENGINE_FRAME_BUDGET` | Release with both pilots | run the serial best-of-five 1.15× frame-time budget; refuses a loaded machine |
 | `CNA_ENGINE_SANITIZE` | empty | `-fsanitize=` list (e.g. `address,undefined`) for the engine's own targets only; dependencies stay uninstrumented, so a sanitizer tree reuses their objects from ccache |
 | `CNA_ENGINE_BUILD_TESTS` / `_EXAMPLES` | top level | tests and examples |
 | `CNA_ENGINE_CNA_RENDERER` / `_PLATFORM` / `_AUDIO_PLATFORM` | `SOFTWARE` / `HEADLESS` / `NULL` | CNA axes for a standalone build |
