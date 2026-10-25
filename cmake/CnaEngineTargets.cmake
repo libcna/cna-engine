@@ -34,10 +34,11 @@ function(cna_engine_add_library target alias)
     cna_engine_sanitize(${target})
 endfunction()
 
-# Links CNA / cna-extended targets. They are not part of any export set
-# (upstream-issues.md UP-001), so they are linked for the build tree only and
-# recorded in CNA_ENGINE_EXTERNAL_LINKS_<target>; CnaEngineConfig.cmake re-adds
-# them to the imported targets after checking that the consumer defined them.
+# Links CNA / cna-extended targets. They belong to separate packages, so they
+# are linked for the build tree only and recorded in
+# CNA_ENGINE_EXTERNAL_LINKS_<target>; CnaEngineConfig.cmake finds those
+# packages (unless the consumer already defined their targets) and re-adds the
+# links to the imported engine targets.
 #
 # Their headers are system headers for the engine's own compilation: a warning
 # inside CNA or cna-extended (cna-extended's SizeF under Clang, UP-015) must

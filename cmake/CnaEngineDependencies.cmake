@@ -3,10 +3,10 @@
 # Provides CNA's modular targets (and, when CNA_ENGINE_WITH_EXTENDED is ON,
 # CNA::Extended) to cna-engine.
 #
-# CNA and cna-extended export no installable CMake package (upstream-issues.md
-# UP-001), so they are consumed as source trees, exactly as cna-extended itself
-# consumes CNA. A parent project that already defined CNA::Core (and
-# CNA::Extended) is respected and nothing is added again.
+# A source-tree engine build consumes CNA and cna-extended as source trees. An
+# installed engine instead finds CNA's C++ SDK and cna-extended's package (both
+# available since UP-001 was resolved). A parent project that already defined
+# CNA::Core (and CNA::Extended) is respected and nothing is added again.
 
 set(CNA_ENGINE_CNA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../cna"
     CACHE PATH "Path to the modular cna repository")

@@ -35,7 +35,11 @@ config file should call `find_dependency(CNA)` instead.
 ## UP-002 — Several XNA-compatible constructors are tagged `CNAEXT`
 
 - Repository: `libcna/cna`, `modules/input` and `modules/math`
-- Status: open (informational), reported to CNA on 2026-10-22 through the Codex session `cna-demos` (`codex queue`, at the owner's request); cna-engine watches CNA's history for commits naming this issue
+- Status: resolved on 2026-10-22 (documentation only) in CNA `99b54079e`:
+  `docs/migration-guide.md` now distinguishes the `CNAEXT` declaration marker
+  from implicit/synthesized C# semantics and keeps the strict compiler
+  diagnostics. No runtime, header or test change was required. The fix is in
+  the engine's CNA pin `cb377fa04`
 - Found: 2026-10-19, ENG-020
 
 `KeyboardState()`, `MouseState()`, `GamePadState()` default constructors and

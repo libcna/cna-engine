@@ -55,8 +55,8 @@ if(CNA_ENGINE_WITH_EXTENDED AND TARGET CNA::Extended)
         endif()
     endif()
 endif()
-# CNA and cna-extended targets cannot be exported (UP-001): the package
-# configuration re-attaches each target's links once the consumer defined them.
+# CNA and cna-extended live in their own export sets: the package configuration
+# finds them when necessary and re-attaches each imported engine target's links.
 set(CNA_ENGINE_PACKAGE_REQUIRED "")
 set(CNA_ENGINE_PACKAGE_LINK_LINES "")
 foreach(_target IN LISTS CNA_ENGINE_EXPORTED_TARGETS)

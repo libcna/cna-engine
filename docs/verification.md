@@ -4,6 +4,38 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-25 — CNA repair audit at the pinned baseline
+
+Engine `5ef8f1f` before this documentation update, clean and equal to
+`origin/develop`; clean dependency clones at CNA `cb377fa04`, Sharp Runtime
+`1dc8785b`, and cna-extended `c19c6e5`. The CNA pin contains UP-001
+`58ebc46fd`, UP-002 `99b54079e`, UP-004 `5ab1c7729`, UP-006
+`470b12a5d`/`a2f0378cf`, UP-018's evidence `d49c080d9`, and UP-019
+`144d9f909`.
+
+- `build/`, Debug, SOFTWARE/HEADLESS/NULL, baseline enforced: the complete
+  build succeeded (1,197 Ninja steps). The ordinary suite excluding
+  `carsim_suite` passed **339 of 339** after making the two throwaway-git
+  baseline tests ignore a developer's global `commit.gpgsign=true`. Before
+  that harness fix, 337 passed and those two failed only because the sandbox
+  could not create GnuPG files; rerunning them with signing disabled passed
+  2 of 2.
+- The cna-extended UP-004 regressions
+  `OrthographicCameraTest.ContainsPoint*` and `ContainsVector2*` passed **2 of
+  2** directly against the pin.
+- `tools/run_consumer_probes.sh build build-consumer`: **3 of 3**. CNA's SDK,
+  cna-extended and the engine were installed, and the strict consumer,
+  enhanced consumer and `cna_engine_add_game` game configured, linked and ran
+  using installed packages only.
+- A descendant canary configured while the shared CNA checkout was at its
+  then-published `origin/next` `bdaeaff` (+130 commits) and Sharp Runtime at
+  `f990d074` (+9): core/graphics **232 of 232**, enhanced **18 of 18**, and
+  extended **10 of 10**. Another session advanced the shared CNA checkout
+  while the build ran, so this is compatibility evidence only, not clean
+  release evidence and not a reason to move the pin.
+- No pin moved. A future candidate still needs the complete clean-clone
+  protocol in ADR-002.
+
 ## 2026-10-22 — Baseline move: CNA `cb377fa04` (UP-001), cna-extended `c19c6e5`
 
 CNA published `cb377fa04`, which installs a relocatable C++ module SDK

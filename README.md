@@ -125,9 +125,18 @@ tests read back pixels from CNA's software renderer.
 ## Using an installed engine
 
 `cmake --install build --prefix <dir>` installs headers, libraries and
-`CnaEngineConfig.cmake`. CNA itself installs no package (`upstream-issues.md`
-UP-001), so a consumer adds CNA (and cna-extended) as source trees first and
-then calls `find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics)`.
+`CnaEngineConfig.cmake`. CNA installs a relocatable C++ SDK since
+`58ebc46fd` (`CNA_INSTALL_CXX`, UP-001), and cna-extended installs a
+`CnaExtended` package since 0.2.0. Put all three installation prefixes on
+`CMAKE_PREFIX_PATH`; the engine package finds its dependencies, so the
+consumer only needs:
+
+```cmake
+find_package(CnaEngine 0.1 REQUIRED COMPONENTS Core Graphics)
+target_link_libraries(my_game PRIVATE CnaEngine::Core CnaEngine::Graphics)
+```
+
+`tools/run_consumer_probes.sh` builds and tests this installed-only route.
 
 ## Documents
 

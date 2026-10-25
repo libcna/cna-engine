@@ -1,12 +1,12 @@
 # CNA Engine Handoff
 
-Date: 2026-10-23. Audience: the next AI agent, starting in a fresh context.
+Date: 2026-10-25. Audience: the next AI agent, starting in a fresh context.
 Supersedes the earlier handoffs (they are in git history).
 
 Read this file first, then `plan.md` (tasks and their results),
 `upstream-issues.md` (defects found elsewhere) and `docs/verification.md`
-(evidence, newest first). Everything below is true as of `develop` at
-`5872f2b` plus this update.
+(evidence, newest first). Everything below is true as of this handoff's
+`develop` commit (after `5ef8f1f`).
 
 ## Mission
 
@@ -55,29 +55,30 @@ From the owner (Robert Vokac) and the workspace (`../CLAUDE.md`,
   touch other sessions' Xvfb or `/tmp/xvfb-run.*`. Before deleting anything
   outside your own output, check that no live process uses it.
 
-## Repositories and their state (2026-10-23)
+## Repositories and their state (2026-10-25)
 
 | Repository | Branch | Head | Pushed |
 | --- | --- | --- | --- |
-| `libcna/cna-engine` | `develop` | `cfab224` | yes |
+| `libcna/cna-engine` | `develop` | this handoff's commit (after `5ef8f1f`) | local until the owner requests a push |
 | `libcna/cna-extended` | `develop` | `c19c6e5` | yes |
 | `libcnalab/backrooms-simulator` | `main` | `12527a7` (shadows, pause menu) | yes |
 | `libcnalab/school-simulator` | `main` | `c1aee2a` (sun shadows, pause menu) | yes |
 | `libcnalab/car-simulator` | `main` | `3a34c80` (`docs/known-issues.md`) | yes |
 | `libcnalab/street-simulator` | `develop` | `14145cd` (`docs/known-issues.md`) | yes |
 | `libcnalab/train-simulator` | `develop` | `2fd191d` | yes |
-| `openeggbert/galaxy-eggbert` | `develop` | `5adf55b` (editor bug note) | yes |
+| `openeggbert/galaxy-eggbert` | `develop` | `00ba088` (contains UP-014's `2d59be1`) | yes |
 
-CI is green for all of it: engine `cfab224` and `5872f2b`, cna-extended
-`c19c6e5` (2026-10-23). The engine job also builds CNA's C++ SDK in the
-consumer probes, so it runs longer than it used to (15 to 25 minutes before).
-Nothing runs in the background; no task is half done.
+The last recorded CI is green for engine `cfab224` and `5872f2b` and for
+cna-extended `c19c6e5` (2026-10-23). The engine job also builds CNA's C++ SDK
+in the consumer probes, so it runs longer than it used to (15 to 25 minutes
+before). The 2026-10-25 local verification is recorded at the top of
+`docs/verification.md`.
 
 Cleaned up on 2026-10-23 at the owner's request: the merged game worktrees
 `libcnalab/backrooms-simulator-engine` and `libcnalab/school-simulator-engine`
-(and their local `engine-shadows-menu` branches) and this repository's build
-trees `build/`, `build-probe/` and `build-consumer/` are gone. Rebuild them
-as below; the shared ccache holds most objects.
+(and their local `engine-shadows-menu` branches) were removed. The
+2026-10-25 verification recreated this repository's ignored `build/`,
+`build-probe/` and `build-consumer/` trees; reuse them as below.
 
 ## Dependency pins (ADR-002)
 
@@ -105,8 +106,8 @@ cna-extended's suite against the clones, (4) the pilot suites in
 
 ## Build trees
 
-None exists at handoff (removed 2026-10-23). Recreate only the ones a task
-needs, with these names (the closed list):
+The three trees below exist after the 2026-10-25 verification. Reuse them;
+the names are the workspace's closed list:
 
 | Directory | Configure with |
 | --- | --- |
@@ -167,6 +168,9 @@ SwiftShader) behind a static server; hold keys ~0.9 s there (slow frames).
   cna-extended's package when the consumer has not defined their targets.
 
 ## Open
+
+The plan contains 54 completed items, three partial items below, and no
+unstarted item.
 
 1. **REL-001**: version ranges for CNA and cna-extended, once releases are
    tagged (e.g. cna-extended `v0.2.0`, engine `v0.1.0`). Tags only with the

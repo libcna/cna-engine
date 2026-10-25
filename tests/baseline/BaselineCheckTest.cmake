@@ -20,7 +20,11 @@ endfunction()
 function(commit message)
     file(WRITE "${WORK}/file.txt" "${message}\n")
     run(add file.txt)
-    run(-c user.name=test -c user.email=test@example.invalid commit -q -m "${message}")
+    # The fixture must not inherit a developer's global commit.gpgsign=true:
+    # its throwaway repository has no need for signatures and CI/sandboxes may
+    # not have a writable GnuPG home.
+    run(-c user.name=test -c user.email=test@example.invalid -c commit.gpgsign=false
+        commit -q -m "${message}")
 endfunction()
 
 run(init -q -b main)
