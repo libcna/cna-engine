@@ -31,6 +31,29 @@ namespace CnaEngine::Graphics
                 EXPECT_GT(Vector3::Dot(n, centroid - center), 0.0f) << "triangle " << t;
             }
         }
+
+        // On every triangle, seen from its front, the texture's top (v0) is towards `up` and u
+        // grows to the viewer's right: the region reads upright and unmirrored.
+        void ExpectReadsUpright(const MeshData& mesh, const Vector3& up)
+        {
+            for (std::size_t t = 0; t < mesh.TriangleCount(); ++t) {
+                const Vector3 front = Vector3::Normalize(mesh.FaceNormal(t));
+                const Vector3 right = Vector3::Cross(-front, up);
+                for (std::size_t i = 0; i < 3; ++i) {
+                    for (std::size_t j = 0; j < 3; ++j) {
+                        const std::uint32_t a = mesh.indices[t * 3 + i];
+                        const std::uint32_t b = mesh.indices[t * 3 + j];
+                        const Vector3 d = mesh.positions[b] - mesh.positions[a];
+                        if (Vector3::Dot(d, up) > 1e-4f) {
+                            EXPECT_LT(mesh.texCoords0[b].Y, mesh.texCoords0[a].Y) << "triangle " << t << ": upside down";
+                        }
+                        if (Vector3::Dot(d, right) > 1e-4f) {
+                            EXPECT_GT(mesh.texCoords0[b].X, mesh.texCoords0[a].X) << "triangle " << t << ": mirrored";
+                        }
+                    }
+                }
+            }
+        }
     }
 
     TEST(MeshBuilderTests, StoresOnlyMaskedAttributes)
@@ -178,6 +201,20 @@ namespace CnaEngine::Graphics
                 EXPECT_GT(Vector3::Dot(plate.normals[i + 4], back), 0.99f);
             }
         }
+    }
+
+    TEST(MeshBuilderTests, PlatesReadUprightAndUnmirroredFromBothSides)
+    {
+        const UvRect region{0.25f, 0.5f, 0.375f, 0.625f};
+        for (const PlateAxis axis : {PlateAxis::Z, PlateAxis::X, PlateAxis::Y}) {
+            MeshBuilder builder({VertexAttribute::Position, VertexAttribute::TexCoord0});
+            builder.AddPlate(Vector3(1.0f, 2.0f, 3.0f), 2.0f, 4.0f, axis, region);
+            // Y plates: the region's top edge towards -Z, as a box's top face shows it.
+            ExpectReadsUpright(builder.Mesh(), axis == PlateAxis::Y ? -Vector3::UnitZ : Vector3::UnitY);
+        }
+        MeshBuilder crossed({VertexAttribute::Position, VertexAttribute::TexCoord0});
+        crossed.AddCrossedPlates(Vector3::Zero, 2.0f, 1.0f, 3, region);
+        ExpectReadsUpright(crossed.Mesh(), Vector3::UnitY);
     }
 
     TEST(MeshBuilderTests, CrossedPlatesTurnAboutY)

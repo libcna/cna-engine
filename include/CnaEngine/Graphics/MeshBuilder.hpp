@@ -100,12 +100,18 @@ namespace CnaEngine::Graphics
         void AddBox(const Microsoft::Xna::Framework::Vector3& min, const Microsoft::Xna::Framework::Vector3& max,
                     const BoxFaces& faces);
         /// A quad that is visible from both sides: the four `corners` (with
-        /// their `texCoords`) twice, once wound for each side, so the texture
-        /// is never mirrored and no culling state is needed.
+        /// their `texCoords`) twice, once wound for each side, so no culling
+        /// state is needed. The corners run around the quad (bottom-left,
+        /// bottom-right, top-right, top-left as seen from the side they run
+        /// counterclockwise from, which shows `texCoords` as given); the
+        /// other side's copy takes them mirrored back, so the texture reads
+        /// unmirrored from both sides.
         void AddDoubleSidedQuad(const std::array<Microsoft::Xna::Framework::Vector3, 4>& corners,
                                 const std::array<Microsoft::Xna::Framework::Vector2, 4>& texCoords);
         /// A flat, double-sided rectangle centred on `center` (signs, decals,
-        /// leaves); see PlateAxis for which way `width` and `height` run.
+        /// leaves); see PlateAxis for which way `width` and `height` run. The
+        /// region reads upright and unmirrored from both sides: on Z and X
+        /// plates its top edge is up, on Y plates towards -Z seen from above.
         void AddPlate(const Microsoft::Xna::Framework::Vector3& center, float width, float height, PlateAxis axis,
                       const UvRect& uv = UvRect::Full());
         /// `planes` vertical double-sided plates through `center`, turned

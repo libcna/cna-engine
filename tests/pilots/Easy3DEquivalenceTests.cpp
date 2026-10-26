@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 //
 // Equivalence probe: what cna-engine took over from easy-3d produces the same
-// vertices, texture coordinates, indices and matrices, bit for bit. The old
+// vertices, texture coordinates, indices and matrices, bit for bit (plates
+// aside, see PlatesAndCrossedPlates). The old
 // implementation is frozen in tests/fixtures/easy3d_legacy, so this migration
 // baseline remains available after the retired repository is removed.
 #include "CnaEngine/Graphics/Camera.hpp"
@@ -73,6 +74,19 @@ namespace CnaEngine::Pilot
             }
         }
 
+        // The same vertices and indices; texture coordinates aside.
+        template <typename Vertex>
+        void ExpectSameShape(const std::vector<Vertex>& vertices, const std::vector<std::uint32_t>& indices,
+                             const MeshBuilder& builder)
+        {
+            const auto& mesh = builder.Mesh();
+            ASSERT_EQ(mesh.positions.size(), vertices.size());
+            ASSERT_EQ(mesh.indices, indices);
+            for (std::size_t i = 0; i < vertices.size(); ++i) {
+                ASSERT_TRUE(Same(mesh.positions[i], vertices[i].Position)) << "vertex " << i;
+            }
+        }
+
         MeshBuilder TexturedBuilder() { return MeshBuilder({VertexAttribute::Position, VertexAttribute::TexCoord0}); }
     }
 
@@ -133,6 +147,11 @@ namespace CnaEngine::Pilot
         }
     }
 
+    // Plates are no longer easy-3d's bit for bit: easy-3d gave a plate's region its top edge at the
+    // plate's bottom and both sides the same coordinates (one side mirrored), which the engine took
+    // over and then fixed (galaxy-eggbert UB-005, 2026-10-27; MeshBuilderTests'
+    // PlatesReadUprightAndUnmirroredFromBothSides). The vertical plates and the crossed plates keep
+    // easy-3d's vertices and indices; the horizontal plate's corners now run the other way round.
     TEST(Easy3DEquivalenceTests, PlatesAndCrossedPlates)
     {
         Random random;
@@ -149,7 +168,9 @@ namespace CnaEngine::Pilot
             MeshBuilder builder = TexturedBuilder();
             builder.AddPlate(plate.Center, plate.Width, plate.Height, static_cast<Graphics::PlateAxis>(n % 3),
                              ToEngine(plate.Uv));
-            ExpectIdentical(vertices, indices, builder);
+            if (plate.Axis != Easy3DLegacy::PlateAxis::Y) {
+                ExpectSameShape(vertices, indices, builder);
+            }
 
             Easy3DLegacy::TripleCrossItem cross;
             cross.Center = plate.Center;
@@ -161,7 +182,7 @@ namespace CnaEngine::Pilot
             Easy3DLegacy::AppendTripleCrossMesh(cross, vertices, indices);
             MeshBuilder crossed = TexturedBuilder();
             crossed.AddCrossedPlates(cross.Center, cross.Width, cross.Height, 3, ToEngine(cross.Uv));
-            ExpectIdentical(vertices, indices, crossed);
+            ExpectSameShape(vertices, indices, crossed);
         }
     }
 

@@ -127,13 +127,18 @@ namespace CnaEngine::Graphics
                                          const std::array<Vector2, 4>& texCoords)
     {
         // The side that sees corners 0-1-2 clockwise is the one the normal
-        // of cross(c - a, b - a) points at.
+        // of cross(c - a, b - a) points at. The corners run counterclockwise
+        // from the other side, which takes `texCoords` as given; this side
+        // takes them mirrored back across the 0-1 edge's perpendicular
+        // (0 <-> 1, 2 <-> 3), so neither side shows the texture mirrored.
         const Vector3 n = Vector3::Normalize(Vector3::Cross(corners[2] - corners[0], corners[1] - corners[0]));
+        const std::array<Vector2, 4> mirrored = {texCoords[1], texCoords[0], texCoords[3], texCoords[2]};
         for (const bool reversed : {false, true}) {
             const Vector3 normal = reversed ? -n : n;
+            const std::array<Vector2, 4>& uvs = reversed ? texCoords : mirrored;
             std::uint32_t index[4];
             for (std::size_t i = 0; i < 4; ++i) {
-                index[i] = AddVertex(Vertex(corners[i], normal, texCoords[i]));
+                index[i] = AddVertex(Vertex(corners[i], normal, uvs[i]));
             }
             if (!reversed) {
                 AddTriangle(index[0], index[1], index[2]);
@@ -165,14 +170,18 @@ namespace CnaEngine::Graphics
                            Vector3(center.X, center.Y + halfH, center.Z - halfW)};
                 break;
             case PlateAxis::Y:
-                corners = {Vector3(center.X - halfW, center.Y, center.Z - halfH),
-                           Vector3(center.X + halfW, center.Y, center.Z - halfH),
+                // Seen from above, the region's top edge towards -Z (as a
+                // box's top face shows it).
+                corners = {Vector3(center.X - halfW, center.Y, center.Z + halfH),
                            Vector3(center.X + halfW, center.Y, center.Z + halfH),
-                           Vector3(center.X - halfW, center.Y, center.Z + halfH)};
+                           Vector3(center.X + halfW, center.Y, center.Z - halfH),
+                           Vector3(center.X - halfW, center.Y, center.Z - halfH)};
                 break;
         }
-        AddDoubleSidedQuad(corners, {Vector2(uv.u0, uv.v0), Vector2(uv.u1, uv.v0), Vector2(uv.u1, uv.v1),
-                                     Vector2(uv.u0, uv.v1)});
+        // Bottom-left, bottom-right, top-right, top-left: v grows downwards
+        // in a texture, so the top corners take v0.
+        AddDoubleSidedQuad(corners, {Vector2(uv.u0, uv.v1), Vector2(uv.u1, uv.v1), Vector2(uv.u1, uv.v0),
+                                     Vector2(uv.u0, uv.v0)});
     }
 
     void MeshBuilder::AddCrossedPlates(const Vector3& center, const float width, const float height,
@@ -184,8 +193,8 @@ namespace CnaEngine::Graphics
         constexpr float pi = 3.14159265358979323846f;
         const float halfW = width * 0.5f;
         const float halfH = height * 0.5f;
-        const std::array<Vector2, 4> texCoords = {Vector2(uv.u0, uv.v0), Vector2(uv.u1, uv.v0),
-                                                  Vector2(uv.u1, uv.v1), Vector2(uv.u0, uv.v1)};
+        const std::array<Vector2, 4> texCoords = {Vector2(uv.u0, uv.v1), Vector2(uv.u1, uv.v1),
+                                                  Vector2(uv.u1, uv.v0), Vector2(uv.u0, uv.v0)};
         const float step = 180.0f / static_cast<float>(planes);
         for (int i = 0; i < planes; ++i) {
             const float radians = static_cast<float>(i) * step * pi / 180.0f;

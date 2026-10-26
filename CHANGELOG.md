@@ -37,6 +37,19 @@ the same day, when galaxy-eggbert moved onto them (23 headers).
 
 ### Pilot-validated API changes
 
+- `Graphics/MeshBuilder.hpp`, a fix (behaviour, no signature change):
+  `AddPlate` and `AddCrossedPlates` gave the region's top edge (v0) to the
+  plate's bottom corners, and `AddDoubleSidedQuad` gave both sides the same
+  coordinates, so a plate stood on its head and read mirrored from one side
+  (galaxy-eggbert's hub signs; its UB-005, D48). Now a vertical plate shows its
+  region upright, a horizontal one with its top edge towards -Z seen from
+  above (as a box's top face), and the reverse side's copy takes the
+  coordinates mirrored back, so both sides read unmirrored. The horizontal
+  plate's corners run the other way round. easy-3d, which the builder took
+  the plates over from, had the same defect; its equivalence probe keeps the
+  plates' vertices and indices, not their coordinates. Galaxy-eggbert is the
+  only user.
+
 - `Graphics/ForwardRenderer.hpp`, additive: `SharedMaterialBinder()` -- the
   binder as a shared pointer, so a binder that wraps it
   (`Enhanced::LocalLightBinder`, GAME-061) keeps it alive.

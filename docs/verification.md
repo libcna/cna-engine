@@ -4,6 +4,20 @@ Newest first. Each entry states the dependency revisions and worktree state,
 the configuration, the commands, and the result. Failures and skips are
 listed, never folded into a pass.
 
+## 2026-10-27 — plates read upright and unmirrored (galaxy-eggbert UB-005)
+
+Engine `f68e7c3` plus this change (`MeshBuilder`'s `AddPlate`,
+`AddCrossedPlates`, `AddDoubleSidedQuad`), the pinned clones as on 2026-10-25.
+
+- `build/`, Debug, as configured: the build succeeded; the suite excluding
+  `carsim_suite` passed **344 of 344**, among them the new
+  `MeshBuilderTests.PlatesReadUprightAndUnmirroredFromBothSides` and the
+  adjusted `pilot.Easy3DEquivalenceTests.PlatesAndCrossedPlates`.
+- The new test against the previous `MeshBuilder.cpp`: **failed**, as it must.
+- `tools/api_snapshot.py --check`: OK (23 headers unchanged).
+- galaxy-eggbert, which builds the engine from this worktree: its suite and a
+  live look at its hub signs, see its `upstream_bugs.md` UB-005.
+
 ## 2026-10-25 — CNA repair audit at the pinned baseline
 
 Engine `5ef8f1f` before this documentation update, clean and equal to
