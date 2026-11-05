@@ -394,7 +394,7 @@ int main(int argc, char** argv)
         // Headless and deterministic: one frame at a time until the scripted
         // run has taken its screenshot (with a generous cap).
         for (int frame = 0; frame < 10 * ScriptedUpdates && !game.Finished(); ++frame) {
-            game.RunOneFrame();
+            game.RunFrameEXT();
         }
 
         std::printf("quick_start: gathered %d pickups\n", game.Collected());
